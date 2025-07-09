@@ -61,13 +61,18 @@ services:
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN # Default: GSSA
       KAFKA_OPTS: '-Djava.security.auth.login.config=/opt/kafka/config/kafka_server_jaas.conf'
       # Monitoring
-    #      - JMX_PORT=9999
+      #  - JMX_PORT=9999
+      # SSL Settings
+      KAFKA_SSL_KEYSTORE_LOCATION: /opt/kafka/config/server.keystore.p12
+      KAFKA_SSL_KEYSTORE_PASSWORD: server-ks-password
+      KAFKA_SSL_KEY_PASSWORD: server-ks-password
     networks:
       - kafka_network
     volumes:
       - "Kafka00Data:/tmp/kafka-logs"
       - "Kafka00Log:/opt/kafka/logs"
       - ./kafka_server_jaas.conf:/opt/kafka/config/kafka_server_jaas.conf
+      - ./server.keystore.p12:/opt/kafka/config/server.keystore.p12
   ##Kafka 01
   Kafka01Service:
     image: apache/kafka:4.0.0
@@ -105,12 +110,17 @@ services:
       KAFKA_OPTS: '-Djava.security.auth.login.config=/opt/kafka/config/kafka_server_jaas.conf'
       # Monitoring
     #      - JMX_PORT=9999
+      # SSL Settings
+      KAFKA_SSL_KEYSTORE_LOCATION: /opt/kafka/config/server.keystore.p12
+      KAFKA_SSL_KEYSTORE_PASSWORD: server-ks-password
+      KAFKA_SSL_KEY_PASSWORD: server-ks-password
     networks:
       - kafka_network
     volumes:
       - "Kafka01Data:/tmp/kafka-logs"
       - "Kafka01Log:/opt/kafka/logs"
       - ./kafka_server_jaas.conf:/opt/kafka/config/kafka_server_jaas.conf
+      - ./server.keystore.p12:/opt/kafka/config/server.keystore.p12
   ##Kafka 02
   Kafka02Service:
     image: apache/kafka:4.0.0
@@ -148,12 +158,17 @@ services:
       KAFKA_OPTS: '-Djava.security.auth.login.config=/opt/kafka/config/kafka_server_jaas.conf'
       # Monitoring
     #      - JMX_PORT=9999
+      # SSL Settings
+      KAFKA_SSL_KEYSTORE_LOCATION: /opt/kafka/config/server.keystore.p12
+      KAFKA_SSL_KEYSTORE_PASSWORD: server-ks-password
+      KAFKA_SSL_KEY_PASSWORD: server-ks-password
     networks:
       - kafka_network
     volumes:
       - "Kafka02Data:/tmp/kafka-logs"
       - "Kafka02Log:/opt/kafka/logs"
       - ./kafka_server_jaas.conf:/opt/kafka/config/kafka_server_jaas.conf
+      - ./server.keystore.p12:/opt/kafka/config/server.keystore.p12
 
   KafkaWebUiService:
     image: provectuslabs/kafka-ui:v0.7.2
