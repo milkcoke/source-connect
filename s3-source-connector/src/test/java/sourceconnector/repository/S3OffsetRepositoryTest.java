@@ -18,7 +18,6 @@ import org.springframework.kafka.config.TopicBuilder;
 import sourceconnector.domain.OffsetRecord;
 import sourceconnector.domain.OffsetStatus;
 
-import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;

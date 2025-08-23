@@ -57,32 +57,15 @@ services:
       # Security
       KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
       # This option delegates the option `inter.broker.listener.name`
-#      KAFKA_SECURITY_INTER_BROKER_PROTOCOL:  SASL_PLAINTEXT # Default: PLAINTEXT
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN # Default: GSSA
       KAFKA_OPTS: '-Djava.security.auth.login.config=/opt/kafka/config/kafka_server_jaas.conf'
       # Monitoring
       #  - JMX_PORT=9999
-      # SSL Settings
-      #      KAFKA_SSL_KEYSTORE_LOCATION: /etc/kafka/secrets/server.keystore.p12
-#      KAFKA_SSL_KEYSTORE_FILENAME: server.keystore.p12
-      # KAFKA_SSL_KEYSTORE_CREDENTIALS: /etc/kafka/secrets/server.keystore.credentials
-#      KAFKA_SSL_KEYSTORE_CREDENTIALS: server.keystore.credentials
-      #      KAFKA_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/server.truststore.p12
-#      KAFKA_SSL_TRUSTSTORE_FILENAME: server.truststore.p12
-      # KAFKA_SSL_TRUSTSTORE_CREDENTIALS: /etc/kafka/secrets/server.truststore.credentials
-#      KAFKA_SSL_TRUSTSTORE_CREDENTIALS: server.truststore.credentials
     networks:
       - kafka_network
     volumes:
       - "Kafka00Data:/tmp/kafka-logs"
       - "Kafka00Log:/opt/kafka/logs"
-#      - ./kafka_server_jaas.conf:/opt/kafka/config/kafka_server_jaas.conf
-      # /etc/kafka/secrets/{KAFKA_SSL_KEYSTORE_FILENAME} will be set.
-#      - ./server.keystore.p12:/etc/kafka/secrets/server.keystore.p12
-#      - ./server.keystore.credentials:/etc/kafka/secrets/server.keystore.credentials
-      # /etc/kafka/secrets/{KAFKA_SSL_TRUSTSTORE_FILENAME} will be set.
-#      - ./server.truststore.p12:/etc/kafka/secrets/server.truststore.p12
-#      - ./server.truststore.credentials:/etc/kafka/secrets/server.truststore.credentials
   ##Kafka 01
   Kafka01Service:
     image: apache/kafka:4.0.0
@@ -115,32 +98,15 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
       #Security
       KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
-#      KAFKA_SECURITY_INTER_BROKER_PROTOCOL: SASL_PLAINTEXT # Default: PLAINTEXT
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN # Default: GSSAPI
       KAFKA_OPTS: '-Djava.security.auth.login.config=/opt/kafka/config/kafka_server_jaas.conf'
       # Monitoring
     #      - JMX_PORT=9999
-      # SSL Settings
-      #      KAFKA_SSL_KEYSTORE_LOCATION: /etc/kafka/secrets/server.keystore.p12
-#      KAFKA_SSL_KEYSTORE_FILENAME: server.keystore.p12
-      # KAFKA_SSL_KEYSTORE_CREDENTIALS: /etc/kafka/secrets/server.keystore.credentials
-#      KAFKA_SSL_KEYSTORE_CREDENTIALS: server.keystore.credentials
-      #      KAFKA_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/server.truststore.p12
-#      KAFKA_SSL_TRUSTSTORE_FILENAME: server.truststore.p12
-      # KAFKA_SSL_TRUSTSTORE_CREDENTIALS: /etc/kafka/secrets/server.truststore.credentials
-#      KAFKA_SSL_TRUSTSTORE_CREDENTIALS: server.truststore.credentials
     networks:
       - kafka_network
     volumes:
       - "Kafka01Data:/tmp/kafka-logs"
       - "Kafka01Log:/opt/kafka/logs"
-#      - ./kafka_server_jaas.conf:/opt/kafka/config/kafka_server_jaas.conf
-      # /etc/kafka/secrets/{KAFKA_SSL_KEYSTORE_FILENAME} will be set.
-#      - ./server.keystore.p12:/etc/kafka/secrets/server.keystore.p12
-#      - ./server.keystore.credentials:/etc/kafka/secrets/server.keystore.credentials
-      # /etc/kafka/secrets/{KAFKA_SSL_TRUSTSTORE_FILENAME} will be set.
-#      - ./server.truststore.p12:/etc/kafka/secrets/server.truststore.p12
-#      - ./server.truststore.credentials:/etc/kafka/secrets/server.truststore.credentials
   ##Kafka 02
   Kafka02Service:
     image: apache/kafka:4.0.0
@@ -173,32 +139,17 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
       # Security
       KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
-#      KAFKA_SECURITY_INTER_BROKER_PROTOCOL: SASL_PLAINTEXT
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN # default: GSSAPI
       KAFKA_OPTS: '-Djava.security.auth.login.config=/opt/kafka/config/kafka_server_jaas.conf'
       # Monitoring
     #      - JMX_PORT=9999
       # SSL Settings
-#      KAFKA_SSL_KEYSTORE_LOCATION: /etc/kafka/secrets/server.keystore.p12
-#      KAFKA_SSL_KEYSTORE_FILENAME: server.keystore.p12
-      # KAFKA_SSL_KEYSTORE_CREDENTIALS: /etc/kafka/secrets/server.keystore.credentials
-#      KAFKA_SSL_KEYSTORE_CREDENTIALS: server.keystore.credentials
-#      KAFKA_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/server.truststore.p12
-#      KAFKA_SSL_TRUSTSTORE_FILENAME: server.truststore.p12
-      # KAFKA_SSL_TRUSTSTORE_CREDENTIALS: /etc/kafka/secrets/server.truststore.credentials
-#      KAFKA_SSL_TRUSTSTORE_CREDENTIALS: server.truststore.credentials
     networks:
       - kafka_network
     volumes:
       - "Kafka02Data:/tmp/kafka-logs"
       - "Kafka02Log:/opt/kafka/logs"
       - ./kafka_server_jaas.conf:/opt/kafka/config/kafka_server_jaas.conf
-      # /etc/kafka/secrets/{KAFKA_SSL_KEYSTORE_FILENAME} will be set.
-#      - ./server.keystore.p12:/etc/kafka/secrets/server.keystore.p12
-#      - ./server.keystore.credentials:/etc/kafka/secrets/server.keystore.credentials
-      # /etc/kafka/secrets/{KAFKA_SSL_TRUSTSTORE_FILENAME} will be set.
-#      - ./server.truststore.p12:/etc/kafka/secrets/server.truststore.p12
-#      - ./server.truststore.credentials:/etc/kafka/secrets/server.truststore.credentials
 
   KafkaWebUiService:
     image: provectuslabs/kafka-ui:v0.7.2
