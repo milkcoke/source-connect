@@ -32,7 +32,7 @@ class ProduceServiceTest {
         CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
         org.apache.kafka.clients.producer.ProducerConfig.ACKS_CONFIG, "-1",
         org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
-        org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class,
+        org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
         org.apache.kafka.clients.producer.ProducerConfig.LINGER_MS_CONFIG, 100,
         ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true
 //        ProducerConfig.TRANSACTIONAL_ID_CONFIG, "test-s3"

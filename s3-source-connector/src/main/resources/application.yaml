@@ -9,7 +9,7 @@ spring:
       retries: 5
       properties:
         key.serializer: org.apache.kafka.common.serialization.StringSerializer
-        value.serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+        value.serializer: org.apache.kafka.common.serialization.StringSerializer
         security.protocol: PLAINTEXT
         sasl.mechanism: PLAIN
         transactional.id: "s3-source-connector"

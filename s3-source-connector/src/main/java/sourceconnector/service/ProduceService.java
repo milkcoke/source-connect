@@ -16,7 +16,7 @@ import java.util.Properties;
 public class ProduceService {
   private final String logTopic;
   private final String offsetTopic;
-  private final KafkaProducer<String, byte[]> kafkaProducer;
+  private final KafkaProducer<String, String> kafkaProducer;
 
   public ProduceService(Properties properties,
                         String logTopic,
@@ -40,16 +40,13 @@ public class ProduceService {
         this.kafkaProducer.send(new ProducerRecord<>(
           logTopic,
           null,
-          message.getBytes())
+          message)
         );
       }
       this.kafkaProducer.send(new ProducerRecord<>(
         this.offsetTopic,
         offsetRecord.key(),
-        ByteBuffer
-          .allocate(Long.BYTES)
-          .putLong(offsetRecord.offset())
-          .array()
+        String.valueOf(offsetRecord.offset())
       ));
 
       this.kafkaProducer.commitTransaction();
