@@ -18,6 +18,7 @@ spring:
       max-poll-records: 50_000 # default: 1000
       properties:
         poll.ms: 100 # default: 100
+        session.timeout.ms: 45_000 # default: 45_000
         fetch.max.bytes: 57671680  # default: 57671680 (55MB)
         max.partition.fetch.bytes: 57671680 # default: 1MB
         # static membership
