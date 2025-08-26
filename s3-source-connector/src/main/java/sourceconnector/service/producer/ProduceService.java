@@ -1,4 +1,4 @@
-package sourceconnector.service;
+package sourceconnector.service.producer;
 
 import lombok.extern.slf4j.Slf4j;
 import sourceconnector.domain.BatchMessages;
@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Properties;
 

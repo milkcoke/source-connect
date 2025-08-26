@@ -7,7 +7,6 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
-import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.DisplayName;
@@ -16,6 +15,7 @@ import sourceconnector.domain.DefaultBatchLogs;
 import sourceconnector.domain.OffsetRecord;
 import sourceconnector.domain.S3OffsetRecord;
 import org.junit.jupiter.api.Test;
+import sourceconnector.service.producer.ProduceService;
 
 import java.nio.ByteBuffer;
 import java.time.Duration;
