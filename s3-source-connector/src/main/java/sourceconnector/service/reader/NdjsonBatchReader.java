@@ -18,12 +18,11 @@ public class NdjsonBatchReader implements BatchReader<String> {
   }
 
   @Override
-  public List<String> nextBatch() {
+  public List<String> nextBatch() throws IOException {
     List<String> batch = new ArrayList<>(batchSize);
     String line;
-    // TODO: Handle only \n or \r\n
-    while (batch.size() < batchSize && (line = reader.readLine() != null)) {
-      batch.add(line.trim());
+    while (batch.size() < batchSize && (line = reader.readLine()) != null) {
+      batch.add(line);
     }
 
     return batch;

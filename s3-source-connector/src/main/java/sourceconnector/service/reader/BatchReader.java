@@ -9,7 +9,7 @@ public interface BatchReader<T> extends AutoCloseable {
    * @return {@link java.util.List} Batch records
    * @throws IOException
    */
-  List<T> nextBatch();
+  List<T> nextBatch() throws IOException;
 
   @Override
   void close() throws IOException;
