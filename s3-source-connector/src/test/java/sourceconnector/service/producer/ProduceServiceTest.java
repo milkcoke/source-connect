@@ -1,4 +1,4 @@
-package sourceconnector.service;
+package sourceconnector.service.producer;
 
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.*;
@@ -15,7 +15,6 @@ import sourceconnector.domain.DefaultBatchLogs;
 import sourceconnector.domain.OffsetRecord;
 import sourceconnector.domain.S3OffsetRecord;
 import org.junit.jupiter.api.Test;
-import sourceconnector.service.producer.ProduceService;
 
 import java.nio.ByteBuffer;
 import java.time.Duration;
