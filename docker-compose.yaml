@@ -16,7 +16,7 @@ volumes:
   Kafka02Data:
     driver: local
   Kafka02Log:
-    driver: loca
+    driver: local
 
 services:
   ##Kafka 00
@@ -27,7 +27,7 @@ services:
     container_name: Kafka00Broker
     ports:
       - '9092:9094'
-      - '9095:9095'
+#      - '9095:9096'
     environment:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
       # KRaft settings
@@ -37,36 +37,35 @@ services:
       # KRAFT_CLUSTER_ID 설정으로 모든 브로커가 동일한 ID를 가진다
       CLUSTER_ID: 'HsDBs9l6UUmQq7Y5E6bNlw'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '0@Kafka00Service:9093,1@Kafka01Service:9093,2@Kafka02Service:9093'
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
       # Listeners
       ALLOW_PLAINTEXT_LISTENER: yes
       #KAFKA_LISTENERS 카프카가 jetty socket 으로 리스닝할 Listener명:IP:Port
-      KAFKA_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094,DEVELOPER://:9095'
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094, # SASL_SSL://:9096
       # KAFKA_ADVERTISED_LISTENERS : 외부 노출 엔드포인트 (e.g. public DNS or public IP of proxy)
       # Leader broker endpoint 를 포함한 metadata response 에 포함되어 클라이언트에 반환될 endpoint 정보 리스트
       # 클라이언트는 이 목록을 받아 자신이 설정한 security.protocol, ip/port 에 따라 leader broker endpoint 를 결정하여 연결을 시도한다.
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://Kafka00Service:9092,EXTERNAL://127.0.0.1:9092,DEVELOPER://127.0.0.1:9095
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT,DEVELOPER:SASL_PLAINTEXT
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://Kafka00Service:9092,EXTERNAL://127.0.0.1:9092, #SASL_SSL://127.0.0.1:9095
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT, # SASL_SSL:SASL_SSL
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT # Default: CONTROLLER
       # Clustering
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       KAFKA_NUM_PARTITIONS: 5
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
       # Security
-      KAFKA_SASL_ENABLED_MECHANISMS=PLAIN,SCRAM-SHA-5: 2
+      KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
       # This option delegates the option `inter.broker.listener.name`
-      KAFKA_SECURITY_INTER_BROKER_PROTOCOL: PLAINTEXT # Default: PLAINTEXT
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN # Default: GSSA
       KAFKA_OPTS: '-Djava.security.auth.login.config=/opt/kafka/config/kafka_server_jaas.conf'
       # Monitoring
-    #      - JMX_PORT=9999
+      #  - JMX_PORT=9999
     networks:
       - kafka_network
     volumes:
       - "Kafka00Data:/tmp/kafka-logs"
       - "Kafka00Log:/opt/kafka/logs"
-      - ./kafka_server_jaas.conf:/opt/kafka/config/kafka_server_jaas.conf
   ##Kafka 01
   Kafka01Service:
     image: apache/kafka:4.0.0
@@ -75,7 +74,7 @@ services:
     container_name: Kafka01Broker
     ports:
       - '9093:9094'
-      - '9096:9095'
+#      - '9096:9096'
     environment:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
       # KRaft settings
@@ -84,21 +83,21 @@ services:
       KAFKA_PROCESS_ROLES: broker,controller
       CLUSTER_ID: 'HsDBs9l6UUmQq7Y5E6bNlw'
       KAFKA_CONTROLLER_QUORUM_VOTERS: 0@Kafka00Service:9093,1@Kafka01Service:9093,2@Kafka02Service:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
       # Listeners
       ALLOW_PLAINTEXT_LISTENER: yes
-      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094,DEVELOPER://:9095
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://Kafka01Service:9092,EXTERNAL://127.0.0.1:9093,DEVELOPER://127.0.0.1:9096
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT,DEVELOPER:SASL_PLAINTEXT
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094 #SASL_SSL://:9096
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://Kafka01Service:9092,EXTERNAL://127.0.0.1:9093 # SASL_SSL://127.0.0.1:9096
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT #SASL_SSL:SASL_SSL
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT # Default: CONTROLLER
       # Clustering
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       KAFKA_NUM_PARTITIONS: 5
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
       #Security
-      KAFKA_SASL_ENABLED_MECHANISMS: PLAIN,SCRAM-SHA-512
-      KAFKA_SECURITY_INTER_BROKER_PROTOCOL: PLAINTEXT # Default: PLAINTEXT
+      KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN # Default: GSSAPI
       KAFKA_OPTS: '-Djava.security.auth.login.config=/opt/kafka/config/kafka_server_jaas.conf'
       # Monitoring
@@ -108,7 +107,6 @@ services:
     volumes:
       - "Kafka01Data:/tmp/kafka-logs"
       - "Kafka01Log:/opt/kafka/logs"
-      - ./kafka_server_jaas.conf:/opt/kafka/config/kafka_server_jaas.conf
   ##Kafka 02
   Kafka02Service:
     image: apache/kafka:4.0.0
@@ -117,7 +115,7 @@ services:
     container_name: Kafka02Broker
     ports:
       - '9094:9094'
-      - '9097:9095'
+#      - '9097:9096'
     environment:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
       # KRaft settings
@@ -126,25 +124,26 @@ services:
       KAFKA_PROCESS_ROLES: controller,broker
       CLUSTER_ID: 'HsDBs9l6UUmQq7Y5E6bNlw'
       KAFKA_CONTROLLER_QUORUM_VOTERS: 0@Kafka00Service:9093,1@Kafka01Service:9093,2@Kafka02Service:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
       # Listeners
       ALLOW_PLAINTEXT_LISTENER: yes
-      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094,DEVELOPER://:9095
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://Kafka02Service:9092,EXTERNAL://127.0.0.1:9094,DEVELOPER://127.0.0.1:9097
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT,DEVELOPER:SASL_PLAINTEXT
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094, #SASL_SSL://:9096
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://Kafka02Service:9092,EXTERNAL://127.0.0.1:9094 #SASL_SSL://127.0.0.1:9097
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT #SASL_SSL:SASL_SSL
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT # Default: CONTROLLER
       # Clustering
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       KAFKA_NUM_PARTITIONS: 5
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
       # Security
-      KAFKA_SASL_ENABLED_MECHANISMS: PLAIN,SCRAM-SHA-512
-      KAFKA_SECURITY_INTER_BROKER_PROTOCOL: PLAINTEXT
+      KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN # default: GSSAPI
       KAFKA_OPTS: '-Djava.security.auth.login.config=/opt/kafka/config/kafka_server_jaas.conf'
       # Monitoring
     #      - JMX_PORT=9999
+      # SSL Settings
     networks:
       - kafka_network
     volumes:
