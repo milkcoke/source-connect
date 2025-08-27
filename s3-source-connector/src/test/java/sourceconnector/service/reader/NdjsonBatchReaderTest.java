@@ -5,14 +5,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import sourceconnector.repository.FileRepository;
 import sourceconnector.repository.LocalFileRepository;
-import sourceconnector.service.processor.BatchProcessor;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 class NdjsonBatchReaderTest {
 
