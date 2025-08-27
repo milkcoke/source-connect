@@ -3,7 +3,6 @@ package sourceconnector.service.processor;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -23,9 +22,7 @@ public class ChainBatchProcessor implements BatchProcessor<String, String>{
     }
     public ChainBatchProcessor build() {
       if (processors.isEmpty()) throw new IllegalStateException("Should pass at least one processor");
-      List<BaseProcessor<String, String>> reversed = new ArrayList<>(processors);
-      Collections.reverse(reversed);
-      return new ChainBatchProcessor(reversed);
+      return new ChainBatchProcessor(processors);
     }
 
   }
