@@ -81,6 +81,3 @@ You should handle file offset to avoid duplication and keep ordering.
 I choose the kafka streams processing guarantee option `exactly_once_v2`. \
 This option provides a transactional mechanism for keeping ordering, no duplication, and offset handling. \
 For make steps (3) ~ (6) a transaction, we should produce records to the kafka topic.
-
-
-
