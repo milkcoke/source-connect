@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 public class ChainBatchProcessor implements BatchProcessor<String, String>{
@@ -33,6 +34,15 @@ public class ChainBatchProcessor implements BatchProcessor<String, String>{
 
   @Override
   public List<String> processBatch(List<String> batch) {
+    List<String> result = batch;
+    for (BaseProcessor<String, String> processor : processors) {
+      result = batch.stream()
+        .map(processor::process)
+        .filter(Objects::nonNull)
+        .toList();
+    }
+
+    return result;
   }
 
 }
