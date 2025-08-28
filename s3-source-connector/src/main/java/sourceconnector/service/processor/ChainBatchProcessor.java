@@ -8,15 +8,15 @@ import java.util.Objects;
 
 @RequiredArgsConstructor
 public class ChainBatchProcessor implements BatchProcessor<String, String>{
-  private final List<BaseProcessor<String, String>> processors;
+  private final List<Processor<String, String, String>> processors;
 
   public static Builder builder() {
     return new Builder();
   }
   public static class Builder {
-    private final List<BaseProcessor<String, String>> processors = new ArrayList<>();
+    private final List<Processor<String, String, String>> processors = new ArrayList<>();
 
-    public Builder addProcessor(BaseProcessor<String,String> processor) {
+    public Builder addProcessor(Processor<String,String, String> processor) {
       processors.add(processor);
       return this;
     }
@@ -32,7 +32,7 @@ public class ChainBatchProcessor implements BatchProcessor<String, String>{
   @Override
   public List<String> processBatch(List<String> batch) {
     List<String> result = batch;
-    for (BaseProcessor<String, String> processor : processors) {
+    for (Processor<String, String> processor : processors) {
       result = batch.stream()
         .map(processor::process)
         .filter(Objects::nonNull)
