@@ -8,7 +8,7 @@ class MapperProcessorTest {
 
   @Test
   void process() {
-//    BaseProcessor<String, Integer, Double> processor = new MapperProcessor<>(String::length)
-//      .setNext(new MapperProcessor<>(num-> Double.valueOf(num)));
+    BaseProcessor<String, String> processor = new MapperProcessor<>(String::length)
+      .setNext(new MapperProcessor<>(num-> num.toString()));
   }
 }
