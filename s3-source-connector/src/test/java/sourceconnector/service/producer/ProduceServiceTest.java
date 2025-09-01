@@ -10,8 +10,8 @@ import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.DisplayName;
-import sourceconnector.domain.BatchMessages;
-import sourceconnector.domain.DefaultBatchLogs;
+import sourceconnector.domain.MessageBatch;
+import sourceconnector.domain.DefaultMessageBatchLogs;
 import sourceconnector.domain.OffsetRecord;
 import sourceconnector.domain.S3OffsetRecord;
 import org.junit.jupiter.api.Test;
@@ -46,14 +46,14 @@ class ProduceServiceTest {
       "log-topic",
       "s3-offset-topic"
     );
-    BatchMessages batchMessages = new DefaultBatchLogs(List.of(
+    MessageBatch<String> messageBatch = new DefaultMessageBatchLogs(List.of(
       "log1",
       "log2",
       "log3"
     ));
     OffsetRecord offsetRecord = new S3OffsetRecord("s3://test/2025/04/11/test.json", 3L);
     // when
-    produceService.send(offsetRecord, batchMessages);
+    produceService.sendBatch(offsetRecord, messageBatch);
 
 
   }
