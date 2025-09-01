@@ -21,7 +21,7 @@ public class FileLogBatcher implements Batchable<FileBaseLog> {
       result = pipeline.getResult();
       this.batch.add(result);
     } while (
-      result != null &&
+      result == null ||
       batch.size() < batchSize
     );
     return batch;
