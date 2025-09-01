@@ -5,5 +5,5 @@ package sourceconnector.service.pipeline;
  * @param <T> Handling type
  */
 public interface Pipeline<T> {
-  T getResult(T input);
+  T getResult();
 }
