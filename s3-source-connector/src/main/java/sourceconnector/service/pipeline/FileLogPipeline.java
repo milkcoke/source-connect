@@ -9,7 +9,7 @@ import sourceconnector.parser.LogParser;
 import sourceconnector.repository.FileRepository;
 import sourceconnector.service.processor.BaseProcessor;
 import sourceconnector.service.reader.LineReader;
-import sourceconnector.service.reader.NdjsonReader;
+import sourceconnector.service.reader.StringLineReader;
 
 import java.io.IOException;
 
@@ -34,7 +34,7 @@ public class FileLogPipeline implements Pipeline<Log> {
     try {
       return new FileLogPipeline(
         filePath,
-        new NdjsonReader(fileRepository.getFile(filePath)),
+        new StringLineReader(fileRepository.getFile(filePath)),
         parser,
         processors[0]
       );
