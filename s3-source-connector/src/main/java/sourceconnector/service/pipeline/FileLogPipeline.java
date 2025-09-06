@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import sourceconnector.domain.log.FileMetadata;
 import sourceconnector.domain.log.Log;
+import sourceconnector.exception.FileLogReadException;
 import sourceconnector.parser.LogParser;
 import sourceconnector.repository.FileRepository;
 import sourceconnector.service.processor.BaseProcessor;
@@ -20,6 +21,7 @@ public class FileLogPipeline implements Pipeline<Log> {
   private final LineReader<String> reader;
   private final LogParser parser;
   private final BaseProcessor<Log> startProcessor;
+  private boolean isComplete = false;
 
   @SafeVarargs
   public static Pipeline<Log> create(
@@ -48,15 +50,33 @@ public class FileLogPipeline implements Pipeline<Log> {
   public Log getResult() {
     try {
       String rawString = this.reader.read();
+
+      // Complete the pipeline if end of file has been reached
+      if (rawString == null) {
+        this.isComplete = true;
+        return null;
+      }
+
       Log input = this.parser.parse(
         rawString,
         new FileMetadata(this.filePath, this.reader.getLineNumber())
       );
       return this.startProcessor.process(input);
     } catch (IOException exception) {
-      log.error("Failed to read from: {} offset: {}", filePath, this.reader.getLineNumber(), exception);
+      throw new FileLogReadException(
+        String.format(
+          "Failed to read from: %s, offset: %d",
+          filePath,
+          this.reader.getLineNumber() + 1
+        ),
+        exception
+      );
     }
-    return null;
+
   }
 
+  @Override
+  public boolean isComplete() {
+    return this.isComplete;
+  }
 }
