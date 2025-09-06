@@ -7,6 +7,10 @@ public class JSONLog extends FileBaseLog {
     this.payload = payload;
   }
 
+  public JSONLog withPayload(String newPayload) {
+    return new JSONLog(newPayload, this.getMetadata());
+  }
+
   @Override
   public String get() {
     return this.payload;
