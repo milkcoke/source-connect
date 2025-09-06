@@ -4,6 +4,9 @@ public class JSONLog extends FileBaseLog {
   private final String payload;
   public JSONLog(String payload, FileMetadata metadata) {
     super(metadata);
+    if (payload == null) {
+      throw new IllegalArgumentException("Payload cannot be null");
+    }
     this.payload = payload;
   }
 
