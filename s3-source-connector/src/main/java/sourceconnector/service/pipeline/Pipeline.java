@@ -6,4 +6,5 @@ package sourceconnector.service.pipeline;
  */
 public interface Pipeline<T> {
   T getResult();
+  boolean isComplete();
 }
