@@ -1,7 +1,7 @@
 package sourceconnector.service.batcher;
 
-import java.util.Collection;
+import sourceconnector.domain.MessageBatch;
 
 public interface Batchable<T> {
-  Collection<T> nextBatch();
+  MessageBatch<T> nextBatch();
 }
