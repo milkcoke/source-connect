@@ -1,6 +1,7 @@
 package sourceconnector.service.pipeline;
 
 import lombok.AccessLevel;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import sourceconnector.domain.log.FileMetadata;
@@ -28,7 +29,7 @@ public class FileLogPipeline implements Pipeline<Log> {
     FileRepository fileRepository,
     String filePath,
     LogParser parser,
-    BaseProcessor<Log>... processors
+    @NonNull BaseProcessor<Log>... processors
   ) {
     for (int i = processors.length - 1; i > 0; i--) {
       processors[i - 1].setNext(processors[i]);
