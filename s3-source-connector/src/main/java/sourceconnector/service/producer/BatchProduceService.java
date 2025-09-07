@@ -12,17 +12,17 @@ import java.util.Properties;
 
 @Slf4j
 @RequiredArgsConstructor
-public class ProduceService implements BatchProducer<String> {
+public class BatchProduceService implements BatchProducer<String> {
   private final String logTopic;
   private final String offsetTopic;
   private final KafkaProducer<String, String> kafkaProducer;
 
-  public ProduceService(Properties properties,
-                        String logTopic,
-                        String offsetTopic) {
-    this.kafkaProducer = new KafkaProducer<>(properties);
+  public BatchProduceService(Properties properties,
+                             String logTopic,
+                             String offsetTopic) {
     this.logTopic = logTopic;
     this.offsetTopic = offsetTopic;
+    this.kafkaProducer = new KafkaProducer<>(properties);
   }
 
   @Override
@@ -32,7 +32,6 @@ public class ProduceService implements BatchProducer<String> {
   ) {
     Collection<String> batch = messageBatch.get();
 
-    this.kafkaProducer.initTransactions();
     try {
       this.kafkaProducer.beginTransaction();
 

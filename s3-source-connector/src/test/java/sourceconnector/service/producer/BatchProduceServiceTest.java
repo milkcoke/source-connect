@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Properties;
 
 
-class ProduceServiceTest {
+class BatchProduceServiceTest {
   private static final Properties props = new Properties();
   static {
     props.putAll(Map.of(
@@ -41,7 +41,7 @@ class ProduceServiceTest {
   @Test
   void sendTest() {
     // given
-    ProduceService produceService = new ProduceService(
+    BatchProduceService batchProduceService = new BatchProduceService(
       props,
       "log-topic",
       "s3-offset-topic"
@@ -53,7 +53,7 @@ class ProduceServiceTest {
     ));
     OffsetRecord offsetRecord = new S3OffsetRecord("s3://test/2025/04/11/test.json", 3L);
     // when
-    produceService.sendBatch(offsetRecord, messageBatch);
+    batchProduceService.sendBatch(offsetRecord, messageBatch);
 
 
   }
