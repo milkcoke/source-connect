@@ -35,7 +35,7 @@ public class S3OffsetRepository implements OffsetRepository {
     long currentOffset = this.consumer.beginningOffsets(List.of(topicPartition)).get(topicPartition);
     long endOffset = this.consumer.endOffsets(List.of(topicPartition)).get(topicPartition);
 
-    OffsetRecord lastOffsetRecord = new S3OffsetRecord(s3Path, INITIAL_OFFSET.getValue());
+    S3OffsetRecord lastOffsetRecord = new S3OffsetRecord(s3Path, INITIAL_OFFSET.getValue());
 
     while (currentOffset < endOffset) {
       this.consumer.seek(topicPartition, currentOffset);
@@ -62,7 +62,7 @@ public class S3OffsetRepository implements OffsetRepository {
           record.key(),
           record.offset()
         ))
-        .orElse((S3OffsetRecord) lastOffsetRecord);
+        .orElse(lastOffsetRecord);
     }
 
     return lastOffsetRecord;

@@ -16,7 +16,7 @@ public class LocalFileRepository implements FileRepository {
    */
   @Override
   public InputStream getFile(String filePath) throws IOException {
-    Path path =  Paths.get(filePath);
+    Path path = Paths.get(filePath);
     return Files.newInputStream(path, READ);
   }
 }

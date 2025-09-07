@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 
 @RequiredArgsConstructor
-public class DefaultBatchLogs implements BatchMessages {
+public class DefaultMessageBatchLogs implements MessageBatch {
   private final List<String> logs;
 
   public void add(String log) {
