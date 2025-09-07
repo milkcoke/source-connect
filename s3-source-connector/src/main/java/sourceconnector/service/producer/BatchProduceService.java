@@ -23,6 +23,7 @@ public class BatchProduceService implements BatchProducer<String> {
     this.logTopic = logTopic;
     this.offsetTopic = offsetTopic;
     this.kafkaProducer = new KafkaProducer<>(properties);
+    this.kafkaProducer.initTransactions();
   }
 
   @Override
