@@ -5,9 +5,8 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import sourceconnector.domain.LocalFileOffsetRecord;
 import sourceconnector.domain.MessageBatch;
-import sourceconnector.domain.OffsetStatus;
-import sourceconnector.domain.S3OffsetRecord;
 import sourceconnector.domain.log.FileBaseLog;
 import sourceconnector.domain.log.Log;
 import sourceconnector.parser.JSONLogParser;
@@ -24,13 +23,7 @@ import sourceconnector.service.producer.BatchProducer;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Properties;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.*;
 
 class S3SourceConnectorTest {
   private static final Properties props = new Properties();
@@ -53,32 +46,32 @@ class S3SourceConnectorTest {
 
     File file = Path.of("src/test/resources/sample-data/large-ndjson.ndjson").toFile();
 
-    Pipeline<Log> pipeline = FileLogPipeline.create(
+    Pipeline<FileBaseLog> pipeline = FileLogPipeline.create(
       new LocalFileRepository(),
       file.getPath(),
       new JSONLogParser(),
       new BaseProcessor[]{new TrimMapperProcessor(), new EmptyFilterProcessor()}
     );
 
-    Batchable<Log> batcher = new LogBatcher(pipeline, 1000);
+    Batchable<FileBaseLog> batcher = new LogBatcher(pipeline, 1000);
     BatchProducer<String> producer = new BatchProduceService(props, "log", "local-offset");
 
     // when
-    while(true) {
-      MessageBatch<Log> batch = batcher.nextBatch();
-      Collection<Log> messages = batch.get();
+    List<FileBaseLog> messages;
+    do {
+      MessageBatch<FileBaseLog> batch = batcher.nextBatch();
+      messages = batch.get();
+      var lastMessageMetadata = messages.getLast().getMetadata();
+      List<String> messageBatch = messages
+        .stream()
+        .map(Log::get)
+        .toList();
+      producer.sendBatch(
+        new LocalFileOffsetRecord(lastMessageMetadata.filePath(), lastMessageMetadata.offset()),
+        ()-> messageBatch
+      );
 
-      if (messages == Collections.EMPTY_LIST) {
-        producer.sendBatch(
-          new S3OffsetRecord(file.getPath(), OffsetStatus.COMPLETE_OFFSET.getValue()),
-          ()-> Collections.EMPTY_LIST
-        );
-        break;
-      } else {
-        // TODO: get last offset in the MessageBatch
-      }
-
-    }
+    } while (messages != Collections.EMPTY_LIST);
 
   }
 }
