@@ -1,7 +1,7 @@
 package sourceconnector.domain;
 
-import java.util.Collection;
+import java.util.List;
 
 public interface MessageBatch<T> {
-  Collection<T> get();
+  List<T> get();
 }
