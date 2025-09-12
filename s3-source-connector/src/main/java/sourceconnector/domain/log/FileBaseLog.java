@@ -7,4 +7,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public abstract class FileBaseLog implements Log {
   private final FileLogMetadata metadata;
+
+  public abstract FileBaseLog withPayload(String newPayload);
 }

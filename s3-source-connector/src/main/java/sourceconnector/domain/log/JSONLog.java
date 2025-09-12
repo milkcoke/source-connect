@@ -10,6 +10,7 @@ public class JSONLog extends FileBaseLog {
     this.payload = payload;
   }
 
+  @Override
   public JSONLog withPayload(String newPayload) {
     return new JSONLog(newPayload, this.getMetadata());
   }
