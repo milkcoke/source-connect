@@ -1,21 +1,14 @@
 package sourceconnector.domain.log;
 
-import org.apache.commons.lang3.StringUtils;
-
 /**
  * Log Should have the payload and metadata
  */
 public interface Log {
+  /**
+   * Get the payload of the log
+   *
+   * @return String payload
+   */
   String get();
-  Metadata getMetadata();
-
-  static Log empty() {
-    return Empty.INSTANCE;
-  }
-  enum Empty implements Log {
-    INSTANCE;
-    @Override public String get() { return StringUtils.EMPTY; }
-    @Override public Metadata getMetadata() { return Metadata.empty(); }
-  }
-
+  LogMetadata getMetadata();
 }

@@ -1,8 +1,8 @@
 package sourceconnector.parser;
 
 import sourceconnector.domain.log.Log;
-import sourceconnector.domain.log.Metadata;
+import sourceconnector.domain.log.LogMetadata;
 
 public interface LogParser {
-  Log parse(String rawString, Metadata metadata);
+  Log parse(String rawString, LogMetadata logMetadata);
 }
