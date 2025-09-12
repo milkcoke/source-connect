@@ -2,11 +2,11 @@ package sourceconnector.service.processor.impl;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import sourceconnector.domain.log.FileBaseLog;
 import sourceconnector.domain.log.JSONLog;
 import sourceconnector.domain.log.Log;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 class EmptyFilterProcessorTest {
 
@@ -15,7 +15,7 @@ class EmptyFilterProcessorTest {
   void shouldReturnFalseForEmptyOrBlankInput() {
     // given
     EmptyFilterProcessor processor = new EmptyFilterProcessor();
-    JSONLog emptyInput = new JSONLog("", null);
+    FileBaseLog emptyInput = new JSONLog("", null);
 
     // when
     Log result = processor.process(emptyInput);

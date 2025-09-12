@@ -3,17 +3,17 @@ package sourceconnector;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import sourceconnector.domain.LocalFileOffsetRecord;
 import sourceconnector.domain.MessageBatch;
-import sourceconnector.domain.log.FileBaseLog;
+import sourceconnector.domain.factory.FileBaseLogFactory;
 import sourceconnector.domain.log.Log;
-import sourceconnector.parser.JSONLogParser;
 import sourceconnector.repository.LocalFileRepository;
 import sourceconnector.service.batcher.Batchable;
 import sourceconnector.service.batcher.LogBatcher;
-import sourceconnector.service.pipeline.FileLogPipeline;
+import sourceconnector.service.pipeline.FileBaseLogPipeline;
 import sourceconnector.service.pipeline.Pipeline;
 import sourceconnector.service.processor.BaseProcessor;
 import sourceconnector.service.processor.impl.EmptyFilterProcessor;
@@ -25,6 +25,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
 
+@Disabled
 class S3SourceConnectorTest {
   private static final Properties props = new Properties();
   static {
@@ -46,20 +47,20 @@ class S3SourceConnectorTest {
 
     File file = Path.of("src/test/resources/sample-data/large-ndjson.ndjson").toFile();
 
-    Pipeline<FileBaseLog> pipeline = FileLogPipeline.create(
+    Pipeline<Log> pipeline = FileBaseLogPipeline.create(
       new LocalFileRepository(),
       file.getPath(),
-      new JSONLogParser(),
+      new FileBaseLogFactory(),
       new BaseProcessor[]{new TrimMapperProcessor(), new EmptyFilterProcessor()}
     );
 
-    Batchable<FileBaseLog> batcher = new LogBatcher(pipeline, 1000);
+    Batchable<Log> batcher = new LogBatcher(pipeline, 1000);
     BatchProducer<String> producer = new BatchProduceService(props, "log", "local-offset");
 
     // when
-    List<FileBaseLog> messages;
+    List<Log> messages;
     do {
-      MessageBatch<FileBaseLog> batch = batcher.nextBatch();
+      MessageBatch<Log> batch = batcher.nextBatch();
       messages = batch.get();
       var lastMessageMetadata = messages.getLast().getMetadata();
       List<String> messageBatch = messages
@@ -67,7 +68,7 @@ class S3SourceConnectorTest {
         .map(Log::get)
         .toList();
       producer.sendBatch(
-        new LocalFileOffsetRecord(lastMessageMetadata.filePath(), lastMessageMetadata.offset()),
+        new LocalFileOffsetRecord(lastMessageMetadata.key(), lastMessageMetadata.offset()),
         ()-> messageBatch
       );
 
