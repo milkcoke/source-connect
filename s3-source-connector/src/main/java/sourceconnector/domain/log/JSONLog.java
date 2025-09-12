@@ -2,7 +2,7 @@ package sourceconnector.domain.log;
 
 public class JSONLog extends FileBaseLog {
   private final String payload;
-  public JSONLog(String payload, FileMetadata metadata) {
+  public JSONLog(String payload, FileLogMetadata metadata) {
     super(metadata);
     if (payload == null) {
       throw new IllegalArgumentException("Payload cannot be null");
