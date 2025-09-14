@@ -1,13 +1,12 @@
 package sourceconnector;
 
 import org.apache.kafka.clients.CommonClientConfigs;
-import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.record.CompressionType;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import sourceconnector.domain.LocalFileOffsetRecord;
-import sourceconnector.domain.MessageBatch;
 import sourceconnector.domain.factory.JSONLogFactory;
 import sourceconnector.domain.log.Log;
 import sourceconnector.repository.LocalFileRepository;
@@ -24,18 +23,22 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
 
+import static org.apache.kafka.clients.producer.ProducerConfig.*;
+
 @Disabled
 class S3SourceConnectorTest {
   private static final Properties props = new Properties();
   static {
     props.putAll(Map.of(
         CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
-        org.apache.kafka.clients.producer.ProducerConfig.ACKS_CONFIG, "-1",
-        org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
-        org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
-        org.apache.kafka.clients.producer.ProducerConfig.LINGER_MS_CONFIG, 100,
-        ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true,
-        ProducerConfig.TRANSACTIONAL_ID_CONFIG, "test-s3"
+        ACKS_CONFIG, "-1",
+        COMPRESSION_TYPE_CONFIG, CompressionType.LZ4.name,
+        KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
+        VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
+        LINGER_MS_CONFIG, 100,
+        BATCH_SIZE_CONFIG, 524288,
+        ENABLE_IDEMPOTENCE_CONFIG, true,
+        TRANSACTIONAL_ID_CONFIG, "test-s3"
       )
     );
   }
@@ -53,14 +56,12 @@ class S3SourceConnectorTest {
       new TrimMapperProcessor(new JSONLogFactory()), new EmptyFilterProcessor()
     );
 
-    Batchable<Log> batcher = new LogBatcher(pipeline, 1000);
+    Batchable<Log> batcher = new LogBatcher(pipeline, 10_000);
     BatchProducer<String> producer = new BatchProduceService(props, "log", "local-offset");
 
     // when
     List<Log> messages;
-    do {
-      MessageBatch<Log> batch = batcher.nextBatch();
-      messages = batch.get();
+    while((messages = batcher.nextBatch().get()) != Collections.EMPTY_LIST) {
       var lastMessageMetadata = messages.getLast().getMetadata();
       List<String> messageBatch = messages
         .stream()
@@ -70,8 +71,7 @@ class S3SourceConnectorTest {
         new LocalFileOffsetRecord(lastMessageMetadata.key(), lastMessageMetadata.offset()),
         ()-> messageBatch
       );
-
-    } while (messages != Collections.EMPTY_LIST);
+    }
 
   }
 }

@@ -8,7 +8,6 @@ import sourceconnector.domain.log.Log;
 import sourceconnector.repository.LocalFileRepository;
 import sourceconnector.service.pipeline.FileBaseLogPipeline;
 import sourceconnector.service.pipeline.Pipeline;
-import sourceconnector.service.processor.BaseProcessor;
 import sourceconnector.service.processor.impl.EmptyFilterProcessor;
 import sourceconnector.service.processor.impl.TrimMapperProcessor;
 
