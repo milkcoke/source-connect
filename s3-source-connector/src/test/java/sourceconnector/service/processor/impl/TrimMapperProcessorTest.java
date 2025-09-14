@@ -2,8 +2,10 @@ package sourceconnector.service.processor.impl;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import sourceconnector.domain.log.FileBaseLog;
+import sourceconnector.domain.factory.JSONLogFactory;
 import sourceconnector.domain.log.JSONLog;
+import sourceconnector.domain.log.Log;
+import sourceconnector.domain.log.LogMetadata;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -14,10 +16,10 @@ class TrimMapperProcessorTest {
   @Test
   void trimWhiteSpaceLeadingAndTrailing() {
     // given
-    TrimMapperProcessor processor = new TrimMapperProcessor();
-    FileBaseLog input = new JSONLog("   test payload   ", null);
+    TrimMapperProcessor processor = new TrimMapperProcessor(new JSONLogFactory());
+    Log input = new JSONLog("   test payload   ", LogMetadata.EMPTY);
     // when
-    FileBaseLog result = processor.map(input);
+    Log result = processor.map(input);
     // then
     assertThat(result.get()).isEqualTo("test payload");
   }
@@ -26,10 +28,10 @@ class TrimMapperProcessorTest {
   @Test
   void removeAllWhiteSpace() {
     // given
-    TrimMapperProcessor processor = new TrimMapperProcessor();
-    FileBaseLog input = new JSONLog("   ", null);
+    TrimMapperProcessor processor = new TrimMapperProcessor(new JSONLogFactory());
+    Log input = new JSONLog("   ", LogMetadata.EMPTY);
     // when
-    FileBaseLog result = processor.map(input);
+    Log result = processor.map(input);
     // then
     assertThat(result.get()).isEqualTo("");
   }

@@ -3,7 +3,7 @@ package sourceconnector.service.batcher;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import sourceconnector.domain.MessageBatch;
-import sourceconnector.domain.factory.FileBaseLogFactory;
+import sourceconnector.domain.factory.JSONLogFactory;
 import sourceconnector.domain.log.Log;
 import sourceconnector.repository.LocalFileRepository;
 import sourceconnector.service.pipeline.FileBaseLogPipeline;
@@ -29,8 +29,8 @@ class LogBatcherTest {
     Pipeline<Log> pipeline = FileBaseLogPipeline.create(
       new LocalFileRepository(),
       file.getPath(),
-      new FileBaseLogFactory(),
-      new BaseProcessor[]{new TrimMapperProcessor(), new EmptyFilterProcessor()}
+      new JSONLogFactory(),
+      new TrimMapperProcessor(new JSONLogFactory()), new EmptyFilterProcessor()
     );
     Batchable<Log> batcher = new LogBatcher(pipeline, 100);
 
@@ -50,8 +50,8 @@ class LogBatcherTest {
     Pipeline<Log> pipeline = FileBaseLogPipeline.create(
       new LocalFileRepository(),
       file.getPath(),
-      new FileBaseLogFactory(),
-      new BaseProcessor[]{new TrimMapperProcessor(), new EmptyFilterProcessor()}
+      new JSONLogFactory(),
+      new TrimMapperProcessor(new JSONLogFactory()), new EmptyFilterProcessor()
     );
     Batchable<Log> batcher = new LogBatcher(pipeline, 3);
 

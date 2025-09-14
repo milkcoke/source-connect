@@ -4,7 +4,7 @@ import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import sourceconnector.domain.factory.FileBaseLogFactory;
+import sourceconnector.domain.factory.LogFactory;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.FileLogMetadata;
 import sourceconnector.exception.FileLogReadException;
@@ -20,7 +20,7 @@ import java.io.IOException;
 public class FileBaseLogPipeline implements Pipeline<Log> {
   private final String filePath;
   private final LineReader<String> reader;
-  private final FileBaseLogFactory fileBaseLogFactory;
+  private final LogFactory logFactory;
   private final BaseProcessor<Log> startProcessor;
   private boolean isComplete = false;
 
@@ -28,7 +28,7 @@ public class FileBaseLogPipeline implements Pipeline<Log> {
   public static Pipeline<Log> create(
     FileRepository fileRepository,
     String filePath,
-    FileBaseLogFactory logFactory,
+    LogFactory logFactory,
     @NonNull BaseProcessor<Log>... processors
   ) {
     for (int i = processors.length - 1; i > 0; i--) {
@@ -57,7 +57,7 @@ public class FileBaseLogPipeline implements Pipeline<Log> {
         this.isComplete = true;
         return null;
       }
-      Log input = this.fileBaseLogFactory.create(
+      Log input = this.logFactory.create(
         rawString,
         new FileLogMetadata(this.filePath, this.reader.getLineNumber())
       );

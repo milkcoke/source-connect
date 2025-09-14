@@ -1,11 +1,11 @@
 package sourceconnector.service.processor.impl;
 
-import sourceconnector.domain.log.FileBaseLog;
+import sourceconnector.domain.log.Log;
 import sourceconnector.service.processor.AbstractFilterProcessor;
 
-public class EmptyFilterProcessor extends AbstractFilterProcessor<FileBaseLog> {
+public class EmptyFilterProcessor extends AbstractFilterProcessor<Log> {
   @Override
-  protected boolean condition(FileBaseLog input) {
+  protected boolean condition(Log input) {
     return !input.get().isEmpty();
   }
 }
