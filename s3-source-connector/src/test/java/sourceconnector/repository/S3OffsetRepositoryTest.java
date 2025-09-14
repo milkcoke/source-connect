@@ -13,8 +13,8 @@ import org.apache.kafka.common.config.TopicConfig;
 import org.apache.kafka.common.serialization.*;
 import org.junit.jupiter.api.*;
 import org.springframework.kafka.config.TopicBuilder;
-import sourceconnector.domain.OffsetRecord;
-import sourceconnector.domain.OffsetStatus;
+import sourceconnector.domain.offset.OffsetRecord;
+import sourceconnector.domain.offset.OffsetStatus;
 
 import java.time.Duration;
 import java.util.Collections;

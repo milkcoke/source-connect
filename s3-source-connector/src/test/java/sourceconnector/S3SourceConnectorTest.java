@@ -6,7 +6,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import sourceconnector.domain.LocalFileOffsetRecord;
+import sourceconnector.domain.offset.LocalFileOffsetRecord;
 import sourceconnector.domain.factory.JSONLogFactory;
 import sourceconnector.domain.log.Log;
 import sourceconnector.repository.LocalFileRepository;

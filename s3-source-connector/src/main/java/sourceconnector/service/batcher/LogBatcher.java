@@ -1,7 +1,7 @@
 package sourceconnector.service.batcher;
 
 import lombok.RequiredArgsConstructor;
-import sourceconnector.domain.MessageBatch;
+import sourceconnector.domain.batch.MessageBatch;
 import sourceconnector.domain.log.Log;
 import sourceconnector.service.pipeline.Pipeline;
 

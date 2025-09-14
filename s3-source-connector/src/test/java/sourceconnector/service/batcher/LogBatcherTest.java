@@ -2,7 +2,7 @@ package sourceconnector.service.batcher;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import sourceconnector.domain.MessageBatch;
+import sourceconnector.domain.batch.MessageBatch;
 import sourceconnector.domain.factory.JSONLogFactory;
 import sourceconnector.domain.log.Log;
 import sourceconnector.repository.LocalFileRepository;

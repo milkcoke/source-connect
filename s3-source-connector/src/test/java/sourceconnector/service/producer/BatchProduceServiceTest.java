@@ -10,10 +10,10 @@ import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.DisplayName;
-import sourceconnector.domain.MessageBatch;
-import sourceconnector.domain.DefaultMessageBatchLogs;
-import sourceconnector.domain.OffsetRecord;
-import sourceconnector.domain.S3OffsetRecord;
+import sourceconnector.domain.batch.MessageBatch;
+import sourceconnector.domain.batch.DefaultMessageBatchLogs;
+import sourceconnector.domain.offset.OffsetRecord;
+import sourceconnector.domain.offset.S3OffsetRecord;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;

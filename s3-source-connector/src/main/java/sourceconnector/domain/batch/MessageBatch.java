@@ -1,4 +1,4 @@
-package sourceconnector.domain;
+package sourceconnector.domain.batch;
 
 import java.util.List;
 
