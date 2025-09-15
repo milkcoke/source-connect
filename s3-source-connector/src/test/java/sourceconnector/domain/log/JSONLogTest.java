@@ -11,11 +11,14 @@ class JSONLogTest {
   @Test
   void jsonLogTest() {
     // given
-    JSONLog jsonLog = new JSONLog("log payload",new FileMetadata("localFile/file.ndjson", 0L));
+    JSONLog jsonLog = new JSONLog(
+      "log payload",
+      new FileLogMetadata("localFile/file.ndjson", 0L)
+    );
     // when then
     assertThat(jsonLog.get()).isEqualTo("log payload");
     assertThat(jsonLog.getMetadata())
-      .extracting(FileMetadata::filePath, FileMetadata::offset)
+      .extracting(LogMetadata::key, LogMetadata::offset)
       .containsExactly("localFile/file.ndjson", 0L);
   }
 

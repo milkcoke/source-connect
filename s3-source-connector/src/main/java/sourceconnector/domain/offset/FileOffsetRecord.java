@@ -1,4 +1,4 @@
-package sourceconnector.domain;
+package sourceconnector.domain.offset;
 
 public record FileOffsetRecord(
   String key,

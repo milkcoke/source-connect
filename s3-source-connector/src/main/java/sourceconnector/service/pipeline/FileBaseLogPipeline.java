@@ -4,10 +4,10 @@ import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import sourceconnector.domain.log.FileMetadata;
+import sourceconnector.domain.factory.LogFactory;
 import sourceconnector.domain.log.Log;
+import sourceconnector.domain.log.FileLogMetadata;
 import sourceconnector.exception.FileLogReadException;
-import sourceconnector.parser.LogParser;
 import sourceconnector.repository.FileRepository;
 import sourceconnector.service.processor.BaseProcessor;
 import sourceconnector.service.reader.LineReader;
@@ -17,10 +17,10 @@ import java.io.IOException;
 
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class FileLogPipeline implements Pipeline<Log> {
+public class FileBaseLogPipeline implements Pipeline<Log> {
   private final String filePath;
   private final LineReader<String> reader;
-  private final LogParser parser;
+  private final LogFactory logFactory;
   private final BaseProcessor<Log> startProcessor;
   private boolean isComplete = false;
 
@@ -28,17 +28,17 @@ public class FileLogPipeline implements Pipeline<Log> {
   public static Pipeline<Log> create(
     FileRepository fileRepository,
     String filePath,
-    LogParser parser,
+    LogFactory logFactory,
     @NonNull BaseProcessor<Log>... processors
   ) {
     for (int i = processors.length - 1; i > 0; i--) {
       processors[i - 1].setNext(processors[i]);
     }
     try {
-      return new FileLogPipeline(
+      return new FileBaseLogPipeline(
         filePath,
         new StringLineReader(fileRepository.getFile(filePath)),
-        parser,
+        logFactory,
         processors[0]
       );
     } catch (IOException e) {
@@ -57,10 +57,9 @@ public class FileLogPipeline implements Pipeline<Log> {
         this.isComplete = true;
         return null;
       }
-
-      Log input = this.parser.parse(
+      Log input = this.logFactory.create(
         rawString,
-        new FileMetadata(this.filePath, this.reader.getLineNumber())
+        new FileLogMetadata(this.filePath, this.reader.getLineNumber())
       );
       return this.startProcessor.process(input);
     } catch (IOException exception) {

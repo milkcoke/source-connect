@@ -1,13 +1,17 @@
 package sourceconnector.service.processor.impl;
 
-import sourceconnector.domain.log.JSONLog;
+import lombok.RequiredArgsConstructor;
+import sourceconnector.domain.factory.LogFactory;
+import sourceconnector.domain.log.Log;
 import sourceconnector.service.processor.AbstractMapperProcessor;
 
-public class TrimMapperProcessor extends AbstractMapperProcessor<JSONLog> {
+@RequiredArgsConstructor
+public class TrimMapperProcessor extends AbstractMapperProcessor<Log> {
+  private final LogFactory logFactory;
 
   @Override
-  protected JSONLog map(JSONLog jsonLog) {
-    String trimmed = jsonLog.get().trim();
-    return jsonLog.withPayload(trimmed);
+  protected Log map(Log log) {
+    String trimmed = log.get().trim();
+    return logFactory.create(trimmed, log.getMetadata());
   }
 }

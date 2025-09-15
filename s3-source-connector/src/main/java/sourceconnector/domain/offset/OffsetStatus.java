@@ -1,4 +1,4 @@
-package sourceconnector.domain;
+package sourceconnector.domain.offset;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

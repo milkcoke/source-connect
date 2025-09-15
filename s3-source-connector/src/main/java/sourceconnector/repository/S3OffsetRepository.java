@@ -10,15 +10,15 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.utils.Utils;
-import sourceconnector.domain.OffsetRecord;
-import sourceconnector.domain.S3OffsetRecord;
+import sourceconnector.domain.offset.OffsetRecord;
+import sourceconnector.domain.offset.S3OffsetRecord;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
-import static sourceconnector.domain.OffsetStatus.INITIAL_OFFSET;
+import static sourceconnector.domain.offset.OffsetStatus.INITIAL_OFFSET;
 
 @Slf4j
 @RequiredArgsConstructor

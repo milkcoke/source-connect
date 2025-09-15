@@ -10,10 +10,10 @@ import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.DisplayName;
-import sourceconnector.domain.MessageBatch;
-import sourceconnector.domain.DefaultMessageBatchLogs;
-import sourceconnector.domain.OffsetRecord;
-import sourceconnector.domain.S3OffsetRecord;
+import sourceconnector.domain.batch.MessageBatch;
+import sourceconnector.domain.batch.DefaultMessageBatchLogs;
+import sourceconnector.domain.offset.OffsetRecord;
+import sourceconnector.domain.offset.S3OffsetRecord;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Properties;
 
 
-class ProduceServiceTest {
+class BatchProduceServiceTest {
   private static final Properties props = new Properties();
   static {
     props.putAll(Map.of(
@@ -41,7 +41,7 @@ class ProduceServiceTest {
   @Test
   void sendTest() {
     // given
-    ProduceService produceService = new ProduceService(
+    BatchProduceService batchProduceService = new BatchProduceService(
       props,
       "log-topic",
       "s3-offset-topic"
@@ -53,7 +53,7 @@ class ProduceServiceTest {
     ));
     OffsetRecord offsetRecord = new S3OffsetRecord("s3://test/2025/04/11/test.json", 3L);
     // when
-    produceService.sendBatch(offsetRecord, messageBatch);
+    batchProduceService.sendBatch(offsetRecord, messageBatch);
 
 
   }

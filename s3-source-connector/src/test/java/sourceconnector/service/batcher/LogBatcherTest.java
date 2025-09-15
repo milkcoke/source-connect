@@ -2,13 +2,12 @@ package sourceconnector.service.batcher;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import sourceconnector.domain.MessageBatch;
+import sourceconnector.domain.batch.MessageBatch;
+import sourceconnector.domain.factory.JSONLogFactory;
 import sourceconnector.domain.log.Log;
-import sourceconnector.parser.JSONLogParser;
 import sourceconnector.repository.LocalFileRepository;
-import sourceconnector.service.pipeline.FileLogPipeline;
+import sourceconnector.service.pipeline.FileBaseLogPipeline;
 import sourceconnector.service.pipeline.Pipeline;
-import sourceconnector.service.processor.BaseProcessor;
 import sourceconnector.service.processor.impl.EmptyFilterProcessor;
 import sourceconnector.service.processor.impl.TrimMapperProcessor;
 
@@ -26,11 +25,11 @@ class LogBatcherTest {
     // given
     File file = Path.of("src/test/resources/sample-data/empty.ndjson").toFile();
 
-    Pipeline<Log> pipeline = FileLogPipeline.create(
+    Pipeline<Log> pipeline = FileBaseLogPipeline.create(
       new LocalFileRepository(),
       file.getPath(),
-      new JSONLogParser(),
-      new BaseProcessor[]{new TrimMapperProcessor(), new EmptyFilterProcessor()}
+      new JSONLogFactory(),
+      new TrimMapperProcessor(new JSONLogFactory()), new EmptyFilterProcessor()
     );
     Batchable<Log> batcher = new LogBatcher(pipeline, 100);
 
@@ -47,11 +46,11 @@ class LogBatcherTest {
   void nextBatchTest() {
     File file = Path.of("src/test/resources/sample-data/empty-included.ndjson").toFile();
 
-    Pipeline<Log> pipeline = FileLogPipeline.create(
+    Pipeline<Log> pipeline = FileBaseLogPipeline.create(
       new LocalFileRepository(),
       file.getPath(),
-      new JSONLogParser(),
-      new BaseProcessor[]{new TrimMapperProcessor(), new EmptyFilterProcessor()}
+      new JSONLogFactory(),
+      new TrimMapperProcessor(new JSONLogFactory()), new EmptyFilterProcessor()
     );
     Batchable<Log> batcher = new LogBatcher(pipeline, 3);
 

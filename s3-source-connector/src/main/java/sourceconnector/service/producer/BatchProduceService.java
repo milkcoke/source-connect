@@ -1,8 +1,8 @@
 package sourceconnector.service.producer;
 
 import lombok.extern.slf4j.Slf4j;
-import sourceconnector.domain.MessageBatch;
-import sourceconnector.domain.OffsetRecord;
+import sourceconnector.domain.batch.MessageBatch;
+import sourceconnector.domain.offset.OffsetRecord;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -12,17 +12,18 @@ import java.util.Properties;
 
 @Slf4j
 @RequiredArgsConstructor
-public class ProduceService implements BatchProducer<String> {
+public class BatchProduceService implements BatchProducer<String> {
   private final String logTopic;
   private final String offsetTopic;
   private final KafkaProducer<String, String> kafkaProducer;
 
-  public ProduceService(Properties properties,
-                        String logTopic,
-                        String offsetTopic) {
-    this.kafkaProducer = new KafkaProducer<>(properties);
+  public BatchProduceService(Properties properties,
+                             String logTopic,
+                             String offsetTopic) {
     this.logTopic = logTopic;
     this.offsetTopic = offsetTopic;
+    this.kafkaProducer = new KafkaProducer<>(properties);
+    this.kafkaProducer.initTransactions();
   }
 
   @Override
@@ -32,7 +33,6 @@ public class ProduceService implements BatchProducer<String> {
   ) {
     Collection<String> batch = messageBatch.get();
 
-    this.kafkaProducer.initTransactions();
     try {
       this.kafkaProducer.beginTransaction();
 
