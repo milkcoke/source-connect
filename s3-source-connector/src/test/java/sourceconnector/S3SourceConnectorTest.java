@@ -2,6 +2,7 @@ package sourceconnector;
 
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.common.record.CompressionType;
+import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -36,7 +37,7 @@ class S3SourceConnectorTest {
         ACKS_CONFIG, "-1",
         COMPRESSION_TYPE_CONFIG, CompressionType.LZ4.name,
         KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
-        VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
+        VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class,
         LINGER_MS_CONFIG, 100,
         BATCH_SIZE_CONFIG, 524288,
         ENABLE_IDEMPOTENCE_CONFIG, true,

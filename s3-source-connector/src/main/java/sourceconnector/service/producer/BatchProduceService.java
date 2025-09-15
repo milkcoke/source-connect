@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Properties;
 
@@ -15,7 +17,7 @@ import java.util.Properties;
 public class BatchProduceService implements BatchProducer<String> {
   private final String logTopic;
   private final String offsetTopic;
-  private final KafkaProducer<String, String> kafkaProducer;
+  private final KafkaProducer<String, byte[]> kafkaProducer;
 
   public BatchProduceService(Properties properties,
                              String logTopic,
@@ -40,13 +42,13 @@ public class BatchProduceService implements BatchProducer<String> {
         this.kafkaProducer.send(new ProducerRecord<>(
           logTopic,
           null,
-          message)
+          message.getBytes(StandardCharsets.UTF_8))
         );
       }
       this.kafkaProducer.send(new ProducerRecord<>(
         this.offsetTopic,
         offsetRecord.key(),
-        String.valueOf(offsetRecord.offset())
+        ByteBuffer.allocate(Long.BYTES).putLong(offsetRecord.offset()).array()
       ));
 
       this.kafkaProducer.commitTransaction();
