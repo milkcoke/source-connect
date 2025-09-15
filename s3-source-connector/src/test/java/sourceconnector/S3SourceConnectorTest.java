@@ -6,9 +6,11 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import sourceconnector.domain.log.LogMetadata;
 import sourceconnector.domain.offset.LocalFileOffsetRecord;
 import sourceconnector.domain.factory.JSONLogFactory;
 import sourceconnector.domain.log.Log;
+import sourceconnector.domain.offset.OffsetStatus;
 import sourceconnector.repository.LocalFileRepository;
 import sourceconnector.service.batcher.Batchable;
 import sourceconnector.service.batcher.LogBatcher;
@@ -61,16 +63,26 @@ class S3SourceConnectorTest {
 
     // when
     List<Log> messages;
-    while((messages = batcher.nextBatch().get()) != Collections.EMPTY_LIST) {
-      var lastMessageMetadata = messages.getLast().getMetadata();
+    LogMetadata lastMessageMetadata = LogMetadata.EMPTY;
+    while((messages = batcher.nextBatch().get()) != Collections.EMPTY_LIST) {lastMessageMetadata = messages.getLast().getMetadata();
       List<String> messageBatch = messages
         .stream()
         .map(Log::get)
         .toList();
       producer.sendBatch(
-        new LocalFileOffsetRecord(lastMessageMetadata.key(), lastMessageMetadata.offset()),
+        new LocalFileOffsetRecord(
+          lastMessageMetadata.key(),
+          lastMessageMetadata.offset()
+        ),
         ()-> messageBatch
       );
+    }
+
+    if (lastMessageMetadata != LogMetadata.EMPTY) {
+      producer.sendBatch(new LocalFileOffsetRecord(
+        lastMessageMetadata.key(),
+        OffsetStatus.COMPLETE_OFFSET.getValue()
+      ), Collections::emptyList);
     }
 
   }
