@@ -23,7 +23,10 @@ import sourceconnector.service.producer.BatchProduceService;
 import sourceconnector.service.producer.BatchProducer;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 import static org.apache.kafka.clients.producer.ProducerConfig.*;
@@ -86,5 +89,57 @@ class S3SourceConnectorTest {
       ), Collections::emptyList);
     }
 
+  }
+
+  @DisplayName("Should handle multiple files")
+  @Test
+  void handleDirectory() throws IOException {
+    // given
+    BatchProducer<String> producer = new BatchProduceService(props, "log", "local-offset");
+
+    // when
+    try (var stream = Files.walk(Paths.get("src/test/resources/sample-data"))) {
+      List<File> files = stream
+        .filter(Files::isRegularFile)
+        .filter(p -> p.toString().endsWith(".ndjson"))
+        .map(Path::toFile)
+        .toList();
+
+      // then
+      for (File file : files) {
+        Pipeline<Log> pipeline = FileBaseLogPipeline.create(
+          new LocalFileRepository(),
+          file.getPath(),
+          new JSONLogFactory(),
+          new TrimMapperProcessor(new JSONLogFactory()), new EmptyFilterProcessor()
+        );
+
+        Batchable<Log> batcher = new LogBatcher(pipeline, 10_000);
+
+        List<Log> messages;
+        LogMetadata lastMessageMetadata = LogMetadata.EMPTY;
+        while((messages = batcher.nextBatch().get()) != Collections.EMPTY_LIST) {lastMessageMetadata = messages.getLast().getMetadata();
+          List<String> messageBatch = messages
+            .stream()
+            .map(Log::get)
+            .toList();
+          producer.sendBatch(
+            new LocalFileOffsetRecord(
+              lastMessageMetadata.key(),
+              lastMessageMetadata.offset()
+            ),
+            ()-> messageBatch
+          );
+        }
+
+        if (lastMessageMetadata != LogMetadata.EMPTY) {
+          producer.sendBatch(new LocalFileOffsetRecord(
+            lastMessageMetadata.key(),
+            OffsetStatus.COMPLETE_OFFSET.getValue()
+          ), Collections::emptyList);
+        }
+
+      }
+    }
   }
 }
