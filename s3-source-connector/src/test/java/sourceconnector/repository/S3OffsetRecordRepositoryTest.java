@@ -26,9 +26,9 @@ import java.util.concurrent.ExecutionException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class S3OffsetRepositoryTest {
+class S3OffsetRecordRepositoryTest {
   private final String testTopicName = "offset-topic";
-  private S3OffsetRepository repository;
+  private S3OffsetRecordRepository repository;
   private static final Properties props = new Properties();
   static {
     props.putAll(Map.of(
@@ -69,7 +69,7 @@ class S3OffsetRepositoryTest {
     ));
     Consumer<String, Long> consumer = new KafkaConsumer<>(consumerProps);
 
-    repository = new S3OffsetRepository(consumer, adminClient);
+    repository = new S3OffsetRecordRepository(consumer, adminClient);
     Thread.sleep(5_000);
   }
 
@@ -101,7 +101,7 @@ class S3OffsetRepositoryTest {
     }
 
     // when
-    OffsetRecord lastOffsetRecord = repository.getLastOffsetRecord(this.testTopicName, "10000");
+    OffsetRecord lastOffsetRecord = repository.findLastOffsetRecord(this.testTopicName, "10000");
     // then
     assertThat(lastOffsetRecord)
       .extracting(OffsetRecord::key, OffsetRecord::offset)
@@ -114,8 +114,8 @@ class S3OffsetRepositoryTest {
 
   @DisplayName("Should get INITIAL Offset when not processed key")
   @Test
-  void getLastOffsetRecord() {
-     OffsetRecord lastOffset = repository.getLastOffsetRecord(
+  void findLastOffsetRecord() {
+     OffsetRecord lastOffset = repository.findLastOffsetRecord(
       this.testTopicName,
       "s3://test/2025/04/13/test.txt"
     );
