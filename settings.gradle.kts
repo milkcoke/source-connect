@@ -4,3 +4,6 @@ plugins {
 rootProject.name = "s3-source-connect"
 include("kafka-streams-connect")
 include("s3-source-connector")
+include("offset-manager-api")
+include("offset-manager-local")
+include("offset-manager-remote")

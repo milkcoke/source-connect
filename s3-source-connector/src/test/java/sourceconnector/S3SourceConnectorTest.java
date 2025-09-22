@@ -148,7 +148,6 @@ class S3SourceConnectorTest {
   void NothingToDoAfterProcessingAllFiles() throws IOException {
     // given
     BatchProducer<String> producer = new BatchProduceService(props, "log", "local-offset");
-
     // when
     try (var stream = Files.walk(Paths.get("src/test/resources/sample-data"))) {
       List<File> files = stream
