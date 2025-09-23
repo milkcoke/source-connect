@@ -18,9 +18,11 @@ import java.util.*;
 public class LocalOffsetManager implements OffsetManager {
   private final Map<String, Long> offsetStore = new HashMap<>();
   private final Consumer<String, Long> consumer;
+  private final String offsetTopic;
+  private boolean initialized = false;
 
   public void init() {
-    List<PartitionInfo> partitionInfoList = consumer.partitionsFor("offset-topic");
+    List<PartitionInfo> partitionInfoList = consumer.partitionsFor(this.offsetTopic);
     List<TopicPartition> topicPartitions = partitionInfoList.stream()
       .map(partitionInfo -> new TopicPartition(partitionInfo.topic(), partitionInfo.partition()))
       .toList();
@@ -63,6 +65,7 @@ public class LocalOffsetManager implements OffsetManager {
       }
     }
 
+    this.initialized = true;
     log.info("All partitions reached end offsets, finished the initializing.");
   }
 
@@ -83,5 +86,10 @@ public class LocalOffsetManager implements OffsetManager {
   @Override
   public void removeKey(String key) {
     this.offsetStore.remove(key);
+  }
+
+  @Override
+  public boolean isInitialized() {
+    return this.initialized;
   }
 }
