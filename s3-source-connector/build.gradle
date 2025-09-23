@@ -24,7 +24,7 @@ dependencies {
     testCompileOnly("org.projectlombok:lombok:1.18.38")
     testImplementation platform('org.junit:junit-bom:5.13.3')
     testImplementation('org.junit.jupiter:junit-jupiter')
-    testImplementation("org.assertj:assertj-core:3.27.4")
+    testImplementation("org.assertj:assertj-core:3.27.6")
 }
 
 test {
