@@ -73,7 +73,7 @@ class LocalOffsetManagerTest {
       ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class,
       ConsumerConfig.ISOLATION_LEVEL_CONFIG, IsolationLevel.READ_COMMITTED.name().toLowerCase(),
       ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, 57_671_680, // 55MB
-      ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 50_000
+      ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 5
     ));
 
     Thread.sleep(6_000);

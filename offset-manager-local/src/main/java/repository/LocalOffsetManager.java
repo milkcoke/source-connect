@@ -11,6 +11,7 @@ import org.apache.kafka.common.TopicPartition;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -41,11 +42,9 @@ public class LocalOffsetManager implements OffsetManager {
     Map<TopicPartition, Long> nextOffset = consumer.beginningOffsets(topicPartitions);
 
     // If beginning offset >= end offset, no need to poll
-    topicPartitions = topicPartitions.stream()
+    Set<TopicPartition> activePartitions = topicPartitions.stream()
         .filter(tp-> nextOffset.get(tp) < endOffsets.get(tp))
-        .toList();
-
-    Set<TopicPartition> activePartitions = new HashSet<>(topicPartitions);
+        .collect(Collectors.toSet());
 
     // 6. Poll loop with dynamic unassign
     while (!activePartitions.isEmpty()) {
