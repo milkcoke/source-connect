@@ -93,10 +93,10 @@ class LocalOffsetManagerTest {
   void init() {
     // given
     Producer<String, Long> producer = new KafkaProducer<>(producerConfig);
-    producer.initTransactions();
     String keyA = "file-a.txt";
     String keyB = "file-b.txt";
     String keyC = "file-c.txt";
+    producer.initTransactions();
     producer.beginTransaction();
     for (long i = 0; i < 5; i++) {
       producer.send(new ProducerRecord<>(this.offsetTopic, keyA, i));
@@ -107,13 +107,11 @@ class LocalOffsetManagerTest {
     producer.commitTransaction();
     producer.close();
     Consumer<String, Long> consumer = new KafkaConsumer<>(this.consumerConfig);
-    LocalOffsetManager localOffsetManager = new LocalOffsetManager(consumer, this.offsetTopic);
 
     // when
-    localOffsetManager.init();
+    LocalOffsetManager localOffsetManager = new LocalOffsetManager(consumer, this.offsetTopic);
 
     // then
-    assertThat(localOffsetManager.isInitialized()).isTrue();
     assertThat(localOffsetManager.findLatestOffset(keyA)).isPresent().contains(4L);
     assertThat(localOffsetManager.findLatestOffset(keyB)).isPresent().contains(4L);
     assertThat(localOffsetManager.findLatestOffset(keyC)).isPresent().contains(4L);

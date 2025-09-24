@@ -6,5 +6,4 @@ public interface OffsetManager {
   Optional<Long> findLatestOffset(String key);
   void update(String key, long offset);
   void removeKey(String key);
-  boolean isInitialized();
 }
