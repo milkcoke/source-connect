@@ -64,6 +64,7 @@ public class LocalOffsetManager implements OffsetManager {
       Set<TopicPartition> copyPartitionSet = new HashSet<>(activePartitions);
       for (TopicPartition tp : copyPartitionSet) {
         long currentLastOffset = consumer.position(tp);
+        nextOffset.put(tp, currentLastOffset);
 
         if (currentLastOffset >= endOffsets.get(tp)) {
           log.info("Partition {} reached end offset {}", tp, endOffsets.get(tp));
