@@ -32,7 +32,6 @@ public class LocalOffsetManager implements OffsetManager {
             .map(partitionInfo -> new TopicPartition(partitionInfo.topic(), partitionInfo.partition()))
             .toList();
 
-
     // 2. Assign all partitions
     consumer.assign(topicPartitions);
 
@@ -52,37 +51,30 @@ public class LocalOffsetManager implements OffsetManager {
 
     // 6. Poll loop with dynamic unassign
     while (!activePartitions.isEmpty()) {
-        // last offset is updated automatically whenever poll is called
-        // last offset is from FetchResponse by TopicPartition
-        ConsumerRecords<String, Long> records = consumer.poll(Duration.ofMillis(100));
+      // last offset is updated automatically whenever poll is called
+      // last offset is from FetchResponse by TopicPartition
+      ConsumerRecords<String, Long> records = consumer.poll(Duration.ofMillis(100));
 
-        // 6-1. Process records and update offset store
-        for (ConsumerRecord<String, Long> record : records) {
-            this.update(record.key(), record.value());
+      // 6-1. Process records and update offset store
+      for (ConsumerRecord<String, Long> record : records) {
+        this.update(record.key(), record.value());
+      }
+
+      // 6-2. Update nextOffset for all active partitions and Check for partitions that reached end offset
+      Set<TopicPartition> copyPartitionSet = new HashSet<>(activePartitions);
+      for (TopicPartition tp : copyPartitionSet) {
+        long currentLastOffset = consumer.position(tp);
+
+        if (currentLastOffset >= endOffsets.get(tp)) {
+          log.info("Partition {} reached end offset {}", tp, endOffsets.get(tp));
+          activePartitions.remove(tp);
         }
+      }
 
-        // 6-2. Update nextOffset for all active partitions and Check for partitions that reached end offset
-        for (TopicPartition tp : activePartitions) {
-            // Update current position as next offset
-            long currentLastOffset = consumer.position(tp);
-            nextOffset.put(tp, currentLastOffset);
-
-            // Reached to end offset for this partition
-            if (currentLastOffset >= endOffsets.get(tp)) {
-                log.info("Partition {} reached end offset {}", tp, endOffsets.get(tp));
-                activePartitions.remove(tp);
-            }
-        }
-
-        // 6-3 Re-assign only the remaining partitions
+      // 6-3 Re-assign only when active partition set is changed
+      if (activePartitions.size() != consumer.assignment().size()) {
         consumer.assign(activePartitions);
-        // TODO: Should check whether or not whenever poll() internal position is updated.
-        // 6-4 Seek to the next offsets for the remaining partitions
-//        for (TopicPartition remainingTp : activePartitions) {
-//            consumer.seek(remainingTp, nextOffset.get(remainingTp));
-//            log.info("Reassigned partition {} to offset {}", remainingTp, nextOffset.get(remainingTp));
-//        }
-//
+      }
     }
 
     consumer.close();

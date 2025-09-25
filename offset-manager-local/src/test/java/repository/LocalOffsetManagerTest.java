@@ -133,7 +133,7 @@ class LocalOffsetManagerTest {
 
 
   @Order(3)
-  @DisplayName("Should update all offsets correctly when initialized")
+  @DisplayName("Should update all offsets correctly even though transaction COMMIT Markers are interleaved")
   @Test
   void retrieveAllLastOffsetMany() {
     // given
