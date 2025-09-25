@@ -56,34 +56,33 @@ public class LocalOffsetManager implements OffsetManager {
         // last offset is from FetchResponse by TopicPartition
         ConsumerRecords<String, Long> records = consumer.poll(Duration.ofMillis(100));
 
-        Set<TopicPartition> scannedPartitions = new HashSet<>(activePartitions);
+        // 6-1. Process records and update offset store
         for (ConsumerRecord<String, Long> record : records) {
-            TopicPartition tp = new TopicPartition(record.topic(), record.partition());
-            scannedPartitions.add(tp);
             this.update(record.key(), record.value());
         }
 
-        for (TopicPartition tp : scannedPartitions) {
-            long lastOffset = consumer.position(tp);
-            nextOffset.put(tp, lastOffset);
-        }
+        // 6-2. Update nextOffset for all active partitions and Check for partitions that reached end offset
+        for (TopicPartition tp : activePartitions) {
+            // Update current position as next offset
+            long currentLastOffset = consumer.position(tp);
+            nextOffset.put(tp, currentLastOffset);
 
-
-        for (TopicPartition tp : scannedPartitions) {
             // Reached to end offset for this partition
-            if (nextOffset.get(tp) >= endOffsets.get(tp)) {
+            if (currentLastOffset >= endOffsets.get(tp)) {
                 log.info("Partition {} reached end offset {}", tp, endOffsets.get(tp));
                 activePartitions.remove(tp);
             }
         }
 
-        // Re-assign only the remaining partitions
+        // 6-3 Re-assign only the remaining partitions
         consumer.assign(activePartitions);
-        for (TopicPartition remainingTp : activePartitions) {
-            consumer.seek(remainingTp, nextOffset.get(remainingTp));
-            log.info("Reassigned partition {} to offset {}", remainingTp, nextOffset.get(remainingTp));
-        }
-
+        // TODO: Should check whether or not whenever poll() internal position is updated.
+        // 6-4 Seek to the next offsets for the remaining partitions
+//        for (TopicPartition remainingTp : activePartitions) {
+//            consumer.seek(remainingTp, nextOffset.get(remainingTp));
+//            log.info("Reassigned partition {} to offset {}", remainingTp, nextOffset.get(remainingTp));
+//        }
+//
     }
 
     consumer.close();
