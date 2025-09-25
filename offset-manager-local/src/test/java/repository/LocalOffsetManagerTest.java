@@ -1,5 +1,6 @@
 package repository;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -20,15 +21,14 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.*;
 import org.springframework.kafka.config.TopicBuilder;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Slf4j
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class LocalOffsetManagerTest {
 
   private final String offsetTopic = "offset-topic";
@@ -64,7 +64,7 @@ class LocalOffsetManagerTest {
     try {
       adminClient.createTopics(List.of(testTopic)).all().get();
     } catch (TopicExistsException exception) {
-      System.out.println(exception.getMessage());
+      log.error(exception.getMessage(), exception);
     }
 
     consumerConfig.putAll(Map.of(
@@ -73,7 +73,7 @@ class LocalOffsetManagerTest {
       ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class,
       ConsumerConfig.ISOLATION_LEVEL_CONFIG, IsolationLevel.READ_COMMITTED.name().toLowerCase(),
       ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, 57_671_680, // 55MB
-      ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 5
+      ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 500
     ));
 
     Thread.sleep(6_000);
@@ -88,9 +88,23 @@ class LocalOffsetManagerTest {
     adminClient.close();
   }
 
+  @Order(1)
+  @DisplayName("OffsetManager return empty when no offset found")
+  @Test
+  void returnEmptyWhenFirstCreatedTopic() {
+    // given
+    Consumer<String, Long> consumer = new KafkaConsumer<>(this.consumerConfig);
+    LocalOffsetManager localOffsetManager = new LocalOffsetManager(consumer, this.offsetTopic);
+    // when
+    Optional<Long> foundOffset = localOffsetManager.findLatestOffset("key1");
+    // then
+    assertThat(foundOffset).isEmpty();
+  }
+
+  @Order(2)
   @DisplayName("Should update all offsets correctly when initialized")
   @Test
-  void init() {
+  void retrieveAllLastOffset() {
     // given
     Producer<String, Long> producer = new KafkaProducer<>(producerConfig);
     String keyA = "file-a.txt";
@@ -115,6 +129,41 @@ class LocalOffsetManagerTest {
     assertThat(localOffsetManager.findLatestOffset(keyA)).isPresent().contains(4L);
     assertThat(localOffsetManager.findLatestOffset(keyB)).isPresent().contains(4L);
     assertThat(localOffsetManager.findLatestOffset(keyC)).isPresent().contains(4L);
+  }
+
+
+  @Order(3)
+  @DisplayName("Should update all offsets correctly when initialized")
+  @Test
+  void retrieveAllLastOffsetMany() {
+    // given
+    Producer<String, Long> producer = new KafkaProducer<>(producerConfig);
+    String keyA = "many-a.txt";
+    String keyB = "many-b.txt";
+    String keyC = "many-c.txt";
+    producer.initTransactions();
+    for (long i = 1; i <= 1000; i++) {
+      if ((i - 1) % 100 == 0) {
+       producer.beginTransaction();
+      }
+      producer.send(new ProducerRecord<>(this.offsetTopic, keyA, i));
+      producer.send(new ProducerRecord<>(this.offsetTopic, keyB, i));
+      producer.send(new ProducerRecord<>(this.offsetTopic, keyC, i));
+      if (i % 100 == 0) {
+        producer.commitTransaction();
+      }
+    }
+    producer.close();
+
+    Consumer<String, Long> consumer = new KafkaConsumer<>(this.consumerConfig);
+
+    // when
+    LocalOffsetManager localOffsetManager = new LocalOffsetManager(consumer, this.offsetTopic);
+
+    // then
+    assertThat(localOffsetManager.findLatestOffset(keyA)).isPresent().contains(1000L);
+    assertThat(localOffsetManager.findLatestOffset(keyB)).isPresent().contains(1000L);
+    assertThat(localOffsetManager.findLatestOffset(keyC)).isPresent().contains(1000L);
   }
 
 }
