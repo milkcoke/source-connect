@@ -63,8 +63,10 @@ class LocalOffsetManagerTest {
 
     try {
       adminClient.createTopics(List.of(testTopic)).all().get();
-    } catch (TopicExistsException exception) {
-      log.error(exception.getMessage(), exception);
+     } catch (ExecutionException exception) {
+      if (exception.getCause() instanceof TopicExistsException) {
+        log.error(exception.getMessage(), exception);
+      }
     }
 
     consumerConfig.putAll(Map.of(

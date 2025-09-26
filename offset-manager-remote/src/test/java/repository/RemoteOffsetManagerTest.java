@@ -26,7 +26,6 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -63,8 +62,10 @@ class RemoteOffsetManagerTest {
 
     try {
       adminClient.createTopics(List.of(testTopic)).all().get();
-    } catch (TopicExistsException exception) {
-      log.error(exception.getMessage(), exception);
+    } catch (ExecutionException exception) {
+        if (exception.getCause() instanceof TopicExistsException) {
+            log.error(exception.getMessage(), exception);
+        }
     }
 
     consumerConfig.putAll(Map.of(
