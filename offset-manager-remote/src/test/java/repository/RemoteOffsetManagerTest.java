@@ -100,10 +100,9 @@ class RemoteOffsetManagerTest {
     assertThat(foundOffset).isEmpty();
   }
 
-  @SneakyThrows(InterruptedException.class)
   @DisplayName("Update continuously receives new offsets and updates the store")
   @Test
-  void updateContinuously() {
+  void updateContinuously() throws InterruptedException {
     // given
     OffsetManager offsetManager = new RemoteOffsetManager(new KafkaConsumer<>(consumerConfig), this.offsetTopic);
     assertThat(offsetManager.findLatestOffset("keyA")).isEmpty();

@@ -8,6 +8,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
+import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
 import java.util.*;
@@ -15,13 +16,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * Should update continuously when new offsets are produced to the offset topic.
  * without consumer group management in the background
  */
 @Slf4j
+@Repository
 public class RemoteOffsetManager implements OffsetManager {
   private final Map<String, Long> offsetStore = new ConcurrentHashMap<>();
   private final ExecutorService executorService = Executors.newSingleThreadExecutor();

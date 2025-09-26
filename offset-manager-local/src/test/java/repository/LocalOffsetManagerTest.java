@@ -28,7 +28,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class LocalOffsetManagerTest {
 
   private final String offsetTopic = "offset-topic";
@@ -90,7 +89,6 @@ class LocalOffsetManagerTest {
     adminClient.close();
   }
 
-  @Order(1)
   @DisplayName("OffsetManager return empty when no offset found")
   @Test
   void returnEmptyWhenFirstCreatedTopic() {
@@ -98,12 +96,11 @@ class LocalOffsetManagerTest {
     Consumer<String, Long> consumer = new KafkaConsumer<>(this.consumerConfig);
     LocalOffsetManager localOffsetManager = new LocalOffsetManager(consumer, this.offsetTopic);
     // when
-    Optional<Long> foundOffset = localOffsetManager.findLatestOffset("key1");
+    Optional<Long> foundOffset = localOffsetManager.findLatestOffset("notExistKey");
     // then
     assertThat(foundOffset).isEmpty();
   }
 
-  @Order(2)
   @DisplayName("Should update all offsets correctly when initialized")
   @Test
   void retrieveAllLastOffset() {
@@ -134,7 +131,6 @@ class LocalOffsetManagerTest {
   }
 
 
-  @Order(3)
   @DisplayName("Should update all offsets correctly even though transaction COMMIT Markers are interleaved")
   @Test
   void retrieveAllLastOffsetMany() {
