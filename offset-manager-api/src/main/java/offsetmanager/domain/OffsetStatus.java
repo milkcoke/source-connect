@@ -1,4 +1,4 @@
-package sourceconnector.domain.offset;
+package offsetmanager.domain;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -6,8 +6,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 public enum OffsetStatus {
-  INITIAL_OFFSET(0L),
-  COMPLETE_OFFSET(-1L);
+  INITIAL(0L),
+  COMPLETE(-1L);
 
   private final long value;
 }

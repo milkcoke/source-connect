@@ -1,5 +1,6 @@
 package sourceconnector.repository;
 
+import offsetmanager.domain.OffsetStatus;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -14,7 +15,6 @@ import org.apache.kafka.common.serialization.*;
 import org.junit.jupiter.api.*;
 import org.springframework.kafka.config.TopicBuilder;
 import sourceconnector.domain.offset.OffsetRecord;
-import sourceconnector.domain.offset.OffsetStatus;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -124,7 +124,7 @@ class S3OffsetRecordRepositoryTest {
       .extracting(OffsetRecord::key, OffsetRecord::offset)
       .containsExactly(
         "s3://test/2025/04/13/test.txt",
-        OffsetStatus.INITIAL_OFFSET.getValue()
+        OffsetStatus.INITIAL.getValue()
       );
   }
 

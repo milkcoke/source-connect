@@ -1,5 +1,6 @@
 package sourceconnector.repository;
 
+import offsetmanager.domain.OffsetStatus;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -18,9 +19,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.kafka.config.TopicBuilder;
 import sourceconnector.domain.offset.LocalFileOffsetRecord;
 import sourceconnector.domain.offset.OffsetRecord;
-import sourceconnector.domain.offset.OffsetStatus;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -28,8 +27,6 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.extractProperty;
-import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class LocalOffsetRecordRepositoryTest {
@@ -95,7 +92,7 @@ class LocalOffsetRecordRepositoryTest {
     // then
     assertThat(offsetRecord)
       .hasFieldOrPropertyWithValue("key", "NotExistFile.ndjson")
-      .hasFieldOrPropertyWithValue("offset", OffsetStatus.INITIAL_OFFSET.getValue());
+      .hasFieldOrPropertyWithValue("offset", OffsetStatus.INITIAL.getValue());
   }
 
   @DisplayName("Should get the last offset value when local file path exists in the offset topic")
