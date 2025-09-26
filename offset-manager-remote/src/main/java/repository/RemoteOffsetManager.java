@@ -46,17 +46,15 @@ public class RemoteOffsetManager implements OffsetManager {
     consumer.seekToBeginning(topicPartitions);
 
     // 5. Track next offsets to read
-    Map<TopicPartition, Long> nextOffset = consumer.beginningOffsets(topicPartitions);
+    Map<TopicPartition, Long> earliestOffsets = consumer.beginningOffsets(topicPartitions);
 
-    // If beginning offset >= end offset, no need to poll
-    Set<TopicPartition> activePartitions = topicPartitions.stream()
-      .filter(tp -> nextOffset.get(tp) < endOffsets.get(tp))
+    // Initialize scanned partitions which are already scanned to the end
+    Set<TopicPartition> scannedPartitions = topicPartitions.stream()
+      .filter(tp -> earliestOffsets.get(tp) >= endOffsets.get(tp))
       .collect(Collectors.toSet());
 
-    // 6. Poll loop with dynamic unassign
-    while (!activePartitions.isEmpty()) {
-      // last offset is updated automatically whenever poll is called
-      // last offset is from FetchResponse by TopicPartition
+    // 6. Scan all partitions until all partitions reach end offsets
+    while (topicPartitions.size() != scannedPartitions.size()) {
       ConsumerRecords<String, Long> records = consumer.poll(Duration.ofMillis(100));
 
       // 6-1. Process records and update offset store
@@ -64,23 +62,27 @@ public class RemoteOffsetManager implements OffsetManager {
         this.update(record.key(), record.value());
       }
 
-      // 6-2. Update nextOffset for all active partitions and Check for partitions that reached end offset
-      Set<TopicPartition> copyPartitionSet = new HashSet<>(activePartitions);
-      for (TopicPartition tp : copyPartitionSet) {
+      // 6-2 Only check the partitions that are not fully scanned yet
+      // FIXME: If Transaction markers exists between earliestOffsets and endOffsets, it could not be detected.
+      Set<TopicPartition> retrievedPartitions = records.partitions();
+      for (TopicPartition tp : retrievedPartitions) {
         long currentLastOffset = consumer.position(tp);
 
+          // 6-3. Pause the fetch about the partitions that reached end offsets
         if (currentLastOffset >= endOffsets.get(tp)) {
           log.info("Partition {} reached end offset {}", tp, endOffsets.get(tp));
-          activePartitions.remove(tp);
+          consumer.pause(Collections.singleton(tp));
+          scannedPartitions.add(tp);
         }
-      }
-
-      // 6-3 Re-assign only when active partition set is changed
-      if (activePartitions.size() != consumer.assignment().size()) {
-        consumer.assign(activePartitions);
       }
     }
 
+      // TODO: Refactor this
+      //    (1) pause and resume approach << pause protects from sending fetch request to the partition
+      //     (2) Remove a partition from assignment and Reassign the all partitions at the end.
+
+    consumer.resume(scannedPartitions);
+    // resume all partitions
     log.info("All partitions reached end offsets, finished the initializing.");
     this.executorService.submit(this::runUpdate);
   }
