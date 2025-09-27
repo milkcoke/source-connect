@@ -101,6 +101,42 @@ class RemoteOffsetManagerTest {
     assertThat(foundOffset).isEmpty();
   }
 
+  @DisplayName("Should find all offset records by keys")
+  @Test
+  void findAllOffsetRecordsTest() throws InterruptedException {
+    // given
+    OffsetManager offsetManager = new RemoteOffsetManager(new KafkaConsumer<>(consumerConfig), this.offsetTopic);
+    Producer<String, Long> producer = new KafkaProducer<>(producerConfig);
+    String keyA = "many-a.txt";
+    String keyB = "many-b.txt";
+    String keyC = "many-c.txt";
+    producer.initTransactions();
+    for (long i = 1; i <= 1000; i++) {
+      if ((i - 1) % 100 == 0) {
+        producer.beginTransaction();
+      }
+      producer.send(new ProducerRecord<>(this.offsetTopic, keyA, i));
+      producer.send(new ProducerRecord<>(this.offsetTopic, keyB, i));
+      producer.send(new ProducerRecord<>(this.offsetTopic, keyC, i));
+      if (i % 100 == 0) {
+        producer.commitTransaction();
+      }
+    }
+    Thread.sleep(1000);
+
+    // when
+    List<OffsetRecord> offsetRecords = offsetManager.findLatestOffsetRecords(List.of(keyA, keyB, keyC));
+    // then
+    assertThat(offsetRecords)
+      .hasSize(3)
+      .containsExactlyInAnyOrder(
+        new DefaultOffsetRecord(keyA, 1000L),
+        new DefaultOffsetRecord(keyB, 1000L),
+        new DefaultOffsetRecord(keyC, 1000L)
+      );
+
+  }
+
   @DisplayName("Update continuously receives new offsets and updates the store")
   @Test
   void upsertContinuously() throws InterruptedException {
@@ -111,9 +147,9 @@ class RemoteOffsetManagerTest {
     assertThat(offsetManager.findLatestOffsetRecord("keyC")).isEmpty();
 
     Producer<String, Long> producer = new KafkaProducer<>(producerConfig);
-    String keyA = "many-a.txt";
-    String keyB = "many-b.txt";
-    String keyC = "many-c.txt";
+    String keyA = "many-d.txt";
+    String keyB = "many-e.txt";
+    String keyC = "many-f.txt";
     producer.initTransactions();
     for (long i = 1; i <= 1000; i++) {
       if ((i - 1) % 100 == 0) {
