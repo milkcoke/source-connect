@@ -25,10 +25,9 @@ class LocalFileRepositoryTest {
       .hasMessage("not-exist-file.txt");
   }
 
-  @SneakyThrows(IOException.class)
   @DisplayName("Should get inpustream when file exists")
   @Test
-  void getInputStream() {
+  void getInputStream() throws IOException {
     // given
     File file = Path.of("src/test/resources/test-file.txt").toFile();
     file.createNewFile();
@@ -39,10 +38,9 @@ class LocalFileRepositoryTest {
     file.delete();
   }
 
-  @SneakyThrows(IOException.class)
   @DisplayName("Should get inpustream when file exists in local file system")
   @Test
-  void getDownloadDirectoryFileInputStream() {
+  void getDownloadDirectoryFileInputStream() throws IOException {
     // given
     File sampleFile = Paths.get(System.getProperty("user.home"), "Downloads", "sample.txt").toFile();
     // when

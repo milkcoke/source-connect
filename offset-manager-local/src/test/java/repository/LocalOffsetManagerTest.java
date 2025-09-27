@@ -105,7 +105,7 @@ class LocalOffsetManagerTest {
 
   @DisplayName("Should update all offsets correctly when initialized")
   @Test
-  void retrieveAllLastOffset() {
+  void retrieveLastOffset() {
     // given
     Producer<String, Long> producer = new KafkaProducer<>(producerConfig);
     String keyA = "file-a.txt";
@@ -141,7 +141,7 @@ class LocalOffsetManagerTest {
 
   @DisplayName("Should update all offsets correctly even though transaction COMMIT Markers are interleaved")
   @Test
-  void retrieveAllLastOffsetMany() {
+  void retrieveLastOffsetMany() {
     // given
     Producer<String, Long> producer = new KafkaProducer<>(producerConfig);
     String keyA = "many-a.txt";
@@ -173,6 +173,43 @@ class LocalOffsetManagerTest {
       .isEqualTo(new DefaultOffsetRecord(keyB, 1000L));
     assertThat(localOffsetManager.findLatestOffsetRecord(keyC).get())
       .isEqualTo(new DefaultOffsetRecord(keyC, 1000L));
+  }
+
+  @DisplayName("Should get all offsets correctly after inserting new records")
+  @Test
+  void retrieveAllLastOffsetMany() {
+    // given
+    Producer<String, Long> producer = new KafkaProducer<>(producerConfig);
+    String keyA = "many-d.txt";
+    String keyB = "many-e.txt";
+    String keyC = "many-f.txt";
+    producer.initTransactions();
+    for (long i = 1; i <= 1000; i++) {
+      if ((i - 1) % 100 == 0) {
+        producer.beginTransaction();
+      }
+      producer.send(new ProducerRecord<>(this.offsetTopic, keyA, i));
+      producer.send(new ProducerRecord<>(this.offsetTopic, keyB, i));
+      producer.send(new ProducerRecord<>(this.offsetTopic, keyC, i));
+      if (i % 100 == 0) {
+        producer.commitTransaction();
+      }
+    }
+    producer.close();
+
+    Consumer<String, Long> consumer = new KafkaConsumer<>(this.consumerConfig);
+
+    LocalOffsetManager localOffsetManager = new LocalOffsetManager(consumer, this.offsetTopic);
+
+    // when
+    List<OffsetRecord> offsetRecords = localOffsetManager.findLatestOffsetRecords(List.of(keyA, keyB, keyC));
+
+    // then
+    assertThat(offsetRecords).containsExactlyInAnyOrder(
+      new DefaultOffsetRecord(keyA, 1000L),
+      new DefaultOffsetRecord(keyB, 1000L),
+      new DefaultOffsetRecord(keyC, 1000L)
+    );
   }
 
 }
