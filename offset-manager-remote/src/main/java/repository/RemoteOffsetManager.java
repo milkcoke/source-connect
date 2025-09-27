@@ -91,6 +91,14 @@ public class RemoteOffsetManager implements OffsetManager {
   }
 
   @Override
+  public List<OffsetRecord> findLatestOffsetRecords(List<String> keys) {
+    return keys.stream()
+      .map(this.offsetStore::get)
+      .filter(Objects::nonNull)
+      .toList();
+  }
+
+  @Override
   public void upsert(String key, OffsetRecord offsetRecord) {
     this.offsetStore.put(key, offsetRecord);
   }

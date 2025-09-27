@@ -1,26 +1,21 @@
 package sourceconnector.service.reader;
 
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.commons.support.Resource;
 import sourceconnector.repository.LocalFileRepository;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 class StringLineReaderTest {
 
-  @SneakyThrows(IOException.class)
   @DisplayName("Should return null when EOF")
   @Test
-  void readAll() {
+  void readAll() throws IOException {
 
     // given
     File file = Path.of("src/test/resources/sample-data/large-ndjson.ndjson").toFile();
@@ -39,10 +34,9 @@ class StringLineReaderTest {
     assertThat(reader.getLineNumber()).isEqualTo(90_000L);
   }
 
-  @SneakyThrows(IOException.class)
   @DisplayName("Empty line is also counted")
   @Test
-  void emptyLineTest() {
+  void emptyLineTest() throws IOException {
     // given
     File file = Path.of("src/test/resources/sample-data/empty-included.ndjson").toFile();
     InputStream inputStream = new LocalFileRepository().getFile(file.getPath());
