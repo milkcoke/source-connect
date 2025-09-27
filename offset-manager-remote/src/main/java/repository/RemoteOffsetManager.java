@@ -2,6 +2,8 @@ package repository;
 
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
+import offsetmanager.domain.DefaultOffsetRecord;
+import offsetmanager.domain.OffsetRecord;
 import offsetmanager.manager.OffsetManager;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -18,13 +20,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Should update continuously when new offsets are produced to the offset topic.
+ * Should update continuously when new offsets are produced to the offset topic <br>
  * without consumer group management in the background
  */
 @Slf4j
 @Repository
 public class RemoteOffsetManager implements OffsetManager {
-  private final Map<String, Long> offsetStore = new ConcurrentHashMap<>();
+  private final Map<String, OffsetRecord> offsetStore = new ConcurrentHashMap<>();
   private final ExecutorService executorService = Executors.newSingleThreadExecutor();
   private final Consumer<String, Long> consumer;
   private final String offsetTopic;
@@ -52,7 +54,12 @@ public class RemoteOffsetManager implements OffsetManager {
     while(!completeScan) {
       ConsumerRecords<String, Long> records = consumer.poll(Duration.ofMillis(100));
       // 5-1. Process records and update offset store
-      records.forEach(record -> this.update(record.key(), record.value()));
+      records.forEach(record ->
+        this.upsert(
+          record.key(),
+          new DefaultOffsetRecord(record.key(), record.value())
+        )
+      );
       // 5-2 Only check the partitions that are not fully scanned yet
       completeScan = endOffsets.entrySet().stream()
         .allMatch(endOffset -> consumer.position(endOffset.getKey()) >= endOffset.getValue());
@@ -66,7 +73,7 @@ public class RemoteOffsetManager implements OffsetManager {
       while (true) {
         ConsumerRecords<String, Long> records = consumer.poll(Duration.ofMillis(100));
         for (ConsumerRecord<String, Long> record : records) {
-          this.update(record.key(), record.value());
+          this.upsert(record.key(), new DefaultOffsetRecord(record.key(), record.value()));
         }
       }
     } catch (Exception e) {
@@ -75,7 +82,7 @@ public class RemoteOffsetManager implements OffsetManager {
   }
 
   @Override
-  public Optional<Long> findLatestOffset(String key) {
+  public Optional<OffsetRecord> findLatestOffsetRecord(String key) {
     if (this.offsetStore.containsKey(key)) {
       return Optional.of(this.offsetStore.get(key));
     }
@@ -84,8 +91,8 @@ public class RemoteOffsetManager implements OffsetManager {
   }
 
   @Override
-  public void update(String key, long offset) {
-    this.offsetStore.put(key, offset);
+  public void upsert(String key, OffsetRecord offsetRecord) {
+    this.offsetStore.put(key, offsetRecord);
   }
 
   @Override

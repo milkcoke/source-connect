@@ -2,6 +2,8 @@ package repository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import offsetmanager.domain.DefaultOffsetRecord;
+import offsetmanager.domain.OffsetRecord;
 import offsetmanager.manager.OffsetManager;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -17,7 +19,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class LocalOffsetManager implements OffsetManager {
-  private final Map<String, Long> offsetStore = new HashMap<>();
+  private final Map<String, OffsetRecord> offsetStore = new HashMap<>();
   private final String offsetTopic;
 
   /**
@@ -57,7 +59,7 @@ public class LocalOffsetManager implements OffsetManager {
 
       // 6-1. Process records and update offset store
       for (ConsumerRecord<String, Long> record : records) {
-        this.update(record.key(), record.value());
+        this.upsert(record.key(), new DefaultOffsetRecord(record.key(), record.value()));
       }
 
       // 6-2. Update nextOffset for all active partitions and Check for partitions that reached end offset
@@ -83,7 +85,7 @@ public class LocalOffsetManager implements OffsetManager {
 }
 
   @Override
-  public Optional<Long> findLatestOffset(String key) {
+  public Optional<OffsetRecord> findLatestOffsetRecord(String key) {
     if (this.offsetStore.containsKey(key)) {
       return Optional.of(this.offsetStore.get(key));
     }
@@ -92,8 +94,8 @@ public class LocalOffsetManager implements OffsetManager {
   }
 
   @Override
-  public void update(String key, long offset) {
-    this.offsetStore.put(key, offset);
+  public void upsert(String key, OffsetRecord offsetRecord) {
+    this.offsetStore.put(key, offsetRecord);
   }
 
   @Override

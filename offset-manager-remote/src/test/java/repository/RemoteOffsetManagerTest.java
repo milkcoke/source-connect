@@ -1,6 +1,8 @@
 package repository;
 
 import lombok.extern.slf4j.Slf4j;
+import offsetmanager.domain.DefaultOffsetRecord;
+import offsetmanager.domain.OffsetRecord;
 import offsetmanager.manager.OffsetManager;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.AdminClient;
@@ -35,7 +37,7 @@ class RemoteOffsetManagerTest {
   private final Properties consumerConfig = new Properties();
 
   @BeforeAll
-  void setup() throws ExecutionException, InterruptedException {
+  void setup() throws InterruptedException {
     producerConfig.putAll(Map.of(
         CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
         ProducerConfig.ACKS_CONFIG, "-1",
@@ -94,19 +96,19 @@ class RemoteOffsetManagerTest {
     // given
     OffsetManager offsetManager = new RemoteOffsetManager(new KafkaConsumer<>(consumerConfig), this.offsetTopic);
     // when
-    Optional<Long> foundOffset = offsetManager.findLatestOffset("anyKey");
+    Optional<OffsetRecord> foundOffset = offsetManager.findLatestOffsetRecord("anyKey");
     // then
     assertThat(foundOffset).isEmpty();
   }
 
   @DisplayName("Update continuously receives new offsets and updates the store")
   @Test
-  void updateContinuously() throws InterruptedException {
+  void upsertContinuously() throws InterruptedException {
     // given
     OffsetManager offsetManager = new RemoteOffsetManager(new KafkaConsumer<>(consumerConfig), this.offsetTopic);
-    assertThat(offsetManager.findLatestOffset("keyA")).isEmpty();
-    assertThat(offsetManager.findLatestOffset("keyB")).isEmpty();
-    assertThat(offsetManager.findLatestOffset("keyC")).isEmpty();
+    assertThat(offsetManager.findLatestOffsetRecord("keyA")).isEmpty();
+    assertThat(offsetManager.findLatestOffsetRecord("keyB")).isEmpty();
+    assertThat(offsetManager.findLatestOffsetRecord("keyC")).isEmpty();
 
     Producer<String, Long> producer = new KafkaProducer<>(producerConfig);
     String keyA = "many-a.txt";
@@ -126,8 +128,11 @@ class RemoteOffsetManagerTest {
     }
     // when then
     Thread.sleep(1000);
-    assertThat(offsetManager.findLatestOffset(keyA).get()).isEqualTo(1000L);
-    assertThat(offsetManager.findLatestOffset(keyB).get()).isEqualTo(1000L);
-    assertThat(offsetManager.findLatestOffset(keyC).get()).isEqualTo(1000L);
+    assertThat(offsetManager.findLatestOffsetRecord(keyA).get())
+      .isEqualTo(new DefaultOffsetRecord(keyA, 1000L));
+    assertThat(offsetManager.findLatestOffsetRecord(keyB).get())
+      .isEqualTo(new DefaultOffsetRecord(keyB, 1000L));
+    assertThat(offsetManager.findLatestOffsetRecord(keyC).get())
+      .isEqualTo(new DefaultOffsetRecord(keyC, 1000L));
   }
 }

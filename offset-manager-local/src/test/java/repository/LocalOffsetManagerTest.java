@@ -1,6 +1,8 @@
 package repository;
 
 import lombok.extern.slf4j.Slf4j;
+import offsetmanager.domain.DefaultOffsetRecord;
+import offsetmanager.domain.OffsetRecord;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -96,9 +98,9 @@ class LocalOffsetManagerTest {
     Consumer<String, Long> consumer = new KafkaConsumer<>(this.consumerConfig);
     LocalOffsetManager localOffsetManager = new LocalOffsetManager(consumer, this.offsetTopic);
     // when
-    Optional<Long> foundOffset = localOffsetManager.findLatestOffset("notExistKey");
+    Optional<OffsetRecord> offsetRecord = localOffsetManager.findLatestOffsetRecord("notExistKey");
     // then
-    assertThat(foundOffset).isEmpty();
+    assertThat(offsetRecord).isEmpty();
   }
 
   @DisplayName("Should update all offsets correctly when initialized")
@@ -125,9 +127,15 @@ class LocalOffsetManagerTest {
     LocalOffsetManager localOffsetManager = new LocalOffsetManager(consumer, this.offsetTopic);
 
     // then
-    assertThat(localOffsetManager.findLatestOffset(keyA)).isPresent().contains(4L);
-    assertThat(localOffsetManager.findLatestOffset(keyB)).isPresent().contains(4L);
-    assertThat(localOffsetManager.findLatestOffset(keyC)).isPresent().contains(4L);
+    assertThat(localOffsetManager.findLatestOffsetRecord(keyA))
+      .isPresent()
+      .contains(new DefaultOffsetRecord(keyA, 4L));
+    assertThat(localOffsetManager.findLatestOffsetRecord(keyB))
+      .isPresent()
+      .contains(new DefaultOffsetRecord(keyB, 4L));
+    assertThat(localOffsetManager.findLatestOffsetRecord(keyC))
+      .isPresent()
+      .contains(new DefaultOffsetRecord(keyC, 4L));
   }
 
 
@@ -159,9 +167,12 @@ class LocalOffsetManagerTest {
     LocalOffsetManager localOffsetManager = new LocalOffsetManager(consumer, this.offsetTopic);
 
     // then
-    assertThat(localOffsetManager.findLatestOffset(keyA)).isPresent().contains(1000L);
-    assertThat(localOffsetManager.findLatestOffset(keyB)).isPresent().contains(1000L);
-    assertThat(localOffsetManager.findLatestOffset(keyC)).isPresent().contains(1000L);
+    assertThat(localOffsetManager.findLatestOffsetRecord(keyA).get())
+      .isEqualTo(new DefaultOffsetRecord(keyA, 1000L));
+    assertThat(localOffsetManager.findLatestOffsetRecord(keyB).get())
+      .isEqualTo(new DefaultOffsetRecord(keyB, 1000L));
+    assertThat(localOffsetManager.findLatestOffsetRecord(keyC).get())
+      .isEqualTo(new DefaultOffsetRecord(keyC, 1000L));
   }
 
 }
