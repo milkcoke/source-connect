@@ -12,7 +12,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.DisplayName;
 import sourceconnector.domain.batch.MessageBatch;
 import sourceconnector.domain.batch.DefaultMessageBatchLogs;
-import sourceconnector.domain.offset.OffsetRecord;
+import offsetmanager.domain.OffsetRecord;
 import sourceconnector.domain.offset.S3OffsetRecord;
 import org.junit.jupiter.api.Test;
 

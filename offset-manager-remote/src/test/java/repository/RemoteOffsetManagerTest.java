@@ -1,8 +1,7 @@
 package repository;
 
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import offsetmanager.domain.OffsetManager;
+import offsetmanager.manager.OffsetManager;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;

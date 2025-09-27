@@ -1,5 +1,6 @@
 package sourceconnector;
 
+import offsetmanager.domain.OffsetStatus;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.common.record.CompressionType;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
@@ -11,7 +12,6 @@ import sourceconnector.domain.log.LogMetadata;
 import sourceconnector.domain.offset.LocalFileOffsetRecord;
 import sourceconnector.domain.factory.JSONLogFactory;
 import sourceconnector.domain.log.Log;
-import sourceconnector.domain.offset.OffsetStatus;
 import sourceconnector.repository.LocalFileRepository;
 import sourceconnector.service.batcher.Batchable;
 import sourceconnector.service.batcher.LogBatcher;
@@ -85,7 +85,7 @@ class S3SourceConnectorTest {
     if (lastMessageMetadata != LogMetadata.EMPTY) {
       producer.sendBatch(new LocalFileOffsetRecord(
         lastMessageMetadata.key(),
-        OffsetStatus.COMPLETE_OFFSET.getValue()
+        OffsetStatus.COMPLETED.getValue()
       ), Collections::emptyList);
     }
 
@@ -135,7 +135,7 @@ class S3SourceConnectorTest {
         if (lastMessageMetadata != LogMetadata.EMPTY) {
           producer.sendBatch(new LocalFileOffsetRecord(
             lastMessageMetadata.key(),
-            OffsetStatus.COMPLETE_OFFSET.getValue()
+            OffsetStatus.COMPLETED.getValue()
           ), Collections::emptyList);
         }
 
@@ -187,7 +187,7 @@ class S3SourceConnectorTest {
         if (lastMessageMetadata != LogMetadata.EMPTY) {
           producer.sendBatch(new LocalFileOffsetRecord(
             lastMessageMetadata.key(),
-            OffsetStatus.COMPLETE_OFFSET.getValue()
+            OffsetStatus.COMPLETED.getValue()
           ), Collections::emptyList);
         }
 

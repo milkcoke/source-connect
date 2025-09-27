@@ -2,6 +2,7 @@ package sourceconnector.repository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import offsetmanager.domain.OffsetRecord;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.DescribeTopicsResult;
 import org.apache.kafka.clients.admin.TopicDescription;
@@ -10,7 +11,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.utils.Utils;
-import sourceconnector.domain.offset.OffsetRecord;
 import sourceconnector.domain.offset.S3OffsetRecord;
 
 import java.nio.charset.StandardCharsets;
@@ -18,7 +18,7 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
-import static sourceconnector.domain.offset.OffsetStatus.INITIAL_OFFSET;
+import static offsetmanager.domain.OffsetStatus.INITIAL;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -36,7 +36,7 @@ public class S3OffsetRecordRepository implements OffsetRecordRepository {
     // Log End Offset (LEO) for each partition which is offset appended to the topic partition
     long endOffset = this.consumer.endOffsets(List.of(topicPartition)).get(topicPartition);
 
-    S3OffsetRecord lastOffsetRecord = new S3OffsetRecord(s3key, INITIAL_OFFSET.getValue());
+    S3OffsetRecord lastOffsetRecord = new S3OffsetRecord(s3key, INITIAL.getValue());
 
     while (currentOffset < endOffset) {
       this.consumer.seek(topicPartition, currentOffset);

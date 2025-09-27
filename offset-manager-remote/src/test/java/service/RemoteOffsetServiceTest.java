@@ -1,6 +1,6 @@
 package service;
 
-import offsetmanager.domain.OffsetManager;
+import offsetmanager.manager.OffsetManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

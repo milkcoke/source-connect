@@ -1,4 +1,4 @@
-package offsetmanager.domain;
+package offsetmanager.manager;
 
 import java.util.Optional;
 

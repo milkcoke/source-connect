@@ -18,7 +18,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.*;
 import org.springframework.kafka.config.TopicBuilder;
 import sourceconnector.domain.offset.LocalFileOffsetRecord;
-import sourceconnector.domain.offset.OffsetRecord;
+import offsetmanager.domain.OffsetRecord;
 
 import java.util.Collections;
 import java.util.List;

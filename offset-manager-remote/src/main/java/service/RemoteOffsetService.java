@@ -1,7 +1,7 @@
 package service;
 
 import lombok.RequiredArgsConstructor;
-import offsetmanager.domain.OffsetManager;
+import offsetmanager.manager.OffsetManager;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;

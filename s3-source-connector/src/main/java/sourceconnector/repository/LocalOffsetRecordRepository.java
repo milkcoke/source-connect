@@ -2,6 +2,7 @@ package sourceconnector.repository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import offsetmanager.domain.OffsetRecord;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.DescribeTopicsResult;
 import org.apache.kafka.clients.admin.TopicDescription;
@@ -11,7 +12,6 @@ import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.utils.Utils;
 import sourceconnector.domain.offset.LocalFileOffsetRecord;
-import sourceconnector.domain.offset.OffsetRecord;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import static sourceconnector.domain.offset.OffsetStatus.INITIAL_OFFSET;
+import static offsetmanager.domain.OffsetStatus.INITIAL;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -38,7 +38,7 @@ public class LocalOffsetRecordRepository implements OffsetRecordRepository {
     long currentOffset = this.consumer.beginningOffsets(List.of(topicPartition)).get(topicPartition);
     long endOffset = this.consumer.endOffsets(List.of(topicPartition)).get(topicPartition);
 
-    LocalFileOffsetRecord lastOffsetRecord = new LocalFileOffsetRecord(filePath, INITIAL_OFFSET.getValue());
+    LocalFileOffsetRecord lastOffsetRecord = new LocalFileOffsetRecord(filePath, INITIAL.getValue());
 
     while (currentOffset < endOffset) {
       this.consumer.seek(topicPartition, currentOffset);
