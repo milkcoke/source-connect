@@ -32,7 +32,7 @@ import java.util.*;
 import static org.apache.kafka.clients.producer.ProducerConfig.*;
 
 @Disabled
-class S3SourceConnectorTest {
+class SourceConnectorTest {
   private static final Properties props = new Properties();
   static {
     props.putAll(Map.of(

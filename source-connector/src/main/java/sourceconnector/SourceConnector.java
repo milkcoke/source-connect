@@ -6,8 +6,8 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 @SpringBootApplication
 @ConfigurationPropertiesScan
-public class S3SourceConnector {
+public class SourceConnector {
   public static void main(String[] args) {
-    SpringApplication.run(S3SourceConnector.class, args);
+    SpringApplication.run(SourceConnector.class, args);
   }
 }

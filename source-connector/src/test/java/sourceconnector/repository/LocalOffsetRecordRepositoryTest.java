@@ -1,5 +1,6 @@
 package sourceconnector.repository;
 
+import offsetmanager.domain.OffsetRecord;
 import offsetmanager.domain.OffsetStatus;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.AdminClient;
@@ -18,7 +19,6 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.*;
 import org.springframework.kafka.config.TopicBuilder;
 import sourceconnector.domain.offset.LocalFileOffsetRecord;
-import offsetmanager.domain.OffsetRecord;
 
 import java.util.Collections;
 import java.util.List;
