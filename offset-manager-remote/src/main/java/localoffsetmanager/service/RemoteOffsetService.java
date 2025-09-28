@@ -1,12 +1,12 @@
-package service;
+package localoffsetmanager.service;
 
-import exception.OffsetNotFoundException;
+import localoffsetmanager.exception.OffsetNotFoundException;
 import lombok.RequiredArgsConstructor;
 import offsetmanager.domain.OffsetRecord;
 import offsetmanager.manager.OffsetManager;
 import org.springframework.stereotype.Service;
-import service.dto.LastOffsetRecordBatchResponse;
-import service.dto.LastOffsetRecordResponse;
+import localoffsetmanager.service.dto.LastOffsetRecordBatchResponse;
+import localoffsetmanager.service.dto.LastOffsetRecordResponse;
 
 import java.util.List;
 import java.util.Optional;

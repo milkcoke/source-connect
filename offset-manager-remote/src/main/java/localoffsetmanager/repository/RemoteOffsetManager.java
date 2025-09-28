@@ -1,4 +1,4 @@
-package repository;
+package localoffsetmanager.repository;
 
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
@@ -73,6 +73,10 @@ public class RemoteOffsetManager implements OffsetManager {
       while (true) {
         ConsumerRecords<String, Long> records = consumer.poll(Duration.ofMillis(100));
         for (ConsumerRecord<String, Long> record : records) {
+          if (record.value() == null) {
+            this.removeKey(record.key());
+            continue;
+          }
           this.upsert(record.key(), new DefaultOffsetRecord(record.key(), record.value()));
         }
       }

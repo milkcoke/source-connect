@@ -1,6 +1,5 @@
 package sourceconnector.repository;
 
-import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class LocalFileRepositoryTest {
 
   private final FileRepository fileRepository = new LocalFileRepository();
-  @DisplayName("Should throw not found exception when file does not exist")
+  @DisplayName("Should throw not found remoteoffsetmanager.exception when file does not exist")
   @Test
   void shouldThrowNoSuchFileException() {
     Assertions.assertThatThrownBy(()->fileRepository.getFile("not-exist-file.txt"))

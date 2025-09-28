@@ -1,4 +1,4 @@
-package repository;
+package localoffsetmanager.repository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +59,10 @@ public class LocalOffsetManager implements OffsetManager {
 
       // 6-1. Process records and update offset store
       for (ConsumerRecord<String, Long> record : records) {
+        if (record.value() == null) {
+          this.removeKey(record.key());
+          continue;
+        }
         this.upsert(record.key(), new DefaultOffsetRecord(record.key(), record.value()));
       }
 

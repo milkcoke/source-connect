@@ -1,4 +1,4 @@
-package service.dto;
+package localoffsetmanager.service.dto;
 
 import jakarta.validation.constraints.NotEmpty;
 import offsetmanager.domain.OffsetRecord;

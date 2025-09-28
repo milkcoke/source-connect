@@ -1,13 +1,12 @@
-package service;
+package localoffsetmanager.service;
 
-import exception.OffsetNotFoundException;
+import localoffsetmanager.exception.OffsetNotFoundException;
 import offsetmanager.domain.DefaultOffsetRecord;
-import offsetmanager.domain.OffsetRecord;
 import offsetmanager.manager.OffsetManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import service.dto.LastOffsetRecordResponse;
+import localoffsetmanager.service.dto.LastOffsetRecordResponse;
 
 import java.util.Optional;
 

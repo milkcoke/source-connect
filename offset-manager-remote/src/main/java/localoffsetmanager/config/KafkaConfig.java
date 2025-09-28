@@ -1,4 +1,4 @@
-package config;
+package localoffsetmanager.config;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.consumer.KafkaConsumer;

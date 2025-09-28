@@ -1,12 +1,12 @@
-package repository;
+package localoffsetmanager.repository;
 
 import lombok.extern.slf4j.Slf4j;
 import offsetmanager.domain.DefaultOffsetRecord;
 import offsetmanager.domain.OffsetRecord;
+import offsetmanager.manager.OffsetManager;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
-import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -30,15 +30,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class LocalOffsetManagerTest {
+class RemoteOffsetManagerTest {
 
-  private final String offsetTopic = "offset-topic";
+  private final String offsetTopic = "remote-offset-topic";
   private final Properties producerConfig = new Properties();
   private final Properties consumerConfig = new Properties();
 
-
   @BeforeAll
-  void setup() throws ExecutionException, InterruptedException {
+  void setup() throws InterruptedException {
     producerConfig.putAll(Map.of(
         CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
         ProducerConfig.ACKS_CONFIG, "-1",
@@ -64,10 +63,10 @@ class LocalOffsetManagerTest {
 
     try {
       adminClient.createTopics(List.of(testTopic)).all().get();
-     } catch (ExecutionException exception) {
-      if (exception.getCause() instanceof TopicExistsException) {
-        log.error(exception.getMessage(), exception);
-      }
+    } catch (ExecutionException exception) {
+        if (exception.getCause() instanceof TopicExistsException) {
+            log.error(exception.getMessage(), exception);
+        }
     }
 
     consumerConfig.putAll(Map.of(
@@ -91,58 +90,22 @@ class LocalOffsetManagerTest {
     adminClient.close();
   }
 
-  @DisplayName("OffsetManager return empty when no offset found")
+  @DisplayName("Nothing to do update but background update thread starts")
   @Test
-  void returnEmptyWhenFirstCreatedTopic() {
+  void initializeTest() {
     // given
-    Consumer<String, Long> consumer = new KafkaConsumer<>(this.consumerConfig);
-    LocalOffsetManager localOffsetManager = new LocalOffsetManager(consumer, this.offsetTopic);
+    OffsetManager offsetManager = new RemoteOffsetManager(new KafkaConsumer<>(consumerConfig), this.offsetTopic);
     // when
-    Optional<OffsetRecord> offsetRecord = localOffsetManager.findLatestOffsetRecord("notExistKey");
+    Optional<OffsetRecord> foundOffset = offsetManager.findLatestOffsetRecord("anyKey");
     // then
-    assertThat(offsetRecord).isEmpty();
+    assertThat(foundOffset).isEmpty();
   }
 
-  @DisplayName("Should update all offsets correctly when initialized")
+  @DisplayName("Should find all offset records by keys")
   @Test
-  void retrieveLastOffset() {
+  void findAllOffsetRecordsTest() throws InterruptedException {
     // given
-    Producer<String, Long> producer = new KafkaProducer<>(producerConfig);
-    String keyA = "file-a.txt";
-    String keyB = "file-b.txt";
-    String keyC = "file-c.txt";
-    producer.initTransactions();
-    producer.beginTransaction();
-    for (long i = 0; i < 5; i++) {
-      producer.send(new ProducerRecord<>(this.offsetTopic, keyA, i));
-      producer.send(new ProducerRecord<>(this.offsetTopic, keyB, i));
-      producer.send(new ProducerRecord<>(this.offsetTopic, keyC, i));
-    }
-    producer.flush();
-    producer.commitTransaction();
-    producer.close();
-    Consumer<String, Long> consumer = new KafkaConsumer<>(this.consumerConfig);
-
-    // when
-    LocalOffsetManager localOffsetManager = new LocalOffsetManager(consumer, this.offsetTopic);
-
-    // then
-    assertThat(localOffsetManager.findLatestOffsetRecord(keyA))
-      .isPresent()
-      .contains(new DefaultOffsetRecord(keyA, 4L));
-    assertThat(localOffsetManager.findLatestOffsetRecord(keyB))
-      .isPresent()
-      .contains(new DefaultOffsetRecord(keyB, 4L));
-    assertThat(localOffsetManager.findLatestOffsetRecord(keyC))
-      .isPresent()
-      .contains(new DefaultOffsetRecord(keyC, 4L));
-  }
-
-
-  @DisplayName("Should update all offsets correctly even though transaction COMMIT Markers are interleaved")
-  @Test
-  void retrieveLastOffsetMany() {
-    // given
+    OffsetManager offsetManager = new RemoteOffsetManager(new KafkaConsumer<>(consumerConfig), this.offsetTopic);
     Producer<String, Long> producer = new KafkaProducer<>(producerConfig);
     String keyA = "many-a.txt";
     String keyB = "many-b.txt";
@@ -150,7 +113,7 @@ class LocalOffsetManagerTest {
     producer.initTransactions();
     for (long i = 1; i <= 1000; i++) {
       if ((i - 1) % 100 == 0) {
-       producer.beginTransaction();
+        producer.beginTransaction();
       }
       producer.send(new ProducerRecord<>(this.offsetTopic, keyA, i));
       producer.send(new ProducerRecord<>(this.offsetTopic, keyB, i));
@@ -159,26 +122,30 @@ class LocalOffsetManagerTest {
         producer.commitTransaction();
       }
     }
-    producer.close();
-
-    Consumer<String, Long> consumer = new KafkaConsumer<>(this.consumerConfig);
+    Thread.sleep(1000);
 
     // when
-    LocalOffsetManager localOffsetManager = new LocalOffsetManager(consumer, this.offsetTopic);
-
+    List<OffsetRecord> offsetRecords = offsetManager.findLatestOffsetRecords(List.of(keyA, keyB, keyC));
     // then
-    assertThat(localOffsetManager.findLatestOffsetRecord(keyA).get())
-      .isEqualTo(new DefaultOffsetRecord(keyA, 1000L));
-    assertThat(localOffsetManager.findLatestOffsetRecord(keyB).get())
-      .isEqualTo(new DefaultOffsetRecord(keyB, 1000L));
-    assertThat(localOffsetManager.findLatestOffsetRecord(keyC).get())
-      .isEqualTo(new DefaultOffsetRecord(keyC, 1000L));
+    assertThat(offsetRecords)
+      .hasSize(3)
+      .containsExactlyInAnyOrder(
+        new DefaultOffsetRecord(keyA, 1000L),
+        new DefaultOffsetRecord(keyB, 1000L),
+        new DefaultOffsetRecord(keyC, 1000L)
+      );
+
   }
 
-  @DisplayName("Should get all offsets correctly after inserting new records")
+  @DisplayName("Update continuously receives new offsets and updates the store")
   @Test
-  void retrieveAllLastOffsetMany() {
+  void upsertContinuously() throws InterruptedException {
     // given
+    OffsetManager offsetManager = new RemoteOffsetManager(new KafkaConsumer<>(consumerConfig), this.offsetTopic);
+    assertThat(offsetManager.findLatestOffsetRecord("keyA")).isEmpty();
+    assertThat(offsetManager.findLatestOffsetRecord("keyB")).isEmpty();
+    assertThat(offsetManager.findLatestOffsetRecord("keyC")).isEmpty();
+
     Producer<String, Long> producer = new KafkaProducer<>(producerConfig);
     String keyA = "many-d.txt";
     String keyB = "many-e.txt";
@@ -195,21 +162,13 @@ class LocalOffsetManagerTest {
         producer.commitTransaction();
       }
     }
-    producer.close();
-
-    Consumer<String, Long> consumer = new KafkaConsumer<>(this.consumerConfig);
-
-    LocalOffsetManager localOffsetManager = new LocalOffsetManager(consumer, this.offsetTopic);
-
-    // when
-    List<OffsetRecord> offsetRecords = localOffsetManager.findLatestOffsetRecords(List.of(keyA, keyB, keyC));
-
-    // then
-    assertThat(offsetRecords).containsExactlyInAnyOrder(
-      new DefaultOffsetRecord(keyA, 1000L),
-      new DefaultOffsetRecord(keyB, 1000L),
-      new DefaultOffsetRecord(keyC, 1000L)
-    );
+    // when then
+    Thread.sleep(1000);
+    assertThat(offsetManager.findLatestOffsetRecord(keyA).get())
+      .isEqualTo(new DefaultOffsetRecord(keyA, 1000L));
+    assertThat(offsetManager.findLatestOffsetRecord(keyB).get())
+      .isEqualTo(new DefaultOffsetRecord(keyB, 1000L));
+    assertThat(offsetManager.findLatestOffsetRecord(keyC).get())
+      .isEqualTo(new DefaultOffsetRecord(keyC, 1000L));
   }
-
 }

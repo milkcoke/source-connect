@@ -1,4 +1,4 @@
-package controller.dto;
+package localoffsetmanager.controller.dto;
 
 import jakarta.validation.constraints.NotEmpty;
 

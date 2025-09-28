@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Get the file contents from a file repository (e.g. LocalFile System, S3, GCS, Azure Blob Storage, etc.)
+ * Get the file contents from a file remoteoffsetmanager.repository (e.g. LocalFile System, S3, GCS, Azure Blob Storage, etc.)
  */
 public interface FileRepository {
   /**
