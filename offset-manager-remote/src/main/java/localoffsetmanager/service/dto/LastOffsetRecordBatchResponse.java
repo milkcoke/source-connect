@@ -1,12 +1,10 @@
 package localoffsetmanager.service.dto;
 
-import jakarta.validation.constraints.NotEmpty;
 import offsetmanager.domain.OffsetRecord;
 
 import java.util.List;
 
 public record LastOffsetRecordBatchResponse(
-  @NotEmpty
   List<LastOffsetRecordResponse> lastOffsetRecords
 ) {
 
