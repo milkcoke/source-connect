@@ -1,7 +1,7 @@
 plugins {
-	id("org.springframework.boot") version "3.3.4"
+	id("org.springframework.boot") version "3.5.6"
 	id("io.spring.dependency-management") version "1.1.7"
-	id("com.google.cloud.tools.jib") version "3.4.3"
+	id("com.google.cloud.tools.jib") version "3.4.6"
 	kotlin("plugin.spring") version "2.1.20"
 	kotlin("jvm") version "2.1.20"
 }
@@ -52,7 +52,7 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.apache.kafka:kafka-streams-test-utils:3.7.1")
 
-	compileOnly("org.projectlombok:lombok:1.18.38")
+	compileOnly("org.projectlombok:lombok:1.18.42")
 	annotationProcessor("org.projectlombok:lombok")
 }
 

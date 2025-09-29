@@ -20,9 +20,9 @@ dependencies {
     implementation 'org.apache.kafka:connect-runtime:3.7.1'
     implementation("com.fasterxml.jackson.core:jackson-databind:2.20.0")
 
-    compileOnly("org.projectlombok:lombok:1.18.38")
-    annotationProcessor("org.projectlombok:lombok:1.18.38")
-    testCompileOnly("org.projectlombok:lombok:1.18.38")
+    compileOnly("org.projectlombok:lombok:1.18.42")
+    annotationProcessor("org.projectlombok:lombok:1.18.42")
+    testCompileOnly("org.projectlombok:lombok:1.18.42")
     testImplementation platform('org.junit:junit-bom:5.13.3')
     testImplementation('org.junit.jupiter:junit-jupiter')
     testImplementation("org.assertj:assertj-core:3.27.6")

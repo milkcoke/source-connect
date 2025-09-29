@@ -5,5 +5,4 @@ rootProject.name = "source-connect"
 include("kafka-streams-connect")
 include("source-connector")
 include("offset-manager-api")
-include("offset-manager-local")
-include("offset-manager-remote")
+include("offset-manager")
