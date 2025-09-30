@@ -46,8 +46,8 @@ public class HttpOffsetRecordRepository implements OffsetRecordRepository {
             int responseStatus = response.statusCode();
             if (responseStatus == OK.getStatusCode()) {
                 LastOffsetRecordResponse offsetRecord = objectMapper.readValue(
-                        response.body(),
-                        LastOffsetRecordResponse.class
+                    response.body(),
+                    LastOffsetRecordResponse.class
                 );
                 return Optional.of(new DefaultOffsetRecord(offsetRecord.key(), offsetRecord.offset()));
             } else if (responseStatus == NOT_FOUND.getStatusCode()) {
@@ -63,7 +63,7 @@ public class HttpOffsetRecordRepository implements OffsetRecordRepository {
     @Override
     public List<OffsetRecord> findLastOffsetRecords(List<String> keys) throws JsonProcessingException {
         String url = String.format("%s/v1/offset-records", baseUrl);
-        String requestBody = objectMapper.writeValueAsString(Collections.singletonList(keys));
+        String requestBody = objectMapper.writeValueAsString(keys);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
@@ -72,7 +72,10 @@ public class HttpOffsetRecordRepository implements OffsetRecordRepository {
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() == OK.getStatusCode()) {
-                LastOffsetRecordBatchResponse batchResponse = objectMapper.readValue(response.body(), LastOffsetRecordBatchResponse.class);
+                LastOffsetRecordBatchResponse batchResponse = objectMapper.readValue(
+                  response.body(),
+                  LastOffsetRecordBatchResponse.class
+                );
                 return batchResponse.lastOffsetRecords()
                         .stream()
                         .map(lastOffsetRecord -> new DefaultOffsetRecord(lastOffsetRecord.key(), lastOffsetRecord.offset()))
