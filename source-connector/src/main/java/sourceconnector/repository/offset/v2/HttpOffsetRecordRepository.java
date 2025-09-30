@@ -2,7 +2,8 @@ package sourceconnector.repository.offset.v2;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import offsetmanager.domain.DefaultOffsetRecord;
@@ -42,16 +43,17 @@ public class HttpOffsetRecordRepository implements OffsetRecordRepository {
                 .build();
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() == OK.getStatusCode()) {
+            int responseStatus = response.statusCode();
+            if (responseStatus == OK.getStatusCode()) {
                 LastOffsetRecordResponse offsetRecord = objectMapper.readValue(
                         response.body(),
                         LastOffsetRecordResponse.class
                 );
                 return Optional.of(new DefaultOffsetRecord(offsetRecord.key(), offsetRecord.offset()));
-            } else if (response.statusCode() == NOT_FOUND.getStatusCode()) {
+            } else if (responseStatus == NOT_FOUND.getStatusCode()) {
                 return Optional.empty();
             } else {
-                throw new RuntimeException("Failed to fetch offset record, status code: " + response.statusCode());
+                throw new RuntimeException("Failed to fetch offset record, status code: " + responseStatus);
             }
         } catch (Exception e) {
             throw new IllegalStateException("Failed to fetch offset record", e);
@@ -64,7 +66,7 @@ public class HttpOffsetRecordRepository implements OffsetRecordRepository {
         String requestBody = objectMapper.writeValueAsString(Collections.singletonList(keys));
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .header("Content-Type", "application/json")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .build();
         try {
