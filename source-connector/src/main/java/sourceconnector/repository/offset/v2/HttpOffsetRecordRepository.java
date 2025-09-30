@@ -14,11 +14,9 @@ import offsetmanager.service.dto.LastOffsetRecordResponse;
 import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -36,9 +34,9 @@ public class HttpOffsetRecordRepository implements OffsetRecordRepository {
 
     @Override
     public Optional<OffsetRecord> findLastOffsetRecord(String key) {
-        String url = String.format("%s/v1/offset-records?key=%s", baseUrl, URLEncoder.encode(key, StandardCharsets.UTF_8));
+        URI url = URI.create(baseUrl).resolve("/v1/offset-records?key=" + key);
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
+                .uri(url)
                 .GET()
                 .build();
         try {
@@ -62,10 +60,10 @@ public class HttpOffsetRecordRepository implements OffsetRecordRepository {
 
     @Override
     public List<OffsetRecord> findLastOffsetRecords(List<String> keys) throws JsonProcessingException {
-        String url = String.format("%s/v1/offset-records", baseUrl);
+        URI url = URI.create(baseUrl).resolve("/v1/offset-records");
         String requestBody = objectMapper.writeValueAsString(keys);
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
+                .uri(url)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .build();

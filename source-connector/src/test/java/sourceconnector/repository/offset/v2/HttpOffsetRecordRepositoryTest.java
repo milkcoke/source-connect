@@ -46,7 +46,7 @@ class HttpOffsetRecordRepositoryTest {
       .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
       .code(OK.getStatusCode())
       .build());
-    String baseUrl = mockWebServer.url("/v1/offset-records").toString();
+    String baseUrl = mockWebServer.url("/").toString();
 
     OffsetRecordRepository repository = new HttpOffsetRecordRepository(baseUrl);
     // when
@@ -69,7 +69,7 @@ class HttpOffsetRecordRepositoryTest {
       .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
       .code(Response.Status.NOT_FOUND.getStatusCode())
       .build());
-    String baseUrl = mockWebServer.url("/v1/offset-records").toString();
+    String baseUrl = mockWebServer.url("/").toString();
 
     OffsetRecordRepository repository = new HttpOffsetRecordRepository(baseUrl);
     // when
@@ -103,7 +103,7 @@ class HttpOffsetRecordRepositoryTest {
       .build()
     );
 
-    String baseUrl = mockWebServer.url("/v1/offset-records").toString();
+    String baseUrl = mockWebServer.url("/").toString();
     OffsetRecordRepository repository = new HttpOffsetRecordRepository(baseUrl);
     // when
     List<OffsetRecord> offsetRecords = repository.findLastOffsetRecords(List.of(
@@ -134,7 +134,7 @@ class HttpOffsetRecordRepositoryTest {
       """)
       .build()
     );
-    String baseUrl = mockWebServer.url("/v1/offset-records").toString();
+    String baseUrl = mockWebServer.url("/").toString();
     OffsetRecordRepository repository = new HttpOffsetRecordRepository(baseUrl);
 
     // when
