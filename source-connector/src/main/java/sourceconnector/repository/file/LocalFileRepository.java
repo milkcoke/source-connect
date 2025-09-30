@@ -1,4 +1,4 @@
-package sourceconnector.repository;
+package sourceconnector.repository.file;
 
 import java.io.IOException;
 import java.io.InputStream;

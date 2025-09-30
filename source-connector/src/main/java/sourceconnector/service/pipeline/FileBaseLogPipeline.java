@@ -8,7 +8,7 @@ import sourceconnector.domain.factory.LogFactory;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.FileLogMetadata;
 import sourceconnector.exception.FileLogReadException;
-import sourceconnector.repository.FileRepository;
+import sourceconnector.repository.file.FileRepository;
 import sourceconnector.service.processor.BaseProcessor;
 import sourceconnector.service.reader.LineReader;
 import sourceconnector.service.reader.StringLineReader;

@@ -7,7 +7,6 @@ import java.util.List;
 public record LastOffsetRecordBatchResponse(
   List<LastOffsetRecordResponse> lastOffsetRecords
 ) {
-
   public static LastOffsetRecordBatchResponse from(List<OffsetRecord> offsetRecords) {
     return new LastOffsetRecordBatchResponse(
       offsetRecords.stream()

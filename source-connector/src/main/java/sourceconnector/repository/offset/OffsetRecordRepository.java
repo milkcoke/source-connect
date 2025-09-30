@@ -1,4 +1,4 @@
-package sourceconnector.repository;
+package sourceconnector.repository.offset;
 
 import offsetmanager.domain.OffsetRecord;
 

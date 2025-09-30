@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import sourceconnector.domain.batch.MessageBatch;
 import sourceconnector.domain.factory.JSONLogFactory;
 import sourceconnector.domain.log.Log;
-import sourceconnector.repository.LocalFileRepository;
+import sourceconnector.repository.file.LocalFileRepository;
 import sourceconnector.service.pipeline.FileBaseLogPipeline;
 import sourceconnector.service.pipeline.Pipeline;
 import sourceconnector.service.processor.impl.EmptyFilterProcessor;

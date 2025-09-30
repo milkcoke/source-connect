@@ -3,6 +3,8 @@ package sourceconnector.repository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import sourceconnector.repository.file.FileRepository;
+import sourceconnector.repository.file.LocalFileRepository;
 
 import java.io.File;
 import java.io.IOException;

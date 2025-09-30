@@ -2,7 +2,7 @@ package sourceconnector.service.reader;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import sourceconnector.repository.LocalFileRepository;
+import sourceconnector.repository.file.LocalFileRepository;
 
 import java.io.File;
 import java.io.IOException;

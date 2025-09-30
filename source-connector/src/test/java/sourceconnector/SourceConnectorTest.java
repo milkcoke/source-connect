@@ -12,7 +12,7 @@ import sourceconnector.domain.log.LogMetadata;
 import sourceconnector.domain.offset.LocalFileOffsetRecord;
 import sourceconnector.domain.factory.JSONLogFactory;
 import sourceconnector.domain.log.Log;
-import sourceconnector.repository.LocalFileRepository;
+import sourceconnector.repository.file.LocalFileRepository;
 import sourceconnector.service.batcher.Batchable;
 import sourceconnector.service.batcher.LogBatcher;
 import sourceconnector.service.pipeline.FileBaseLogPipeline;

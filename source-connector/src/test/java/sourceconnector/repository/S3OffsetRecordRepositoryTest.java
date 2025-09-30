@@ -15,6 +15,7 @@ import org.apache.kafka.common.serialization.*;
 import org.junit.jupiter.api.*;
 import org.springframework.kafka.config.TopicBuilder;
 import offsetmanager.domain.OffsetRecord;
+import sourceconnector.repository.offset.S3OffsetRecordRepository;
 
 import java.time.Duration;
 import java.util.Collections;
