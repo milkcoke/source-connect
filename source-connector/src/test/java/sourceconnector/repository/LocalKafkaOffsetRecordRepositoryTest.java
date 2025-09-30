@@ -1,5 +1,6 @@
 package sourceconnector.repository;
 
+import offsetmanager.domain.OffsetRecord;
 import offsetmanager.domain.OffsetStatus;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.AdminClient;
@@ -11,13 +12,15 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.config.TopicConfig;
-import org.apache.kafka.common.serialization.*;
+import org.apache.kafka.common.serialization.LongDeserializer;
+import org.apache.kafka.common.serialization.LongSerializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.*;
 import org.springframework.kafka.config.TopicBuilder;
-import offsetmanager.domain.OffsetRecord;
-import sourceconnector.repository.offset.S3OffsetRecordRepository;
+import sourceconnector.domain.offset.LocalFileOffsetRecord;
+import sourceconnector.repository.offset.v1.LocalKafkaOffsetRecordRepository;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -27,9 +30,9 @@ import java.util.concurrent.ExecutionException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class S3OffsetRecordRepositoryTest {
+class LocalKafkaOffsetRecordRepositoryTest {
   private final String testTopicName = "offset-topic";
-  private S3OffsetRecordRepository repository;
+  private LocalKafkaOffsetRecordRepository repository;
   private static final Properties props = new Properties();
   static {
     props.putAll(Map.of(
@@ -39,7 +42,6 @@ class S3OffsetRecordRepositoryTest {
         ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, LongSerializer.class,
         ProducerConfig.LINGER_MS_CONFIG, 100,
         ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true
-//        ProducerConfig.TRANSACTIONAL_ID_CONFIG, "test-s3"
       )
     );
   }
@@ -70,7 +72,7 @@ class S3OffsetRecordRepositoryTest {
     ));
     Consumer<String, Long> consumer = new KafkaConsumer<>(consumerProps);
 
-    repository = new S3OffsetRecordRepository(consumer, adminClient);
+    repository = new LocalKafkaOffsetRecordRepository(consumer, adminClient);
     Thread.sleep(5_000);
   }
 
@@ -83,61 +85,42 @@ class S3OffsetRecordRepositoryTest {
     adminClient.close();
   }
 
-  @DisplayName("Get all offset within range")
+  @DisplayName("Should get initial offset value when no record found")
   @Test
-  void testForwardScanLastRecord(){
+  void foundNoRecordTest() {
+    // given when
+    OffsetRecord offsetRecord = this.repository.findLastOffsetRecord(this.testTopicName, "NotExistFile.ndjson");
+    // then
+    assertThat(offsetRecord)
+      .hasFieldOrPropertyWithValue("key", "NotExistFile.ndjson")
+      .hasFieldOrPropertyWithValue("offset", OffsetStatus.INITIAL.getValue());
+  }
+
+  @DisplayName("Should get the last offset value when local file path exists in the offset topic")
+  @Test
+  void getLastRecordTest() {
     // given
+    String filePath = "src/test/resources/sample-data/empty-included.ndjson";
 
     try (KafkaProducer<String, Long> producer = new KafkaProducer<>(props)) {
-      for (long i = 0; i <= 9_999; i++) {
-        producer.send(new ProducerRecord<>(this.testTopicName, String.valueOf(i / 1000), i));
-      }
-      producer.flush();
-      Thread.sleep(Duration.ofSeconds(10L));
-      producer.send(new ProducerRecord<>(this.testTopicName, String.valueOf(10_000), 10_000L));
 
-      producer.flush();
+      for (long offset = 0; offset <= 100; offset++) {
+        OffsetRecord record = new LocalFileOffsetRecord(filePath, offset);
+
+        producer.send(new ProducerRecord<>(
+          this.testTopicName,
+          record.key(),
+          record.offset()
+        ));
+      }
     } catch (Exception ignored) {
-      System.out.printf(ignored.getMessage());
     }
 
     // when
-    OffsetRecord lastOffsetRecord = repository.findLastOffsetRecord(this.testTopicName, "10000");
+    OffsetRecord offsetRecord = this.repository.findLastOffsetRecord(this.testTopicName, filePath);
+
     // then
-    assertThat(lastOffsetRecord)
-      .extracting(OffsetRecord::key, OffsetRecord::offset)
-      .containsExactly(
-        "10000",
-        10_000L
-      );
-
-  }
-
-  @DisplayName("Should get INITIAL Offset when not processed key")
-  @Test
-  void findLastOffsetRecord() {
-     OffsetRecord lastOffset = repository.findLastOffsetRecord(
-      this.testTopicName,
-      "s3://test/2025/04/13/test.txt"
-    );
-
-    assertThat(lastOffset)
-      .extracting(OffsetRecord::key, OffsetRecord::offset)
-      .containsExactly(
-        "s3://test/2025/04/13/test.txt",
-        OffsetStatus.INITIAL.getValue()
-      );
-  }
-
-  @DisplayName("Should always get same partition when same key is input")
-  @Test
-  void getPartitionsForTopic() {
-    // given
-    int partition1 = repository.getPartitionsForTopic(this.testTopicName, "s3://test/2025/04/13/test.txt");
-    int partition2 = repository.getPartitionsForTopic(this.testTopicName, "s3://test/2025/04/13/test.txt");
-    int partition3 = repository.getPartitionsForTopic(this.testTopicName, "s3://test/2025/04/13/test.txt");
-
-    assertThat(List.of(partition1, partition2, partition3))
-      .containsOnly(partition1);
+    assertThat(offsetRecord.key()).isEqualTo(filePath);
+    assertThat(offsetRecord.offset()).isEqualTo(100L);
   }
 }

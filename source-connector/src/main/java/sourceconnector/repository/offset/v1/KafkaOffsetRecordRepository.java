@@ -1,10 +1,10 @@
-package sourceconnector.repository.offset;
+package sourceconnector.repository.offset.v1;
 
 import offsetmanager.domain.OffsetRecord;
 
 import java.util.concurrent.ExecutionException;
 
-public interface OffsetRecordRepository {
+public interface KafkaOffsetRecordRepository {
   OffsetRecord findLastOffsetRecord(String topicName, String key);
 
   int getPartitionsForTopic(String topicName, String key) throws ExecutionException, InterruptedException;
