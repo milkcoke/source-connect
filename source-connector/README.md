@@ -1,14 +1,16 @@
-# Concepts
+# Introduction
 
-S3 Source Connector 는 ETL 패턴의 애플리케이션입니다.
+The Source Connector provides File object connect to the Kafka topic supporting the Exactly-Once Semantic.
 
-3가지 컴포넌트로 구성됩니다.
 
-1. Reader
-2. Processor
-3. Producer
+## Configuration
+```yaml
+app:
+  jobCount: 1 # should be greater than or equal to the 1
+  offsetManagerBaseUrl: localhost://8080 # OffsetManager base url
 
-각각의 컴포넌트는 Blocking Queue 를 두고 동작합니다.
-
-## Pipeline
-Reader -> Queue -> Processor(s) -> Queue -> Producer
+  storageType: local # local, s3, azure
+  filePaths:
+    - C://Users/milkcoke/Downloads/logs
+    - C://Users/milkcoke/Downloads/logs2
+```
