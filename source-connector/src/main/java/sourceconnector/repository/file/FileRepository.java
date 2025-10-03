@@ -2,6 +2,7 @@ package sourceconnector.repository.file;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * Get the file contents from a file storage (e.g. LocalFile System, S3, GCS, Azure Blob Storage, etc.)
