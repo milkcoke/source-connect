@@ -1,0 +1,174 @@
+package offsetmanager.repository;
+
+import lombok.extern.slf4j.Slf4j;
+import offsetmanager.domain.DefaultOffsetRecord;
+import offsetmanager.domain.OffsetRecord;
+import offsetmanager.manager.OffsetManager;
+import org.apache.kafka.clients.CommonClientConfigs;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.IsolationLevel;
+import org.apache.kafka.common.config.TopicConfig;
+import org.apache.kafka.common.errors.TopicExistsException;
+import org.apache.kafka.common.serialization.LongDeserializer;
+import org.apache.kafka.common.serialization.LongSerializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
+import org.junit.jupiter.api.*;
+import org.springframework.kafka.config.TopicBuilder;
+
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@Slf4j
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class OffsetManagerTest {
+
+  private final String offsetTopic = "remote-offset-topic";
+  private final Properties producerConfig = new Properties();
+  private final Properties consumerConfig = new Properties();
+
+  @BeforeAll
+  void setup() throws InterruptedException {
+    producerConfig.putAll(Map.of(
+        CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
+        ProducerConfig.ACKS_CONFIG, "-1",
+        ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
+        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, LongSerializer.class,
+        ProducerConfig.LINGER_MS_CONFIG, 100,
+        ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true,
+        ProducerConfig.TRANSACTIONAL_ID_CONFIG, "test-local"
+      )
+    );
+
+    Properties adminProps = new Properties();
+    adminProps.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093");
+
+    AdminClient adminClient = AdminClient.create(adminProps);
+    NewTopic testTopic = TopicBuilder.name(this.offsetTopic)
+      .compact()
+      .partitions(3)
+      .replicas(3)
+      .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
+      .config(TopicConfig.SEGMENT_MS_CONFIG, "10000")
+      .build();
+
+    try {
+      adminClient.createTopics(List.of(testTopic)).all().get();
+    } catch (ExecutionException exception) {
+        if (exception.getCause() instanceof TopicExistsException) {
+            log.error(exception.getMessage(), exception);
+        }
+    }
+
+    consumerConfig.putAll(Map.of(
+      CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093",
+      ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
+      ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class,
+      ConsumerConfig.ISOLATION_LEVEL_CONFIG, IsolationLevel.READ_COMMITTED.name().toLowerCase(),
+      ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, 57_671_680, // 55MB
+      ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 500
+    ));
+
+    Thread.sleep(6_000);
+  }
+
+  @AfterAll
+  void teardown() throws ExecutionException, InterruptedException {
+    Properties adminProps = new Properties();
+    adminProps.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093");
+    AdminClient adminClient = AdminClient.create(adminProps);
+    adminClient.deleteTopics(Collections.singleton(this.offsetTopic)).all().get();
+    adminClient.close();
+  }
+
+  @DisplayName("Nothing to do update but background update thread starts")
+  @Test
+  void initializeTest() {
+    // given
+    OffsetManager offsetManager = new OffsetManagerRepository(new KafkaConsumer<>(consumerConfig), this.offsetTopic);
+    // when
+    Optional<OffsetRecord> foundOffset = offsetManager.findLatestOffsetRecord("anyKey");
+    // then
+    assertThat(foundOffset).isEmpty();
+  }
+
+  @DisplayName("Should find all offset records by keys")
+  @Test
+  void findAllOffsetRecordsTest() throws InterruptedException {
+    // given
+    OffsetManager offsetManager = new OffsetManagerRepository(new KafkaConsumer<>(consumerConfig), this.offsetTopic);
+    Producer<String, Long> producer = new KafkaProducer<>(producerConfig);
+    String keyA = "many-a.txt";
+    String keyB = "many-b.txt";
+    String keyC = "many-c.txt";
+    producer.initTransactions();
+    for (long i = 1; i <= 1000; i++) {
+      if ((i - 1) % 100 == 0) {
+        producer.beginTransaction();
+      }
+      producer.send(new ProducerRecord<>(this.offsetTopic, keyA, i));
+      producer.send(new ProducerRecord<>(this.offsetTopic, keyB, i));
+      producer.send(new ProducerRecord<>(this.offsetTopic, keyC, i));
+      if (i % 100 == 0) {
+        producer.commitTransaction();
+      }
+    }
+    Thread.sleep(1000);
+
+    // when
+    List<OffsetRecord> offsetRecords = offsetManager.findLatestOffsetRecords(List.of(keyA, keyB, keyC));
+    // then
+    assertThat(offsetRecords)
+      .hasSize(3)
+      .containsExactlyInAnyOrder(
+        new DefaultOffsetRecord(keyA, 1000L),
+        new DefaultOffsetRecord(keyB, 1000L),
+        new DefaultOffsetRecord(keyC, 1000L)
+      );
+
+  }
+
+  @DisplayName("Update continuously receives new offsets and updates the store")
+  @Test
+  void upsertContinuously() throws InterruptedException {
+    // given
+    OffsetManager offsetManager = new OffsetManagerRepository(new KafkaConsumer<>(consumerConfig), this.offsetTopic);
+    assertThat(offsetManager.findLatestOffsetRecord("keyA")).isEmpty();
+    assertThat(offsetManager.findLatestOffsetRecord("keyB")).isEmpty();
+    assertThat(offsetManager.findLatestOffsetRecord("keyC")).isEmpty();
+
+    Producer<String, Long> producer = new KafkaProducer<>(producerConfig);
+    String keyA = "many-d.txt";
+    String keyB = "many-e.txt";
+    String keyC = "many-f.txt";
+    producer.initTransactions();
+    for (long i = 1; i <= 1000; i++) {
+      if ((i - 1) % 100 == 0) {
+        producer.beginTransaction();
+      }
+      producer.send(new ProducerRecord<>(this.offsetTopic, keyA, i));
+      producer.send(new ProducerRecord<>(this.offsetTopic, keyB, i));
+      producer.send(new ProducerRecord<>(this.offsetTopic, keyC, i));
+      if (i % 100 == 0) {
+        producer.commitTransaction();
+      }
+    }
+    // when then
+    Thread.sleep(1000);
+    assertThat(offsetManager.findLatestOffsetRecord(keyA).get())
+      .isEqualTo(new DefaultOffsetRecord(keyA, 1000L));
+    assertThat(offsetManager.findLatestOffsetRecord(keyB).get())
+      .isEqualTo(new DefaultOffsetRecord(keyB, 1000L));
+    assertThat(offsetManager.findLatestOffsetRecord(keyC).get())
+      .isEqualTo(new DefaultOffsetRecord(keyC, 1000L));
+  }
+}
