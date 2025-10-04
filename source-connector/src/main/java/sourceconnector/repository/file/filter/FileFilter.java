@@ -1,4 +1,4 @@
-package sourceconnector.repository.file.options;
+package sourceconnector.repository.file.filter;
 
 @FunctionalInterface
 public interface FileFilter {
