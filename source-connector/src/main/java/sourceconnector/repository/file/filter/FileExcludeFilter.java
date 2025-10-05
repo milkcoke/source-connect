@@ -2,7 +2,6 @@ package sourceconnector.repository.file.filter;
 
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class FileExcludeFilter implements FileFilter {
   private final List<Pattern> patterns;
@@ -13,7 +12,7 @@ public class FileExcludeFilter implements FileFilter {
     }
     this.patterns = regexExpressions.stream()
       .map(Pattern::compile)
-      .collect(Collectors.toList());
+      .toList();
   }
 
   @Override

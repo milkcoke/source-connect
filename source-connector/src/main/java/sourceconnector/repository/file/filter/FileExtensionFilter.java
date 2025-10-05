@@ -4,6 +4,7 @@ import java.util.List;
 
 public class FileExtensionFilter implements FileFilter {
   private final List<String> extensions;
+
   public FileExtensionFilter(List<String> extensions) {
     if (extensions == null || extensions.isEmpty()) {
       throw new IllegalArgumentException("file extensions cannot be null or empty");
