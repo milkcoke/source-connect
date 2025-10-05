@@ -50,9 +50,9 @@ class LocalFileListerTest {
       );
   }
 
-  @DisplayName("Should get all files even directory and file are mixed")
+  @DisplayName("Should get all files recursively")
   @Test
-  void getFilesInDirectoryAndFileTest() throws IOException {
+  void getFilesRecursiveTest() throws IOException {
     // given
     FileValidator validator = new CompositeFileValidator(
       Collections.singletonList(new FileExtensionFilter(List.of(".ndjson")))
@@ -68,6 +68,28 @@ class LocalFileListerTest {
         "empty-included.ndjson",
         "large.ndjson",
         "sub1.ndjson"
+      );
+  }
+
+  @DisplayName("Should get all files when directory and file path are mixed")
+  @Test
+  void getFilesWhenMixedDirFile() throws IOException {
+    // given
+    FileValidator validator = new CompositeFileValidator(
+      Collections.singletonList(new FileExtensionFilter(List.of(".ndjson")))
+    );
+    FileLister fileLister = new LocalFileLister(validator);
+    // when
+    List<String> fileList = fileLister.listFiles(true,
+      "src/test/resources/sample-data/subdir1",
+      "src/test/resources/sample-data/subdir2/sub22.ndjson"
+    );
+    // then
+    assertThat(fileList).hasSize(2)
+      .map(path->Path.of(path).getFileName().toString())
+      .containsExactlyInAnyOrder(
+        "sub1.ndjson",
+        "sub22.ndjson"
       );
   }
 }
