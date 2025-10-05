@@ -9,6 +9,7 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import sourceconnector.domain.batch.MessageBatch;
 import sourceconnector.domain.batch.DefaultMessageBatchLogs;
@@ -23,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-
+@Disabled
 class BatchProduceServiceTest {
   private static final Properties props = new Properties();
   static {

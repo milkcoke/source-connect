@@ -42,9 +42,7 @@ class LocalFileListerTest {
     List<String> fileList = fileLister.listFiles(false, "src/test/resources/sample-data");
     // then
     assertThat(fileList).hasSize(3)
-      .map(Path::of)
-      .map(Path::getFileName)
-      .map(Path::toString)
+      .map(path->Path.of(path).getFileName().toString())
       .containsExactlyInAnyOrder(
         "empty.ndjson",
         "empty-included.ndjson",
