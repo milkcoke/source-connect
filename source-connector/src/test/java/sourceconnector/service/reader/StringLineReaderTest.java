@@ -18,7 +18,7 @@ class StringLineReaderTest {
   void readAll() throws IOException {
 
     // given
-    File file = Path.of("src/test/resources/sample-data/large-ndjson.ndjson").toFile();
+    File file = Path.of("src/test/resources/sample-data/large.ndjson").toFile();
     InputStream inputStream = new LocalFileRepository().getFile(file.getPath());
     LineReader<String> reader = new StringLineReader(inputStream);
 

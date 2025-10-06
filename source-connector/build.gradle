@@ -12,23 +12,23 @@ repositories {
 }
 
 dependencies {
-    implementation project(":offset-manager-api")
-    implementation project(":offset-manager")
-    implementation("org.springframework.boot:spring-boot-starter")
-    implementation("org.apache.kafka:kafka-clients:4.1.0")
-    implementation("org.springframework.kafka:spring-kafka:3.3.10")
-    implementation('org.apache.commons:commons-lang3:3.18.0')
-    implementation 'org.apache.kafka:connect-runtime:3.7.1'
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.20.0")
-    implementation('jakarta.ws.rs:jakarta.ws.rs-api:4.0.0')
+  implementation project(":offset-manager-api")
+  implementation project(":offset-manager")
+  implementation("org.springframework.boot:spring-boot-starter")
+  implementation("org.apache.kafka:kafka-clients:4.1.0")
+  implementation("org.springframework.kafka:spring-kafka:3.3.10")
+  implementation('org.apache.commons:commons-lang3:3.18.0')
+  implementation('org.apache.kafka:connect-runtime:3.7.1')
+  implementation("com.fasterxml.jackson.core:jackson-databind:2.20.0")
+  implementation('jakarta.ws.rs:jakarta.ws.rs-api:4.0.0')
 
-    compileOnly("org.projectlombok:lombok:1.18.42")
-    annotationProcessor("org.projectlombok:lombok:1.18.42")
-    testCompileOnly("org.projectlombok:lombok:1.18.42")
-    testImplementation platform('org.junit:junit-bom:5.13.3')
-    testImplementation('org.junit.jupiter:junit-jupiter')
-    testImplementation("org.assertj:assertj-core:3.27.6")
-    testImplementation("com.squareup.okhttp3:mockwebserver:5.1.0")
+  compileOnly("org.projectlombok:lombok:1.18.42")
+  annotationProcessor("org.projectlombok:lombok:1.18.42")
+  testCompileOnly("org.projectlombok:lombok:1.18.42")
+  testImplementation platform('org.junit:junit-bom:5.13.3')
+  testImplementation('org.junit.jupiter:junit-jupiter')
+  testImplementation("org.assertj:assertj-core:3.27.6")
+  testImplementation("com.squareup.okhttp3:mockwebserver:5.1.0")
 }
 
 test {
