@@ -24,7 +24,7 @@ class FileTaskAssignorTest {
       filePaths.add("file-" + i);
     }
     TaskAssignor taskAssignor = new FileTaskAssignor(filePaths, 5);
-    FileSourceTask task0 = new FileSourceTask("Task-0", 0, new LocalFileRepository());
+    FileSourceTask task0 = new FileSourceTask(0, new LocalFileRepository());
 
     // when
     taskAssignor.assign(List.of(task0));
@@ -43,10 +43,10 @@ class FileTaskAssignorTest {
       filePaths.add("file-" + i);
     }
     TaskAssignor taskAssignor = new FileTaskAssignor(filePaths, 4);
-    FileSourceTask task0 = new FileSourceTask("Task-0", 0, new LocalFileRepository());
-    FileSourceTask task1 =  new FileSourceTask("Task-1", 1, new LocalFileRepository());
-    FileSourceTask task2 =  new FileSourceTask("Task-2", 2, new LocalFileRepository());
-    FileSourceTask task3 =   new FileSourceTask("Task-3", 3, new LocalFileRepository());
+    FileSourceTask task0 = new FileSourceTask(0, new LocalFileRepository());
+    FileSourceTask task1 =  new FileSourceTask(1, new LocalFileRepository());
+    FileSourceTask task2 =  new FileSourceTask(2, new LocalFileRepository());
+    FileSourceTask task3 =   new FileSourceTask(3, new LocalFileRepository());
 
     Collection<Task<FileProcessingResult>> tasks = List.of(task0, task1, task2, task3);
 
@@ -68,7 +68,7 @@ class FileTaskAssignorTest {
     // given
     TaskAssignor taskAssignor = new FileTaskAssignor(Collections.emptyList(), 1);
     Collection<Task<FileProcessingResult>> tasks = List.of(
-      new FileSourceTask("Task-0", 0, new LocalFileRepository())
+      new FileSourceTask( 0, new LocalFileRepository())
     );
 
     // when then
