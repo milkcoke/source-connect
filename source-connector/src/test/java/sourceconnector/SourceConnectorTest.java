@@ -118,7 +118,8 @@ class SourceConnectorTest {
 
         List<Log> messages;
         LogMetadata lastMessageMetadata = LogMetadata.EMPTY;
-        while((messages = batcher.nextBatch().get()) != Collections.EMPTY_LIST) {lastMessageMetadata = messages.getLast().getMetadata();
+        while((messages = batcher.nextBatch().get()) != Collections.EMPTY_LIST) {
+          lastMessageMetadata = messages.getLast().getMetadata();
           List<String> messageBatch = messages
             .stream()
             .map(Log::get)

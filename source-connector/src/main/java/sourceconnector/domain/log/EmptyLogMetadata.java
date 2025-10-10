@@ -2,7 +2,7 @@ package sourceconnector.domain.log;
 
 import org.apache.commons.lang3.StringUtils;
 
-public enum EmptyLogMetadata  implements LogMetadata {
+public enum EmptyLogMetadata implements LogMetadata {
   INSTANCE;
 
   @Override

@@ -7,7 +7,7 @@ import sourceconnector.repository.file.FileRepository;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FileSourceTask implements Task<FileProcessingResult>{
+public class FileSourceTask implements Task<FileProcessingResult> {
   private final String id;
   @Getter
   private final int index;
