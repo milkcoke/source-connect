@@ -1,11 +1,14 @@
 package sourceconnector.domain.connect;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import sourceconnector.repository.file.FileRepository;
+import sourceconnector.service.producer.BatchProduceService;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.*;
 
 /**
@@ -34,7 +37,8 @@ public class Worker {
   public Collection<Task<FileProcessingResult>> createTasks(
     int totalWorkerCount,
     int totalTaskCount,
-    FileRepository fileRepository
+    FileRepository fileRepository,
+    Properties producerProperties
   ) {
     if (totalWorkerCount < 1) {
       throw new IllegalArgumentException("Total worker count should be greater than zero");
@@ -50,7 +54,14 @@ public class Worker {
     int endIndex = (this.index + 1) * quotient + Math.min(this.index + 1, remainder);
 
     for (int taskIndex = startIndex; taskIndex < endIndex; taskIndex++) {
-      tasks.add(new FileSourceTask(taskIndex, fileRepository));
+      producerProperties.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, String.format("Task-%d-", taskIndex));
+
+      tasks.add(new FileSourceTask(
+        taskIndex,
+        fileRepository,
+        // FIXME: offset, log topic 명 주입받기 or DSL 을 통한 외부 설정 주입
+        new BatchProduceService(producerProperties, "offset-topic", "log-topic"))
+      );
     }
 
     this.assignTasks();
