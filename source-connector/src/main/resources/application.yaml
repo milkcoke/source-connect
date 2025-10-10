@@ -6,10 +6,9 @@ spring:
       - localhost:9094
     producer:
       acks: -1
-      retries: 5
       properties:
         key.serializer: org.apache.kafka.common.serialization.StringSerializer
-        value.serializer: org.apache.kafka.common.serialization.StringSerializer
+        value.serializer: org.apache.kafka.common.serialization.ByteArraySerializer
         security.protocol: PLAINTEXT
         sasl.mechanism: PLAIN
         transactional.id: "s3-source-connector"

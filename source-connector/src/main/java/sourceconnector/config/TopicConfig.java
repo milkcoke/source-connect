@@ -11,7 +11,7 @@ public class TopicConfig {
   @Bean
   public NewTopic offsetTopic() {
     return TopicBuilder
-      .name("s3-offset-topic")
+      .name("offset-topic")
       .partitions(2)
       .replicas(3)
       .compact()
