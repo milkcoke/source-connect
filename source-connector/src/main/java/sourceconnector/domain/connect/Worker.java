@@ -60,7 +60,7 @@ public class Worker {
         taskIndex,
         fileRepository,
         // FIXME: offset, log topic 명 주입받기 or DSL 을 통한 외부 설정 주입
-        new BatchProduceService(producerProperties, "offset-topic", "log-topic"))
+        new BatchProduceService(producerProperties, "log-topic", "offset-topic"))
       );
     }
 

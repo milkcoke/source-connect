@@ -89,7 +89,11 @@ class WorkerTest {
     // given
     Worker worker = new Worker(
       0,
-      new FileTaskAssignor(List.of("file-0", "file-1"), 2)
+      new FileTaskAssignor(List.of(
+        "src/test/resources/sample-data/subdir1/sub1.ndjson",
+        "src/test/resources/sample-data/empty.ndjson"
+      ),
+        2)
     );
     worker.createTasks(1, 2, new LocalFileRepository(), producerProperties);
 
