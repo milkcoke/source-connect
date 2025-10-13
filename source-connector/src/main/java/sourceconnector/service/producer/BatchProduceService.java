@@ -58,5 +58,4 @@ public class BatchProduceService implements BatchProducer<String> {
     }
 
   }
-
 }

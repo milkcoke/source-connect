@@ -84,7 +84,6 @@ public class FileSourceTask implements Task<FileProcessingResult> {
 
       this.result.addSuccessCount();
     }
-
     return this.result;
   }
 

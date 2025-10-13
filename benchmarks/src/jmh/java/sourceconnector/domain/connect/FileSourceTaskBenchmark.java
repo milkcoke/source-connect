@@ -4,7 +4,6 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.mockito.Mockito;
 import org.openjdk.jmh.annotations.*;
 import sourceconnector.repository.file.FileLister;
 import sourceconnector.repository.file.LocalFileLister;
