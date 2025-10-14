@@ -72,6 +72,7 @@ public class Worker {
 
   /**
    * Start all the tasks in this worker
+   * FIXME: Should handle IOException when close the producer in the task
    * @throws InterruptedException
    * @throws ExecutionException
    * @throws IllegalStateException trying to start before creating tasks
