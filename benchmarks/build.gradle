@@ -29,6 +29,7 @@ test {
 
 jmh {
   fork = 1
-  warmupIterations = 3
+  warmupIterations = 1
   iterations = 5
+  includes=["WorkerBenchmark.fiveTaskBenchmark"]
 }
