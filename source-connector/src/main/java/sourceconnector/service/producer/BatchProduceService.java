@@ -58,4 +58,9 @@ public class BatchProduceService implements BatchProducer<String> {
     }
 
   }
+
+  @Override
+  public void close() {
+    this.kafkaProducer.close();
+  }
 }
