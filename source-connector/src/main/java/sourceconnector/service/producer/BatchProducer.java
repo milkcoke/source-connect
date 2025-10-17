@@ -6,7 +6,6 @@ import sourceconnector.domain.batch.MessageBatch;
 import java.io.Closeable;
 
 
-// TODO: Compare between the AutoCloseable and Closeable
-public interface BatchProducer<T>  extends Closeable {
+public interface BatchProducer<T>  extends AutoCloseable {
   void sendBatch(OffsetRecord offsetRecord, MessageBatch<T> messageBatch);
 }

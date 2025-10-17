@@ -40,7 +40,7 @@ public class FileSourceTask implements Task<FileProcessingResult> {
   }
 
   @Override
-  public FileProcessingResult call() throws IOException {
+  public FileProcessingResult call() throws Exception {
     try {
       for (var filePath: this.filePaths) {
         Pipeline<Log> pipeline = FileBaseLogPipeline.create(

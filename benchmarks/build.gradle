@@ -31,5 +31,5 @@ jmh {
   fork = 1
   warmupIterations = 1
   iterations = 5
-  includes=["WorkerBenchmark.fiveTaskBenchmark"]
+  includes = ['WorkerBenchmark.fiveTaskBenchmark']
 }
