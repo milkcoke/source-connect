@@ -13,7 +13,18 @@ $ cd src/jmh/resources/large-testdata
 $ node generate_ndjosn.js
 ```
 
-#### (2) Execute jmh task
+#### (2) Configure the jmh task
+Configure build.gradle `jmh` task configuration \
+refer to the [docs](https://github.com/melix/jmh-gradle-plugin)
+```groovy
+jmh {
+  fork = 1
+  warmupIterations = 1
+  iterations = 5
+  includes = ['WorkerBenchmark.fiveTaskBenchmark']
+}
+```
+#### (3) Execute jmh
 ```bash
-$ ./gradlew :benchmarks:jmh
+$ ./gradlew :benchmarks:clean :benchmarks:jmh
 ```
