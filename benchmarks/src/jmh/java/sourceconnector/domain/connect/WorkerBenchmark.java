@@ -19,7 +19,7 @@ import java.util.concurrent.ExecutionException;
 
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
-@Warmup(iterations = 0)
+@Warmup(iterations = 1)
 public class WorkerBenchmark {
   private final List<String> testFilePaths = new ArrayList<>();
   private Properties producerConfig;

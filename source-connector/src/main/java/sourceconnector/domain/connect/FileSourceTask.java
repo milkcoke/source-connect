@@ -15,7 +15,6 @@ import sourceconnector.service.processor.impl.EmptyFilterProcessor;
 import sourceconnector.service.processor.impl.TrimMapperProcessor;
 import sourceconnector.service.producer.BatchProducer;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
