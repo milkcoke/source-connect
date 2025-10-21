@@ -39,53 +39,56 @@ public class FileSourceTask implements Task<FileProcessingResult> {
   }
 
   @Override
-  public FileProcessingResult call() {
-    for (var filePath: this.filePaths) {
-      Pipeline<Log> pipeline = FileBaseLogPipeline.create(
-        this.fileRepository,
-        filePath,
-        new JSONLogFactory(),
-        new EmptyFilterProcessor(),
-        new TrimMapperProcessor(new JSONLogFactory())
-      );
+  public FileProcessingResult call() throws Exception {
+    try {
+      for (var filePath: this.filePaths) {
+        Pipeline<Log> pipeline = FileBaseLogPipeline.create(
+          this.fileRepository,
+          filePath,
+          new JSONLogFactory(),
+          new EmptyFilterProcessor(),
+          new TrimMapperProcessor(new JSONLogFactory())
+        );
 
-      LogBatcher batcher = new LogBatcher(pipeline, 10_000);
+        LogBatcher batcher = new LogBatcher(pipeline, 10_000);
 
-      List<Log> messages;
+        List<Log> messages;
 
-      LogMetadata lastMessageMetadata;
+        LogMetadata lastMessageMetadata;
 
-      while ((messages = batcher.nextBatch().get()) != Collections.EMPTY_LIST) {
-        lastMessageMetadata = messages.getLast().getMetadata();
-        List<String> messageBatch = messages
-          .stream()
-          .map(Log::get)
-          .toList();
+        while ((messages = batcher.nextBatch().get()) != Collections.EMPTY_LIST) {
+          lastMessageMetadata = messages.getLast().getMetadata();
+          List<String> messageBatch = messages
+            .stream()
+            .map(Log::get)
+            .toList();
 
+          producer.sendBatch(
+            new LocalFileOffsetRecord(
+              lastMessageMetadata.key(),
+              lastMessageMetadata.offset()
+            ),
+            ()->messageBatch
+          );
+        }
+
+
+        // Complete this file
         producer.sendBatch(
           new LocalFileOffsetRecord(
-            lastMessageMetadata.key(),
-            lastMessageMetadata.offset()
+            // This is for handling no Log after filtered
+            filePath,
+            OffsetStatus.COMPLETED.getValue()
           ),
-          ()->messageBatch
+          Collections::emptyList
         );
+
+        this.result.addSuccessCount();
       }
-
-
-      // Complete this file
-      producer.sendBatch(
-        new LocalFileOffsetRecord(
-          // This is for handling no Log after filtered
-          filePath,
-          OffsetStatus.COMPLETED.getValue()
-        ),
-        Collections::emptyList
-      );
-
-      this.result.addSuccessCount();
+      return this.result;
+    } finally {
+      this.producer.close();
     }
-
-    return this.result;
   }
 
   @Override

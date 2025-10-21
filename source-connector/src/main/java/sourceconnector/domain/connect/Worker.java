@@ -72,6 +72,7 @@ public class Worker {
 
   /**
    * Start all the tasks in this worker
+   * FIXME: Should handle IOException when close the producer in the task
    * @throws InterruptedException
    * @throws ExecutionException
    * @throws IllegalStateException trying to start before creating tasks
@@ -81,22 +82,43 @@ public class Worker {
       throw new IllegalStateException("No tasks to start");
     }
 
-    List<Future<FileProcessingResult>> futures = this.executor.invokeAll(tasks);
-    for (var future : futures) {
-      FileProcessingResult result = future.get();
-      log.info(
-        "totalCount: {}, successCount: {}, failCount: {}",
-        result.getTotalCount(),
-        result.getSuccessCount(),
-        result.getFailureCount()
-      );
-    }
+    try {
+      List<Future<FileProcessingResult>> futures = this.executor.invokeAll(tasks);
+      for (var future : futures) {
+        FileProcessingResult result = future.get();
+        log.info(
+          "totalCount: {}, successCount: {}, failCount: {}",
+          result.getTotalCount(),
+          result.getSuccessCount(),
+          result.getFailureCount()
+        );
+      }
 
-    log.info("{} completed the all jobs", this.id);
+      log.info("{} completed the all jobs", this.id);
+    } finally {
+      this.shutdownGracefully();
+    }
   }
 
 
   private void assignTasks() {
     this.taskAssignor.assign(this.tasks);
+  }
+
+  private void shutdownGracefully() {
+    this.executor.shutdown();
+    try {
+      if (!this.executor.awaitTermination(10L, TimeUnit.SECONDS)) {
+        log.warn("Failed to termination for 10 Seconds");
+        log.warn("Try to shutdown immediately");
+        this.executor.shutdownNow();
+        if (!this.executor.awaitTermination(5L, TimeUnit.SECONDS)) {
+          log.error("All job failed to termination for 5 seconds");
+        }
+      }
+    } catch (InterruptedException e) {
+      this.executor.shutdownNow();
+      Thread.currentThread().interrupt();
+    }
   }
 }
