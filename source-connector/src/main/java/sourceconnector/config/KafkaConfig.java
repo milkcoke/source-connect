@@ -11,8 +11,6 @@ import java.util.Properties;
 
 @Configuration
 public class KafkaConfig {
-  @Value("${spring.kafka.consumer.max-poll-records}")
-  private int maxPollRecords;
 
   @Bean
   public Properties produerProperties(KafkaProperties kafkaProperties) {

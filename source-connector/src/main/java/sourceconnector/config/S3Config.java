@@ -1,9 +1,9 @@
 package sourceconnector.config;
 
-import java.util.List;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
+@ConfigurationProperties("app.storage.s3")
 public record S3Config(
-  List<String> paths,
   String bucket,
   String region
 ) {

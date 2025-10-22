@@ -1,3 +1,12 @@
+app:
+  storage:
+    type: S3
+    paths:
+      - 'a'
+      - 'b'
+    filters:
+      - 'a'
+
 spring:
   kafka:
     bootstrap-servers:
