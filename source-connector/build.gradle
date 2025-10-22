@@ -21,6 +21,7 @@ dependencies {
   implementation('org.apache.kafka:connect-runtime:3.7.1')
   implementation("com.fasterxml.jackson.core:jackson-databind:2.20.0")
   implementation('jakarta.ws.rs:jakarta.ws.rs-api:4.0.0')
+  implementation("software.amazon.awssdk:s3:2.35.10")
 
   compileOnly("org.projectlombok:lombok:1.18.42")
   annotationProcessor("org.projectlombok:lombok:1.18.42")
