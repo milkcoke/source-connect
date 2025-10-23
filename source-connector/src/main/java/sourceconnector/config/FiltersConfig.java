@@ -35,11 +35,11 @@ public record FiltersConfig(
     List<String> expressions
   ){
     public FileFilter toFileFilter() {
-      return switch (type) {
+      return switch (type.toLowerCase().trim()) {
         case "exclude"-> new FileExcludeFilter(expressions);
         case "include"-> new FileIncludeFilter(expressions);
         case "extension"-> new FileExtensionFilter(expressions);
-        default -> throw new IllegalStateException("Unexpected filter type: " + type);
+        default -> throw new IllegalStateException("Invalid filter type: " + type);
       };
 
     }
