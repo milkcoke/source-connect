@@ -1,6 +1,7 @@
 package sourceconnector.config;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.regions.Region;
@@ -16,13 +17,6 @@ public class StorageRepositoryConfiguration {
   }
 
   // --- S3 beans ---
-  @Bean
-  @ConditionalOnProperty(prefix = "app.storage", name = "type", havingValue = "s3", matchIfMissing = false)
-  public S3Config s3Config(S3Config s3Config) {
-    return new S3Config(s3Config.region(), s3Config.bucket());
-  }
-
-
   @Bean
   @ConditionalOnProperty(prefix = "app.storage", name = "type", havingValue = "s3")
   public FileLister s3FileLister(S3Config s3Config, FileValidator fileValidator) {
