@@ -50,6 +50,7 @@ public class S3FileLister implements FileLister  {
         .stream()
         .flatMap(response -> response.contents().stream())
         .map(S3Object::key)
+        .filter(fileValidator::isValid)
         .toList();
 
       objectPaths.addAll(keys);
