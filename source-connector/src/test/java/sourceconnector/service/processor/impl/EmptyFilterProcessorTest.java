@@ -12,10 +12,24 @@ class EmptyFilterProcessorTest {
 
   @DisplayName("Should result is to be null when payload is empty")
   @Test
-  void shouldReturnFalseForEmptyOrBlankInput() {
+  void shouldReturnFalseForEmptyInput() {
     // given
     EmptyFilterProcessor processor = new EmptyFilterProcessor();
     Log emptyInput = new JSONLog("", LogMetadata.EMPTY);
+
+    // when
+    Log result = processor.process(emptyInput);
+
+    // then
+    assertThat(result).isNull();
+  }
+
+  @DisplayName("Should result is to be null when payload is blank")
+  @Test
+  void shouldReturnFalseForBlankInput() {
+    // given
+    EmptyFilterProcessor processor = new EmptyFilterProcessor();
+    Log emptyInput = new JSONLog("  ", LogMetadata.EMPTY);
 
     // when
     Log result = processor.process(emptyInput);

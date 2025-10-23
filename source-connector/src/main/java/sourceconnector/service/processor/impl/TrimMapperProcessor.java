@@ -5,6 +5,9 @@ import sourceconnector.domain.factory.LogFactory;
 import sourceconnector.domain.log.Log;
 import sourceconnector.service.processor.AbstractMapperProcessor;
 
+/**
+ * Remove the whitespace in the Log
+ */
 @RequiredArgsConstructor
 public class TrimMapperProcessor extends AbstractMapperProcessor<Log> {
   private final LogFactory logFactory;
