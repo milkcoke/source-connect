@@ -16,7 +16,8 @@ public class S3FileLister implements FileLister  {
   private final String bucket;
 
   public S3FileLister(
-    Region region, String bucket,
+    Region region,
+    String bucket,
     FileValidator fileValidator
     ) {
     this.s3Client = S3Client.builder().region(region).build();

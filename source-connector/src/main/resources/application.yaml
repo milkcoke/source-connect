@@ -4,8 +4,12 @@ app:
     paths:
       - 'a'
       - 'b'
-    filters:
-      - 'a'
+    configs:
+      filters:
+        - type: extension
+          expressions:
+          - .csv
+          - .ndjson
 
 spring:
   kafka:

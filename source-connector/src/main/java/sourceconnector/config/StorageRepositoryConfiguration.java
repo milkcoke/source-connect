@@ -5,22 +5,32 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.regions.Region;
 import sourceconnector.repository.file.*;
+import sourceconnector.repository.file.validator.FileValidator;
 
 @Configuration
-public class StorageAutoConfiguration {
+public class StorageRepositoryConfiguration {
+
+  @Bean
+  public FileValidator fileValidator(FiltersConfig filtersConfig) {
+    return filtersConfig.toValidator();
+  }
+
   // --- S3 beans ---
-  /*@Bean
+  @Bean
   @ConditionalOnProperty(prefix = "app.storage", name = "type", havingValue = "s3", matchIfMissing = false)
   public S3Config s3Config(S3Config s3Config) {
-    var s3Config = storageConfig.s3Config();
-    return new StorageConfig.S3Config(s3Config.region(), s3Config.bucket());
+    return new S3Config(s3Config.region(), s3Config.bucket());
   }
+
 
   @Bean
   @ConditionalOnProperty(prefix = "app.storage", name = "type", havingValue = "s3")
-  public FileLister s3FileLister(StorageConfig storageConfig) {
-    var  s3Config = storageConfig.s3Config();
-    return new S3FileLister(s3Config.region(), s3Config.bucket())
+  public FileLister s3FileLister(S3Config s3Config, FileValidator fileValidator) {
+    return new S3FileLister(
+      Region.of(s3Config.region()),
+      s3Config.bucket(),
+      fileValidator
+    );
   }
 
   @Bean
@@ -32,20 +42,13 @@ public class StorageAutoConfiguration {
   // --- Local beans ---
   @Bean
   @ConditionalOnProperty(prefix = "app.storage", name = "type", havingValue = "local")
-  public StorageConfig.LocalConfig localConfig(StorageProperties props) {
-    return new StorageConfig.LocalConfig(props.local().baseDir());
+  public FileLister localFileLister(FileValidator fileValidator) {
+    return new LocalFileLister(fileValidator);
   }
 
   @Bean
   @ConditionalOnProperty(prefix = "app.storage", name = "type", havingValue = "local")
-  public FileLister localFileLister(StorageConfig.LocalConfig localConfig) {
-    return new LocalFileLister(localConfig.baseDir());
+  public FileRepository localFileRepository() {
+    return new LocalFileRepository();
   }
-
-  @Bean
-  @ConditionalOnProperty(prefix = "app.storage", name = "type", havingValue = "local")
-  public FileRepository localFileRepository(StorageConfig.LocalConfig localConfig) {
-    return new LocalFileRepository(localConfig.baseDir());
-  }
-   */
 }
