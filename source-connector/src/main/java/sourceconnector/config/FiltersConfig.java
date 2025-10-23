@@ -11,20 +11,23 @@ import sourceconnector.repository.file.validator.NoConditionFileValidator;
 
 import java.util.List;
 
-@ConfigurationProperties("app.storage.filters")
+@ConfigurationProperties("app.storage.config")
 public record FiltersConfig(
-  List<FilterConfig> filtersConfigs
+  List<FilterConfig> filters
 ) {
+  /**
+   * Create {@link sourceconnector.repository.file.validator.FileValidator} according `filters` config in order
+   */
   public FileValidator toValidator() {
-    if (filtersConfigs == null || filtersConfigs.isEmpty()) {
+    if (filters == null || filters.isEmpty()) {
       return new NoConditionFileValidator();
     }
 
-    List<FileFilter> filters = filtersConfigs.stream()
+    List<FileFilter> fileFilters = filters.stream()
       .map(FilterConfig::toFileFilter)
       .toList();
 
-    return  new CompositeFileValidator(filters);
+    return  new CompositeFileValidator(fileFilters);
   }
 
   record FilterConfig(
