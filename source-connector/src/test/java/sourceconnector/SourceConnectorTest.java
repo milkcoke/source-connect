@@ -15,10 +15,10 @@ import sourceconnector.domain.log.Log;
 import sourceconnector.repository.file.LocalFileRepository;
 import sourceconnector.service.batcher.Batchable;
 import sourceconnector.service.batcher.LogBatcher;
-import sourceconnector.service.pipeline.FileBaseLogPipeline;
-import sourceconnector.service.pipeline.Pipeline;
-import sourceconnector.service.processor.impl.EmptyFilterProcessor;
-import sourceconnector.service.processor.impl.TrimMapperProcessor;
+import sourceconnector.domain.pipeline.FileBaseLogPipeline;
+import sourceconnector.domain.pipeline.Pipeline;
+import sourceconnector.domain.processor.impl.EmptyFilterProcessor;
+import sourceconnector.domain.processor.impl.TrimMapperProcessor;
 import sourceconnector.service.producer.BatchProduceService;
 import sourceconnector.service.producer.BatchProducer;
 

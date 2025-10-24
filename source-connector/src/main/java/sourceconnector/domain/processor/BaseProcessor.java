@@ -1,4 +1,4 @@
-package sourceconnector.service.processor;
+package sourceconnector.domain.processor;
 
 public abstract class BaseProcessor<T> implements Processor<T, T> {
   protected BaseProcessor<T> next;

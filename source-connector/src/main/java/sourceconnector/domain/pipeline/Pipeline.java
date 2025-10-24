@@ -1,4 +1,4 @@
-package sourceconnector.service.pipeline;
+package sourceconnector.domain.pipeline;
 
 /**
  * Pipeline consists of multiple processors and can get result

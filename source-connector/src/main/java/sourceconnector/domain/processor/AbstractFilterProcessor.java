@@ -1,4 +1,4 @@
-package sourceconnector.service.processor;
+package sourceconnector.domain.processor;
 
 public abstract class AbstractFilterProcessor<Log> extends BaseProcessor<Log> {
   protected abstract boolean condition(Log input);

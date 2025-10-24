@@ -3,7 +3,7 @@ package sourceconnector.service.batcher;
 import lombok.RequiredArgsConstructor;
 import sourceconnector.domain.batch.MessageBatch;
 import sourceconnector.domain.log.Log;
-import sourceconnector.service.pipeline.Pipeline;
+import sourceconnector.domain.pipeline.Pipeline;
 
 import java.util.ArrayList;
 import java.util.Collections;

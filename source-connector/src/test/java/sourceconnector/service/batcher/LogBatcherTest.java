@@ -6,10 +6,10 @@ import sourceconnector.domain.batch.MessageBatch;
 import sourceconnector.domain.factory.JSONLogFactory;
 import sourceconnector.domain.log.Log;
 import sourceconnector.repository.file.LocalFileRepository;
-import sourceconnector.service.pipeline.FileBaseLogPipeline;
-import sourceconnector.service.pipeline.Pipeline;
-import sourceconnector.service.processor.impl.EmptyFilterProcessor;
-import sourceconnector.service.processor.impl.TrimMapperProcessor;
+import sourceconnector.domain.pipeline.FileBaseLogPipeline;
+import sourceconnector.domain.pipeline.Pipeline;
+import sourceconnector.domain.processor.impl.EmptyFilterProcessor;
+import sourceconnector.domain.processor.impl.TrimMapperProcessor;
 
 import java.io.File;
 import java.nio.file.Path;

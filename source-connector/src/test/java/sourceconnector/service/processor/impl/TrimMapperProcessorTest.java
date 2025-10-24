@@ -6,6 +6,7 @@ import sourceconnector.domain.factory.JSONLogFactory;
 import sourceconnector.domain.log.JSONLog;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.LogMetadata;
+import sourceconnector.domain.processor.impl.TrimMapperProcessor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

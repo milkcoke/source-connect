@@ -1,7 +1,7 @@
-package sourceconnector.service.processor.impl;
+package sourceconnector.domain.processor.impl;
 
 import sourceconnector.domain.log.Log;
-import sourceconnector.service.processor.BaseProcessor;
+import sourceconnector.domain.processor.BaseProcessor;
 
 /**
  * Bypass the input with no operation

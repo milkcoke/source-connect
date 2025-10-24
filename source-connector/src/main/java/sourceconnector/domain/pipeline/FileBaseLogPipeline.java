@@ -1,4 +1,4 @@
-package sourceconnector.service.pipeline;
+package sourceconnector.domain.pipeline;
 
 import lombok.AccessLevel;
 import lombok.NonNull;
@@ -9,7 +9,7 @@ import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.FileLogMetadata;
 import sourceconnector.exception.FileLogReadException;
 import sourceconnector.repository.file.FileRepository;
-import sourceconnector.service.processor.BaseProcessor;
+import sourceconnector.domain.processor.BaseProcessor;
 import sourceconnector.service.reader.LineReader;
 import sourceconnector.service.reader.StringLineReader;
 

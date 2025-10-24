@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import sourceconnector.domain.log.JSONLog;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.LogMetadata;
+import sourceconnector.domain.processor.impl.EmptyFilterProcessor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -1,9 +1,9 @@
-package sourceconnector.service.processor.impl;
+package sourceconnector.domain.processor.impl;
 
 import lombok.RequiredArgsConstructor;
 import sourceconnector.domain.factory.LogFactory;
 import sourceconnector.domain.log.Log;
-import sourceconnector.service.processor.AbstractMapperProcessor;
+import sourceconnector.domain.processor.AbstractMapperProcessor;
 
 /**
  * Remove the whitespace in the Log

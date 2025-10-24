@@ -9,10 +9,10 @@ import sourceconnector.domain.log.LogMetadata;
 import sourceconnector.domain.offset.LocalFileOffsetRecord;
 import sourceconnector.repository.file.FileRepository;
 import sourceconnector.service.batcher.LogBatcher;
-import sourceconnector.service.pipeline.FileBaseLogPipeline;
-import sourceconnector.service.pipeline.Pipeline;
-import sourceconnector.service.processor.impl.EmptyFilterProcessor;
-import sourceconnector.service.processor.impl.TrimMapperProcessor;
+import sourceconnector.domain.pipeline.FileBaseLogPipeline;
+import sourceconnector.domain.pipeline.Pipeline;
+import sourceconnector.domain.processor.impl.EmptyFilterProcessor;
+import sourceconnector.domain.processor.impl.TrimMapperProcessor;
 import sourceconnector.service.producer.BatchProducer;
 
 import java.util.ArrayList;
