@@ -10,13 +10,13 @@ import java.io.InputStream;
 import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class StringLineReaderTest {
 
   @DisplayName("Should return null when EOF")
   @Test
   void readAll() throws IOException {
-
     // given
     File file = Path.of("src/test/resources/sample-data/large.ndjson").toFile();
     InputStream inputStream = new LocalFileRepository().getFile(file.getPath());
@@ -66,5 +66,29 @@ class StringLineReaderTest {
     assertThat(reader.getLineNumber()).isEqualTo(1L);
     reader.read();
     assertThat(reader.getLineNumber()).isEqualTo(2L);
+  }
+
+  @DisplayName("Start from the set line number")
+  @Test
+  void startFromSetLineNumberTest() throws IOException {
+    // given
+    File file = Path.of("src/test/resources/sample-data/line-count.csv").toFile();
+    InputStream inputStream = new LocalFileRepository().getFile(file.getPath());
+    // when
+    LineReader<String> reader = StringLineReader.withInitialLineNumber(inputStream, 5);
+    // then
+    assertThat(Integer.parseInt(reader.read())).isEqualTo(5);
+  }
+
+  @DisplayName("Should throw IllegalArgumentException when calling setLineNumber after read() called")
+  @Test
+  void failSetLineNumberTest() throws IOException {
+    // given
+    File file = Path.of("src/test/resources/sample-data/line-count.csv").toFile();
+    InputStream inputStream = new LocalFileRepository().getFile(file.getPath());
+    // when then
+    assertThatThrownBy(()->StringLineReader.withInitialLineNumber(inputStream, -100))
+      .isInstanceOf(IllegalArgumentException.class)
+      .hasMessage("initial line number must be greater than or equal to 0");
   }
 }
