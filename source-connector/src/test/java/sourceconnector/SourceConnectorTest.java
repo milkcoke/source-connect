@@ -10,12 +10,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import sourceconnector.domain.log.LogMetadata;
 import sourceconnector.domain.offset.LocalFileOffsetRecord;
-import sourceconnector.domain.factory.JSONLogFactory;
+import sourceconnector.domain.log.factory.JSONLogFactory;
 import sourceconnector.domain.log.Log;
+import sourceconnector.domain.pipeline.factory.FileBaseLogPipelineBuilder;
+import sourceconnector.domain.pipeline.factory.PipelineBuilder;
 import sourceconnector.repository.file.LocalFileRepository;
 import sourceconnector.service.batcher.Batchable;
 import sourceconnector.service.batcher.LogBatcher;
-import sourceconnector.domain.pipeline.FileBaseLogPipeline;
 import sourceconnector.domain.pipeline.Pipeline;
 import sourceconnector.domain.processor.impl.EmptyFilterProcessor;
 import sourceconnector.domain.processor.impl.TrimMapperProcessor;
@@ -54,12 +55,13 @@ class SourceConnectorTest {
   void mainTest() {
 
     File file = Path.of("src/test/resources/sample-data/large-ndjson.ndjson").toFile();
+    PipelineBuilder<Log> pipelineBuilder = new FileBaseLogPipelineBuilder();
 
-    Pipeline<Log> pipeline = FileBaseLogPipeline.create(
+    Pipeline<Log> pipeline = pipelineBuilder.create(
       new LocalFileRepository(),
       file.getPath(),
       new JSONLogFactory(),
-      new TrimMapperProcessor(new JSONLogFactory()), new EmptyFilterProcessor()
+      List.of(new TrimMapperProcessor(new JSONLogFactory()), new EmptyFilterProcessor())
     );
 
     Batchable<Log> batcher = new LogBatcher(pipeline, 10_000);
@@ -98,6 +100,7 @@ class SourceConnectorTest {
     // given
     BatchProducer<String> producer = new BatchProduceService(props, "log", "local-offset");
 
+    PipelineBuilder<Log> pipelineBuilder = new FileBaseLogPipelineBuilder();
     // when
     try (var stream = Files.walk(Paths.get("src/test/resources/sample-data"))) {
       List<File> files = stream
@@ -108,11 +111,11 @@ class SourceConnectorTest {
 
       // then
       for (File file : files) {
-        Pipeline<Log> pipeline = FileBaseLogPipeline.create(
+        Pipeline<Log> pipeline = pipelineBuilder.create(
           new LocalFileRepository(),
           file.getPath(),
           new JSONLogFactory(),
-          new TrimMapperProcessor(new JSONLogFactory()), new EmptyFilterProcessor()
+          List.of(new TrimMapperProcessor(new JSONLogFactory()), new EmptyFilterProcessor())
         );
 
         Batchable<Log> batcher = new LogBatcher(pipeline, 10_000);
@@ -150,6 +153,7 @@ class SourceConnectorTest {
   void NothingToDoAfterProcessingAllFiles() throws IOException {
     // given
     BatchProducer<String> producer = new BatchProduceService(props, "log", "local-offset");
+    PipelineBuilder<Log> pipelineBuilder = new FileBaseLogPipelineBuilder();
     // when
     try (var stream = Files.walk(Paths.get("src/test/resources/sample-data"))) {
       List<File> files = stream
@@ -160,11 +164,11 @@ class SourceConnectorTest {
 
       // then
       for (File file : files) {
-        Pipeline<Log> pipeline = FileBaseLogPipeline.create(
+        Pipeline<Log> pipeline = pipelineBuilder.create(
           new LocalFileRepository(),
           file.getPath(),
           new JSONLogFactory(),
-          new TrimMapperProcessor(new JSONLogFactory()), new EmptyFilterProcessor()
+          List.of(new TrimMapperProcessor(new JSONLogFactory()), new EmptyFilterProcessor())
         );
 
         Batchable<Log> batcher = new LogBatcher(pipeline, 10_000);

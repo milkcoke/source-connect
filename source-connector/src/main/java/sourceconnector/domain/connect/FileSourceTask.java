@@ -3,13 +3,14 @@ package sourceconnector.domain.connect;
 import lombok.AccessLevel;
 import lombok.Getter;
 import offsetmanager.domain.OffsetStatus;
-import sourceconnector.domain.factory.JSONLogFactory;
+import sourceconnector.domain.log.factory.JSONLogFactory;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.LogMetadata;
 import sourceconnector.domain.offset.LocalFileOffsetRecord;
+import sourceconnector.domain.pipeline.factory.FileBaseLogPipelineBuilder;
+import sourceconnector.domain.pipeline.factory.PipelineBuilder;
 import sourceconnector.repository.file.FileRepository;
 import sourceconnector.service.batcher.LogBatcher;
-import sourceconnector.domain.pipeline.FileBaseLogPipeline;
 import sourceconnector.domain.pipeline.Pipeline;
 import sourceconnector.domain.processor.impl.EmptyFilterProcessor;
 import sourceconnector.domain.processor.impl.TrimMapperProcessor;
@@ -40,14 +41,17 @@ public class FileSourceTask implements Task<FileProcessingResult> {
 
   @Override
   public FileProcessingResult call() throws Exception {
+    PipelineBuilder<Log> pipelineBuilder = new FileBaseLogPipelineBuilder();
     try {
       for (var filePath: this.filePaths) {
-        Pipeline<Log> pipeline = FileBaseLogPipeline.create(
+        Pipeline<Log> pipeline = pipelineBuilder.create(
           this.fileRepository,
           filePath,
           new JSONLogFactory(),
-          new EmptyFilterProcessor(),
-          new TrimMapperProcessor(new JSONLogFactory())
+          List.of(
+            new EmptyFilterProcessor(),
+            new TrimMapperProcessor(new JSONLogFactory())
+          )
         );
 
         LogBatcher batcher = new LogBatcher(pipeline, 10_000);
