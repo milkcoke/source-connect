@@ -1,4 +1,4 @@
-package sourceconnector.service.processor.impl;
+package sourceconnector.domain.processor.impl;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -1,7 +1,7 @@
 package sourceconnector.domain.processor.impl;
 
 import lombok.RequiredArgsConstructor;
-import sourceconnector.domain.factory.LogFactory;
+import sourceconnector.domain.log.factory.LogFactory;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.processor.AbstractMapperProcessor;
 
