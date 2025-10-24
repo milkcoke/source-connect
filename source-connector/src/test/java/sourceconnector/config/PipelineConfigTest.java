@@ -6,10 +6,9 @@ import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
 import sourceconnector.config.util.YamlTestUtils;
 import sourceconnector.domain.log.Log;
-import sourceconnector.service.processor.BaseProcessor;
-import sourceconnector.service.processor.impl.ByPassProcessor;
-import sourceconnector.service.processor.impl.EmptyFilterProcessor;
-import sourceconnector.service.processor.impl.TrimMapperProcessor;
+import sourceconnector.domain.processor.BaseProcessor;
+import sourceconnector.domain.processor.impl.EmptyFilterProcessor;
+import sourceconnector.domain.processor.impl.TrimMapperProcessor;
 
 import java.io.IOException;
 import java.util.List;
@@ -20,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class PipelineConfigTest {
 
-  @DisplayName("Should get ByPassProcessor when pipeline is not provided")
+  @DisplayName("Should get empty list when no processor")
   @Test
   void ByPassProcessorTest() throws IOException {
     // given
@@ -34,8 +33,7 @@ class PipelineConfigTest {
     // when
     List<BaseProcessor<Log>> processorList = pipelineConfig.toProcessors();
     // then
-    assertThat(processorList)
-      .hasExactlyElementsOfTypes(ByPassProcessor.class);
+    assertThat(processorList).isEmpty();
   }
 
   @DisplayName("Should get two processors when pipeline consists of two processors")
