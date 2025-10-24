@@ -3,7 +3,6 @@ package sourceconnector.service.reader;
 import java.io.*;
 
 public class StringLineReader implements LineReader<String> {
-  // FIXME: LineNumberReader only support Integer range about line number
   private final LineNumberReader reader;
 
   public StringLineReader(InputStream inputStream) {
@@ -16,13 +15,13 @@ public class StringLineReader implements LineReader<String> {
   }
 
   @Override
-  public long getLineNumber() {
+  public int getLineNumber() {
     return this.reader.getLineNumber();
   }
 
   @Override
-  public void setLineNumber(long lineNumber) {
-    this.reader.setLineNumber((int) lineNumber);
+  public void setLineNumber(int lineNumber) {
+    this.reader.setLineNumber(lineNumber);
   }
 
   @Override

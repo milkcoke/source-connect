@@ -43,10 +43,28 @@ class StringLineReaderTest {
     LineReader<String> reader = new StringLineReader(inputStream);
     // when
     String result = null;
+    int count = 0;
     while ((result = reader.read()) != null) {
       System.out.println(result);
+      count++;
     }
     // then
     assertThat(reader.getLineNumber()).isEqualTo(17L);
+    assertThat(count).isEqualTo(17);
+  }
+
+  @DisplayName("Start at the line number from 0 incremented whenever read()")
+  @Test
+  void startLineNumberTest() throws IOException {
+    // given
+    File file = Path.of("src/test/resources/sample-data/empty-included.ndjson").toFile();
+    InputStream inputStream = new LocalFileRepository().getFile(file.getPath());
+    LineReader<String> reader = new StringLineReader(inputStream);
+    // when then
+    assertThat(reader.getLineNumber()).isEqualTo(0L);
+    reader.read();
+    assertThat(reader.getLineNumber()).isEqualTo(1L);
+    reader.read();
+    assertThat(reader.getLineNumber()).isEqualTo(2L);
   }
 }
