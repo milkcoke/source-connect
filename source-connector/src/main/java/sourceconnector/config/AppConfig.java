@@ -12,8 +12,8 @@ public record AppConfig(
   URL offsetManagerBaseUrl
 ) {
   public AppConfig {
-    if (workerCount < 1) throw new IllegalArgumentException("workerCount >= 1 required");
-    if (taskCount < workerCount) throw new IllegalArgumentException("taskCount >= workerCount required");
+    if (workerCount < 1) throw new IllegalArgumentException("workerCount must be >= 1");
+    if (taskCount < workerCount) throw new IllegalArgumentException("taskCount must be >= workerCount");
     Objects.requireNonNull(offsetManagerBaseUrl, "offsetManagerBaseUrl is required");
   }
 }
