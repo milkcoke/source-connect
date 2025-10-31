@@ -26,7 +26,7 @@ class FiltersConfigTest {
   void noFileValidatorTest() throws IOException {
     // given
     Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
-      app:
+      source:
         storage:
           type: local
           paths: ['test']
@@ -34,7 +34,7 @@ class FiltersConfigTest {
             filters:
       """);
     Binder binder = new Binder(new MapConfigurationPropertySource(map));
-    FiltersConfig filtersConfig = binder.bind("app.storage.configs", FiltersConfig.class).get();
+    FiltersConfig filtersConfig = binder.bind("source.storage.configs", FiltersConfig.class).get();
 
     // when
     FileValidator fileValidator = filtersConfig.toValidator();
@@ -47,7 +47,7 @@ class FiltersConfigTest {
   void compositeFileValidatorCreationTest() throws IOException {
     // given
     Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
-      app:
+      source:
         storage:
           type: local
           paths: ['test']
@@ -62,7 +62,7 @@ class FiltersConfigTest {
                   - ".*tmp.*"
       """);
     Binder binder = new Binder(new MapConfigurationPropertySource(map));
-    FiltersConfig filtersConfig = binder.bind("app.storage.configs", FiltersConfig.class).get();
+    FiltersConfig filtersConfig = binder.bind("source.storage.configs", FiltersConfig.class).get();
 
     // when
     FileValidator fileValidator = filtersConfig.toValidator();

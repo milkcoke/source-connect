@@ -18,7 +18,7 @@ public class StorageRepositoryConfiguration {
 
   // --- S3 beans ---
   @Bean
-  @ConditionalOnProperty(prefix = "app.storage", name = "type", havingValue = "s3")
+  @ConditionalOnProperty(prefix = "source.storage", name = "type", havingValue = "s3")
   public FileLister s3FileLister(S3Config s3Config, FileValidator fileValidator) {
     return new S3FileLister(
       Region.of(s3Config.region()),
@@ -28,20 +28,20 @@ public class StorageRepositoryConfiguration {
   }
 
   @Bean
-  @ConditionalOnProperty(prefix = "app.storage", name = "type", havingValue = "s3")
+  @ConditionalOnProperty(prefix = "source.storage", name = "type", havingValue = "s3")
   public FileRepository s3FileRepository(S3Config s3Config) {
     return new S3FileRepository(Region.of(s3Config.region()), s3Config.bucket());
   }
 
   // --- Local beans ---
   @Bean
-  @ConditionalOnProperty(prefix = "app.storage", name = "type", havingValue = "local")
+  @ConditionalOnProperty(prefix = "source.storage", name = "type", havingValue = "local")
   public FileLister localFileLister(FileValidator fileValidator) {
     return new LocalFileLister(fileValidator);
   }
 
   @Bean
-  @ConditionalOnProperty(prefix = "app.storage", name = "type", havingValue = "local")
+  @ConditionalOnProperty(prefix = "source.storage", name = "type", havingValue = "local")
   public FileRepository localFileRepository() {
     return new LocalFileRepository();
   }

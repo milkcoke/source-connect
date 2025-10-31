@@ -1,15 +1,44 @@
-app:
+source:
   storage:
-    type: S3
+    type: local
     paths:
-      - 'a'
-      - 'b'
+      - C://Users/milkcoke/Downloads/logs
+      - C://Users/milkcoke/Downloads/logs2
+
     configs:
       filters:
+        - type: exclude
+          expressions:
+            - '.*empty.*'
         - type: extension
           expressions:
-          - .csv
-          - .ndjson
+            - .ndjson
+            - .csv
+        - type: include
+          expressions:
+            - '.*milkcoke.*'
+
+    s3: # AWS S3
+      bucket: my-bucket
+      region: ap-northeast-2
+
+    blob: # Not yet supported
+      container:
+
+processing:
+  pipelines:
+    - type: trim
+    - type: skipBlank
+
+target:
+  kafka:
+    offsetTopic: offset-topic
+    sinkTopic: target-topic
+
+app:
+  workerCount: 3
+  taskCount: 8
+  offsetManagerBaseUrl: localhost://8080
 
 spring:
   kafka:

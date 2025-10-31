@@ -21,7 +21,7 @@ class StorageConfigTest {
   void storageConfigMappingTest() throws IOException {
     // given
     Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
-    app:
+    source:
       storage:
         type: s3
         paths:
@@ -31,7 +31,7 @@ class StorageConfigTest {
 
     Binder binder = new Binder(new MapConfigurationPropertySource(map));
     // when
-    StorageConfig config = binder.bind("app.storage", StorageConfig.class).get();
+    StorageConfig config = binder.bind("source.storage", StorageConfig.class).get();
 
     // then
     assertThat(config.type()).isEqualTo(StorageType.S3);
@@ -54,7 +54,7 @@ class StorageConfigTest {
   void storageTypeConfigMissingTest() throws IOException {
     // given
     Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
-    app:
+    source:
       storage:
         paths:
           - s3://my-bucket/foo
@@ -63,7 +63,7 @@ class StorageConfigTest {
 
     Binder binder = new Binder(new MapConfigurationPropertySource(map));
     // when then
-    assertThatThrownBy(()-> binder.bind("app.storage", StorageConfig.class).get())
+    assertThatThrownBy(()-> binder.bind("source.storage", StorageConfig.class).get())
       .hasRootCauseInstanceOf(NullPointerException.class)
       .hasStackTraceContaining("storage type is required");
   }

@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.util.List;
 import java.util.Objects;
 
-@ConfigurationProperties(prefix = "app.storage")
+@ConfigurationProperties(prefix = "source.storage")
 public record StorageConfig(
   StorageType type,
   List<String> paths

@@ -10,17 +10,17 @@ import sourceconnector.domain.processor.impl.TrimMapperProcessor;
 import java.util.Collections;
 import java.util.List;
 
-@ConfigurationProperties("transform")
+@ConfigurationProperties("processing")
 public record PipelineConfig(
-  List<ProcessorConfig> pipeline
+  List<ProcessorConfig> pipelines
 ) {
 
   List<BaseProcessor<Log>> toProcessors() {
-    if (pipeline == null || pipeline.isEmpty()) {
+    if (pipelines == null || pipelines.isEmpty()) {
       return Collections.emptyList();
     }
 
-    return pipeline.stream()
+    return pipelines.stream()
       .map(ProcessorConfig::toProcessor)
       .toList();
   }

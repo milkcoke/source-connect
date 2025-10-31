@@ -11,7 +11,7 @@ import sourceconnector.repository.file.validator.NoConditionFileValidator;
 
 import java.util.List;
 
-@ConfigurationProperties("app.storage.configs")
+@ConfigurationProperties("source.storage.configs")
 public record FiltersConfig(
   List<FilterConfig> filters
 ) {

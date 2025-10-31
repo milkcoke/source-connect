@@ -18,7 +18,7 @@ class StorageRepositoryConfigurationTest {
   void localStorageBeanTest() {
     AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 
-    TestPropertySourceUtils.addInlinedPropertiesToEnvironment(context, "app.storage.type=local");
+    TestPropertySourceUtils.addInlinedPropertiesToEnvironment(context, "source.storage.type=local");
 
     context.register(FiltersConfig.class);
     context.register(StorageRepositoryConfiguration.class);
@@ -43,7 +43,7 @@ class StorageRepositoryConfigurationTest {
     // given
     AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 
-    TestPropertySourceUtils.addInlinedPropertiesToEnvironment(context, "app.storage.type=s3");
+    TestPropertySourceUtils.addInlinedPropertiesToEnvironment(context, "source.storage.type=s3");
 
     // Provide S3Config manually
     context.registerBean(S3Config.class, () -> new S3Config("my-bucket", "ap-northeast-2"));

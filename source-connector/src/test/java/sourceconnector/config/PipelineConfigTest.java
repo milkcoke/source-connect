@@ -24,11 +24,11 @@ class PipelineConfigTest {
   void ByPassProcessorTest() throws IOException {
     // given
     Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
-      transform:
-        pipeline:
+      processing:
+        pipelines:
       """);
     Binder binder = new Binder(new MapConfigurationPropertySource(map));
-    PipelineConfig pipelineConfig = binder.bind("transform", PipelineConfig.class).get();
+    PipelineConfig pipelineConfig = binder.bind("processing", PipelineConfig.class).get();
 
     // when
     List<BaseProcessor<Log>> processorList = pipelineConfig.toProcessors();
@@ -41,13 +41,13 @@ class PipelineConfigTest {
   void twoProcessorsTest() throws IOException {
     // given
     Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
-      transform:
-        pipeline:
+      processing:
+        pipelines:
           - type: Trim
           - type: SkipBlank
       """);
     Binder binder = new Binder(new MapConfigurationPropertySource(map));
-    PipelineConfig pipelineConfig = binder.bind("transform", PipelineConfig.class).get();
+    PipelineConfig pipelineConfig = binder.bind("processing", PipelineConfig.class).get();
 
     // when
     List<BaseProcessor<Log>> processorList = pipelineConfig.toProcessors();
@@ -61,13 +61,13 @@ class PipelineConfigTest {
   void ignoreTypeCaseTest() throws IOException {
     // given
     Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
-      transform:
-        pipeline:
+      processing:
+        pipelines:
           - type: tRIM
           - type: skipBlank
       """);
     Binder binder = new Binder(new MapConfigurationPropertySource(map));
-    PipelineConfig pipelineConfig = binder.bind("transform", PipelineConfig.class).get();
+    PipelineConfig pipelineConfig = binder.bind("processing", PipelineConfig.class).get();
 
     // when
     List<BaseProcessor<Log>> processorList = pipelineConfig.toProcessors();
@@ -81,12 +81,12 @@ class PipelineConfigTest {
   void caseSensitiveTypeTest() throws IOException {
     // given
     Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
-      transform:
-        pipeline:
+      processing:
+        pipelines:
           - type: NotExist
       """);
     Binder binder = new Binder(new MapConfigurationPropertySource(map));
-    PipelineConfig pipelineConfig = binder.bind("transform", PipelineConfig.class).get();
+    PipelineConfig pipelineConfig = binder.bind("processing", PipelineConfig.class).get();
 
     // when then
     assertThatThrownBy(pipelineConfig::toProcessors)
