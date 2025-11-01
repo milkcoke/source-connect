@@ -4,13 +4,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
-import org.springframework.boot.convert.ApplicationConversionService;
+import org.springframework.boot.origin.OriginTrackedValue;
 import sourceconnector.config.util.YamlTestUtils;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -50,18 +50,23 @@ class AppConfigTest {
       app:
         workerCount: 1
         taskCount: 2
-        offsetManagerBaseUrl: http://localhost:8080
+        offsetManagerBaseUrl: 
       """);
-    Binder binder = new Binder(
-      List.of(new MapConfigurationPropertySource(map)),
-      null,
-      ApplicationConversionService.getSharedInstance()
-    );
+    map = unwrapOriginTrackedValues(map);
+    Binder binder = new Binder(new MapConfigurationPropertySource(map));
 
-    // when
+    // when then
     assertThatThrownBy(()-> binder.bind("app", AppConfig.class).get())
       .hasRootCauseInstanceOf(NullPointerException.class)
       .hasStackTraceContaining("offsetManagerBaseUrl is required");
+  }
 
+  // workerCount and taskCount has OriginTrackedValue "1", "2" (String) so Unwrap if the instance type is different
+  public static Map<String, Object> unwrapOriginTrackedValues(Map<String, Object> source) {
+    return source.entrySet().stream()
+      .collect(Collectors.toMap(
+        Map.Entry::getKey,
+        e -> (e.getValue() instanceof OriginTrackedValue v) ? v.getValue() : e.getValue()
+      ));
   }
 }
