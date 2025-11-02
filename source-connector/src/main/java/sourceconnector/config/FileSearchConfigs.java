@@ -1,5 +1,6 @@
 package sourceconnector.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import sourceconnector.repository.file.filter.FileExcludeFilter;
 import sourceconnector.repository.file.filter.FileExtensionFilter;
@@ -11,10 +12,32 @@ import sourceconnector.repository.file.validator.NoConditionFileValidator;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @ConfigurationProperties("source.storage.configs")
-public record FiltersConfig(
-  List<FilterConfig> filters
-) {
+public class FileSearchConfigs {
+
+  private final boolean recursive;
+  private final List<FilterConfig> filters;
+
+  public boolean isRecursive() {
+    return this.recursive;
+  }
+
+  public record FilterConfig(
+    String type,
+    List<String> expressions
+  ){
+    FileFilter toFileFilter() {
+      return switch (type.toLowerCase().trim()) {
+        case "exclude"-> new FileExcludeFilter(expressions);
+        case "include"-> new FileIncludeFilter(expressions);
+        case "extension"-> new FileExtensionFilter(expressions);
+        default -> throw new IllegalStateException("Invalid filter type: " + type);
+      };
+
+    }
+  }
+
   /**
    * Create {@link sourceconnector.repository.file.validator.FileValidator} according `filters` config in order
    */
@@ -27,22 +50,7 @@ public record FiltersConfig(
       .map(FilterConfig::toFileFilter)
       .toList();
 
-    return  new CompositeFileValidator(fileFilters);
+    return new CompositeFileValidator(fileFilters);
   }
-
-  record FilterConfig(
-    String type,
-    List<String> expressions
-  ){
-    public FileFilter toFileFilter() {
-      return switch (type.toLowerCase().trim()) {
-        case "exclude"-> new FileExcludeFilter(expressions);
-        case "include"-> new FileIncludeFilter(expressions);
-        case "extension"-> new FileExtensionFilter(expressions);
-        default -> throw new IllegalStateException("Invalid filter type: " + type);
-      };
-
-    }
-  }
-
 }
+

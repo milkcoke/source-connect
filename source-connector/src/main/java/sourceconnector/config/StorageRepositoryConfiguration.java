@@ -11,8 +11,8 @@ import sourceconnector.repository.file.validator.FileValidator;
 public class StorageRepositoryConfiguration {
 
   @Bean
-  public FileValidator fileValidator(FiltersConfig filtersConfig) {
-    return filtersConfig.toValidator();
+  public FileValidator fileValidator(FileSearchConfigs fileSearchConfigs) {
+    return fileSearchConfigs.toValidator();
   }
 
   // --- S3 beans ---

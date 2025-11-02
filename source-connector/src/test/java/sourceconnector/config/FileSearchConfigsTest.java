@@ -2,24 +2,60 @@ package sourceconnector.config;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.context.properties.bind.BindException;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
-import sourceconnector.config.FiltersConfig.FilterConfig;
 import sourceconnector.config.util.YamlTestUtils;
-import sourceconnector.repository.file.filter.FileExcludeFilter;
-import sourceconnector.repository.file.filter.FileExtensionFilter;
-import sourceconnector.repository.file.filter.FileFilter;
 import sourceconnector.repository.file.validator.CompositeFileValidator;
 import sourceconnector.repository.file.validator.FileValidator;
 import sourceconnector.repository.file.validator.NoConditionFileValidator;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class FiltersConfigTest {
+class FileSearchConfigsTest {
+
+  @DisplayName("Should throw BindException when missing recursive option")
+  @Test
+  void recursiveOptionMissingTest() throws IOException {
+    // given
+    Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
+      source:
+        storage:
+          type: local
+          paths: ['test']
+          configs:
+            recursive:
+      """);
+    Binder binder = new Binder(new MapConfigurationPropertySource(map));
+    // when then
+    assertThatThrownBy(()-> binder.bind("source.storage.configs", FileSearchConfigs.class).get())
+      .isInstanceOf(BindException.class);
+  }
+
+  @DisplayName("Should get recursive option correctly")
+  @Test
+  void recursiveParseTest() throws IOException {
+    // given
+    Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
+      source:
+        storage:
+          type: local
+          paths: ['test']
+          configs:
+            recursive: true
+            filters:
+      """);
+    Binder binder = new Binder(new MapConfigurationPropertySource(map));
+
+    // when
+    FileSearchConfigs configs = binder.bind("source.storage.configs", FileSearchConfigs.class).get();
+    // then
+    assertThat(configs.isRecursive()).isTrue();
+  }
 
   @DisplayName("Should get NoConditionFileValidator when filter are not provided")
   @Test
@@ -31,13 +67,14 @@ class FiltersConfigTest {
           type: local
           paths: ['test']
           configs:
+            recursive: true
             filters:
       """);
     Binder binder = new Binder(new MapConfigurationPropertySource(map));
-    FiltersConfig filtersConfig = binder.bind("source.storage.configs", FiltersConfig.class).get();
+    FileSearchConfigs configs = binder.bind("source.storage.configs", FileSearchConfigs.class).get();
 
     // when
-    FileValidator fileValidator = filtersConfig.toValidator();
+    FileValidator fileValidator = configs.toValidator();
     // then
     assertThat(fileValidator).isInstanceOf(NoConditionFileValidator.class);
   }
@@ -52,6 +89,7 @@ class FiltersConfigTest {
           type: local
           paths: ['test']
           configs:
+            recursive: false
             filters:
               - type: extension
                 expressions:
@@ -62,39 +100,38 @@ class FiltersConfigTest {
                   - ".*tmp.*"
       """);
     Binder binder = new Binder(new MapConfigurationPropertySource(map));
-    FiltersConfig filtersConfig = binder.bind("source.storage.configs", FiltersConfig.class).get();
+    FileSearchConfigs configs = binder.bind("source.storage.configs", FileSearchConfigs.class).get();
 
     // when
-    FileValidator fileValidator = filtersConfig.toValidator();
+    FileValidator fileValidator = configs.toValidator();
     // then
     assertThat(fileValidator).isInstanceOf(CompositeFileValidator.class);
   }
 
-  @DisplayName("Should create CompositeFileValidator according to type, expressions")
+
+  @DisplayName("Get recursive and filters both")
   @Test
-  void filterSequenceTest() throws IOException {
+  void FileSearchConfigMappingTest() throws IOException {
     // given
     Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
+      source:
+        storage:
+          type: local
+          paths: ['test']
           configs:
+            recursive: true
             filters:
-              - type: extension
-                expressions:
-                  - '.csv'
-                  - '.ndjson'
               - type: exclude
                 expressions:
                   - ".*tmp.*"
       """);
     Binder binder = new Binder(new MapConfigurationPropertySource(map));
-    FiltersConfig filtersConfig = binder.bind("configs", FiltersConfig.class).get();
-    List<FileFilter> fileFilterList = filtersConfig.filters().stream()
-      .map(FilterConfig::toFileFilter)
-      .toList();
 
+    // when
+    FileSearchConfigs configs = binder.bind("source.storage.configs", FileSearchConfigs.class).get();
     // then
-    assertThat(fileFilterList)
-      .hasSize(2)
-      .hasExactlyElementsOfTypes(FileExtensionFilter.class, FileExcludeFilter.class);
+    assertThat(configs.isRecursive()).isTrue();
+    assertThat(configs.toValidator()).isInstanceOf(CompositeFileValidator.class);
 
   }
 }

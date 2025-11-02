@@ -2,6 +2,7 @@ package sourceconnector.config;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.test.context.support.TestPropertySourceUtils;
 import sourceconnector.repository.file.*;
@@ -13,14 +14,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class StorageRepositoryConfigurationTest {
 
+  @EnableConfigurationProperties(FileSearchConfigs.class)
+  static class TestConfig {}
+
   @DisplayName("LocalBean registration test")
   @Test
   void localStorageBeanTest() {
     AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 
-    TestPropertySourceUtils.addInlinedPropertiesToEnvironment(context, "source.storage.type=local");
+    TestPropertySourceUtils.addInlinedPropertiesToEnvironment(context,
+      "source.storage.type=local",
+      "source.storage.configs.recursive=true"
+    );
 
-    context.register(FiltersConfig.class);
+    context.register(TestConfig.class);
     context.register(StorageRepositoryConfiguration.class);
     context.refresh();
 
@@ -43,11 +50,14 @@ class StorageRepositoryConfigurationTest {
     // given
     AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 
-    TestPropertySourceUtils.addInlinedPropertiesToEnvironment(context, "source.storage.type=s3");
+    TestPropertySourceUtils.addInlinedPropertiesToEnvironment(context,
+      "source.storage.type=s3",
+      "source.storage.configs.recursive=true"
+    );
 
     // Provide S3Config manually
     context.registerBean(S3Config.class, () -> new S3Config("my-bucket", "ap-northeast-2"));
-    context.register(FiltersConfig.class);
+    context.register(TestConfig.class);
     context.register(StorageRepositoryConfiguration.class);
 
     context.refresh();
