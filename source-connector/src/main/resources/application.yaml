@@ -6,6 +6,7 @@ source:
       - C://Users/milkcoke/Downloads/logs2
 
     configs:
+      recursive: true
       filters:
         - type: exclude
           expressions:
@@ -38,7 +39,7 @@ target:
 app:
   workerCount: 3
   taskCount: 8
-  offsetManagerBaseUrl: localhost://8080
+  offsetManagerBaseUrl: http://localhost:8080
 
 spring:
   kafka:

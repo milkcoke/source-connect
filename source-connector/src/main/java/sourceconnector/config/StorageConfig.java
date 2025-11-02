@@ -16,5 +16,8 @@ public record StorageConfig(
   }
   public StorageConfig {
     Objects.requireNonNull(type, "storage type is required");
+    if (paths == null || paths.isEmpty()) {
+      throw new IllegalArgumentException("paths must not be null or empty");
+    }
   }
 }
