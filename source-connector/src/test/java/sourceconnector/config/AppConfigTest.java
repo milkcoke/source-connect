@@ -41,7 +41,6 @@ class AppConfigTest {
       .hasMessage("offsetManagerBaseUrl is required");
   }
 
-  // FIXME: BindException: Failed  to bind properties under 'app.worker-count' to int
   @DisplayName("Yaml configuration test")
   @Test
   void yamlConfigurationTest() throws IOException {
@@ -52,7 +51,6 @@ class AppConfigTest {
         taskCount: 2
         offsetManagerBaseUrl: 
       """);
-    map = unwrapOriginTrackedValues(map);
     Binder binder = new Binder(new MapConfigurationPropertySource(map));
 
     // when then
@@ -61,12 +59,4 @@ class AppConfigTest {
       .hasStackTraceContaining("offsetManagerBaseUrl is required");
   }
 
-  // workerCount and taskCount has OriginTrackedValue "1", "2" (String) so Unwrap if the instance type is different
-  public static Map<String, Object> unwrapOriginTrackedValues(Map<String, Object> source) {
-    return source.entrySet().stream()
-      .collect(Collectors.toMap(
-        Map.Entry::getKey,
-        e -> (e.getValue() instanceof OriginTrackedValue v) ? v.getValue() : e.getValue()
-      ));
-  }
 }
