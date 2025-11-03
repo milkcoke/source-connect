@@ -2,6 +2,9 @@ package sourceconnector.domain.connect;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import sourceconnector.domain.log.Log;
+import sourceconnector.domain.pipeline.factory.PipelineBuilder;
+import sourceconnector.domain.processor.BaseProcessor;
 import sourceconnector.repository.file.FileRepository;
 import sourceconnector.service.producer.BatchProduceService;
 
@@ -10,6 +13,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.*;
+import java.util.function.Supplier;
 
 /**
  * Worker is a container for running tasks.
@@ -38,7 +42,9 @@ public class Worker {
     int totalWorkerCount,
     int totalTaskCount,
     FileRepository fileRepository,
-    Properties producerProperties
+    Properties producerProperties,
+    PipelineBuilder<Log> pipelineBuilder,
+    Supplier<List<BaseProcessor<Log>>> processorSupplier
   ) {
     if (totalWorkerCount < 1) {
       throw new IllegalArgumentException("Total worker count should be greater than zero");
@@ -59,6 +65,7 @@ public class Worker {
       tasks.add(new FileSourceTask(
         taskIndex,
         fileRepository,
+        pipelineBuilder,
         // FIXME: offset, log topic 명 주입받기 or DSL 을 통한 외부 설정 주입
         new BatchProduceService(producerProperties, "log-topic", "offset-topic"))
       );
