@@ -3,31 +3,22 @@ package sourceconnector.domain.connect;
 import lombok.AccessLevel;
 import lombok.Getter;
 import offsetmanager.domain.OffsetStatus;
-import sourceconnector.domain.log.factory.JSONLogFactory;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.LogMetadata;
 import sourceconnector.domain.offset.LocalFileOffsetRecord;
-import sourceconnector.domain.pipeline.factory.FileBaseLogPipelineBuilder;
-import sourceconnector.domain.pipeline.factory.PipelineBuilder;
 import sourceconnector.domain.pipeline.factory.PipelineSupplier;
-import sourceconnector.domain.processor.BaseProcessor;
-import sourceconnector.repository.file.FileRepository;
 import sourceconnector.service.batcher.LogBatcher;
 import sourceconnector.domain.pipeline.Pipeline;
-import sourceconnector.domain.processor.impl.EmptyFilterProcessor;
-import sourceconnector.domain.processor.impl.TrimMapperProcessor;
 import sourceconnector.service.producer.BatchProducer;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Supplier;
 
 public class FileSourceTask implements Task<FileProcessingResult> {
   private final String id;
   @Getter
   private final int index;
-  private final FileRepository fileRepository;
   private final BatchProducer<String> producer;
   private final PipelineSupplier pipelineSupplier;
 
@@ -38,13 +29,11 @@ public class FileSourceTask implements Task<FileProcessingResult> {
 
   public FileSourceTask(
     int index,
-    FileRepository fileRepository,
     PipelineSupplier pipelineSupplier,
     BatchProducer<String> producer
   ) {
     this.id = String.format("Task-%d", index);
     this.index = index;
-    this.fileRepository = fileRepository;
     this.pipelineSupplier = pipelineSupplier;
     this.producer = producer;
   }
@@ -53,7 +42,7 @@ public class FileSourceTask implements Task<FileProcessingResult> {
   public FileProcessingResult call() throws Exception {
     try {
       for (var filePath: this.filePaths) {
-        Pipeline<Log> pipeline = pipelineSupplier.get(fileRepository, filePath, new JSONLogFactory());
+        Pipeline<Log> pipeline = pipelineSupplier.get(filePath);
 
         LogBatcher batcher = new LogBatcher(pipeline, 10_000);
 

@@ -3,17 +3,14 @@ package sourceconnector.domain.connect;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import sourceconnector.domain.log.Log;
+import sourceconnector.domain.log.factory.JSONLogFactory;
+import sourceconnector.domain.pipeline.factory.FileBaseLogPipelineBuilder;
 import sourceconnector.domain.pipeline.factory.PipelineBuilder;
-import sourceconnector.domain.processor.BaseProcessor;
 import sourceconnector.repository.file.FileRepository;
 import sourceconnector.service.producer.BatchProduceService;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.*;
-import java.util.function.Supplier;
 
 /**
  * Worker is a container for running tasks.
@@ -25,7 +22,7 @@ public class Worker {
   private final TaskAssignor taskAssignor;
   private ExecutorService executor;
   private final Collection<Task<FileProcessingResult>> tasks = new ArrayList<>();
-
+  // TODO: required PipelineSupplier or not
   public Worker(int index, TaskAssignor taskAssignor) {
     this.id = String.format("Worker-%d", index);
     this.index = index;
@@ -42,9 +39,7 @@ public class Worker {
     int totalWorkerCount,
     int totalTaskCount,
     FileRepository fileRepository,
-    Properties producerProperties,
-    PipelineBuilder<Log> pipelineBuilder,
-    Supplier<List<BaseProcessor<Log>>> processorSupplier
+    Properties producerProperties
   ) {
     if (totalWorkerCount < 1) {
       throw new IllegalArgumentException("Total worker count should be greater than zero");
@@ -64,8 +59,11 @@ public class Worker {
 
       tasks.add(new FileSourceTask(
         taskIndex,
-        fileRepository,
-        pipelineBuilder,
+        // TODO: `@Bean` registration? or not
+        filePath -> {
+          PipelineBuilder<Log> builder = new FileBaseLogPipelineBuilder();
+          return builder.create(fileRepository, filePath, new JSONLogFactory(), Collections.emptyList());
+        },
         // FIXME: offset, log topic 명 주입받기 or DSL 을 통한 외부 설정 주입
         new BatchProduceService(producerProperties, "log-topic", "offset-topic"))
       );
