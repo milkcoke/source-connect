@@ -9,8 +9,12 @@ import sourceconnector.repository.file.FileRepository;
 
 import java.util.List;
 
+/**
+ * Supplies a {@link Pipeline} instance for processing log files. <br>
+ * This has internal cache for providing simple factory API to create {@link Pipeline} instance. <br>
+ */
 @RequiredArgsConstructor
-public class FilePipelineSupplier implements PipelineSupplier {
+public class FileLogPipelineSupplier implements PipelineSupplier<Log> {
   private final PipelineBuilder<Log> builder;
   private final FileRepository fileRepository;
   private final LogFactory logFactory;

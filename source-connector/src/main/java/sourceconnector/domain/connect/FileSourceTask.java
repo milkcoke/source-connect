@@ -20,7 +20,7 @@ public class FileSourceTask implements Task<FileProcessingResult> {
   @Getter
   private final int index;
   private final BatchProducer<String> producer;
-  private final PipelineSupplier pipelineSupplier;
+  private final PipelineSupplier<Log> pipelineSupplier;
 
   // visible for test
   @Getter(AccessLevel.PACKAGE)
@@ -29,7 +29,7 @@ public class FileSourceTask implements Task<FileProcessingResult> {
 
   public FileSourceTask(
     int index,
-    PipelineSupplier pipelineSupplier,
+    PipelineSupplier<Log> pipelineSupplier,
     BatchProducer<String> producer
   ) {
     this.id = String.format("Task-%d", index);

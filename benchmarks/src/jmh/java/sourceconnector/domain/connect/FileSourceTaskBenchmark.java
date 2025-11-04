@@ -5,9 +5,10 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.openjdk.jmh.annotations.*;
+import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.factory.JSONLogFactory;
 import sourceconnector.domain.pipeline.factory.FileBaseLogPipelineBuilder;
-import sourceconnector.domain.pipeline.factory.FilePipelineSupplier;
+import sourceconnector.domain.pipeline.factory.FileLogPipelineSupplier;
 import sourceconnector.domain.pipeline.factory.PipelineSupplier;
 import sourceconnector.repository.file.FileLister;
 import sourceconnector.repository.file.LocalFileLister;
@@ -31,7 +32,7 @@ public class FileSourceTaskBenchmark {
       new FileExtensionFilter(List.of(".ndjson")))
     )
   );
-  private final PipelineSupplier pipelineSupplier = new FilePipelineSupplier(
+  private final PipelineSupplier<Log> pipelineSupplier = new FileLogPipelineSupplier(
     new FileBaseLogPipelineBuilder(),
     new LocalFileRepository(),
     new JSONLogFactory(),

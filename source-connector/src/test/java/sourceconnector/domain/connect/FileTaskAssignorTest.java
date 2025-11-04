@@ -7,9 +7,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.factory.JSONLogFactory;
 import sourceconnector.domain.pipeline.factory.FileBaseLogPipelineBuilder;
-import sourceconnector.domain.pipeline.factory.FilePipelineSupplier;
+import sourceconnector.domain.pipeline.factory.FileLogPipelineSupplier;
 import sourceconnector.domain.pipeline.factory.PipelineSupplier;
 import sourceconnector.repository.file.LocalFileRepository;
 import sourceconnector.service.producer.BatchProduceService;
@@ -22,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FileTaskAssignorTest {
   private final Properties producerProperties = new Properties();
-  private final PipelineSupplier pipelineSupplier = new FilePipelineSupplier(
+  private final PipelineSupplier<Log> pipelineSupplier = new FileLogPipelineSupplier(
     new FileBaseLogPipelineBuilder(),
     new LocalFileRepository(),
     new JSONLogFactory(),
