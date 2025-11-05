@@ -15,6 +15,11 @@ public class LogBatcher implements Batchable<Log> {
   private final int batchSize;
 
   @Override
+  public boolean hasNextBatch() {
+    return !pipeline.isComplete();
+  }
+
+  @Override
   public MessageBatch<Log> nextBatch() {
     final List<Log> batch = new ArrayList<>(this.batchSize);
 
@@ -27,7 +32,6 @@ public class LogBatcher implements Batchable<Log> {
       batch.size() < batchSize
     );
 
-    // FIXME: 실행된 이후 한 번 더 getResult() 호출될 수 있음.
     if (batch.isEmpty()) return Collections::emptyList;
     return () -> batch;
   }

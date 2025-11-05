@@ -46,11 +46,11 @@ public class FileSourceTask implements Task<FileProcessingResult> {
 
         LogBatcher batcher = new LogBatcher(pipeline, 10_000);
 
-        List<Log> messages;
-
         LogMetadata lastMessageMetadata;
 
-        while ((messages = batcher.nextBatch().get()) != Collections.EMPTY_LIST) {
+        while (batcher.hasNextBatch()) {
+          List<Log> messages = batcher.nextBatch().get();
+          if (messages.isEmpty()) continue;
           lastMessageMetadata = messages.getLast().getMetadata();
           List<String> messageBatch = messages
             .stream()

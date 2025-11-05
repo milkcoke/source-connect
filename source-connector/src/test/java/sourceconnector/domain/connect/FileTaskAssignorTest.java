@@ -27,7 +27,7 @@ class FileTaskAssignorTest {
     new FileBaseLogPipelineBuilder(),
     new LocalFileRepository(),
     new JSONLogFactory(),
-    Collections.emptyList()
+    Collections::emptyList
   );
 
   @BeforeAll

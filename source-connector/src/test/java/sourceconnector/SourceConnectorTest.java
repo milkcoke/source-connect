@@ -68,9 +68,10 @@ class SourceConnectorTest {
     BatchProducer<String> producer = new BatchProduceService(props, "log", "local-offset");
 
     // when
-    List<Log> messages;
     LogMetadata lastMessageMetadata = LogMetadata.EMPTY;
-    while((messages = batcher.nextBatch().get()) != Collections.EMPTY_LIST) {
+    while(batcher.hasNextBatch()) {
+      List<Log> messages = batcher.nextBatch().get();
+      if (messages.isEmpty()) continue;
       lastMessageMetadata = messages.getLast().getMetadata();
       List<String> messageBatch = messages
         .stream()
@@ -120,9 +121,10 @@ class SourceConnectorTest {
 
         Batchable<Log> batcher = new LogBatcher(pipeline, 10_000);
 
-        List<Log> messages;
         LogMetadata lastMessageMetadata = LogMetadata.EMPTY;
-        while((messages = batcher.nextBatch().get()) != Collections.EMPTY_LIST) {
+        while(batcher.hasNextBatch()) {
+          List<Log> messages = batcher.nextBatch().get();
+          if (messages.isEmpty()) continue;
           lastMessageMetadata = messages.getLast().getMetadata();
           List<String> messageBatch = messages
             .stream()
@@ -173,9 +175,10 @@ class SourceConnectorTest {
 
         Batchable<Log> batcher = new LogBatcher(pipeline, 10_000);
 
-        List<Log> messages;
         LogMetadata lastMessageMetadata = LogMetadata.EMPTY;
-        while((messages = batcher.nextBatch().get()) != Collections.EMPTY_LIST) {
+        while(batcher.hasNextBatch()) {
+          List<Log> messages = batcher.nextBatch().get();
+          if (messages.isEmpty()) continue;
           lastMessageMetadata = messages.getLast().getMetadata();
           List<String> messageBatch = messages
             .stream()
