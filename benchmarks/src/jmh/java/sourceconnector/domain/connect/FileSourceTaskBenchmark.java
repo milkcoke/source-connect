@@ -36,7 +36,7 @@ public class FileSourceTaskBenchmark {
     new FileBaseLogPipelineBuilder(),
     new LocalFileRepository(),
     new JSONLogFactory(),
-    Collections.emptyList()
+    Collections::emptyList
   );
   private final List<String> testFilePaths = new ArrayList<>();
 

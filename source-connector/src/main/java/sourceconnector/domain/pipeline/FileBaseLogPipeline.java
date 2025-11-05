@@ -28,6 +28,7 @@ public class FileBaseLogPipeline implements Pipeline<Log>, AutoCloseable {
    */
   @Override
   public Log getResult() {
+    // FIXME: Error occurs here when calling getResult after isComplete returns true
     if (this.isComplete) {
       throw new NoSuchElementException("No more data");
     }

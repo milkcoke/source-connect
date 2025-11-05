@@ -3,10 +3,7 @@ package sourceconnector.domain.connect;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import sourceconnector.domain.log.Log;
-import sourceconnector.domain.log.factory.JSONLogFactory;
-import sourceconnector.domain.pipeline.factory.FileBaseLogPipelineBuilder;
-import sourceconnector.domain.pipeline.factory.PipelineBuilder;
-import sourceconnector.repository.file.FileRepository;
+import sourceconnector.domain.pipeline.factory.PipelineSupplier;
 import sourceconnector.service.producer.BatchProduceService;
 
 import java.util.*;
@@ -22,7 +19,6 @@ public class Worker {
   private final TaskAssignor taskAssignor;
   private ExecutorService executor;
   private final Collection<Task<FileProcessingResult>> tasks = new ArrayList<>();
-  // TODO: required PipelineSupplier or not
   public Worker(int index, TaskAssignor taskAssignor) {
     this.id = String.format("Worker-%d", index);
     this.index = index;
@@ -38,8 +34,10 @@ public class Worker {
   public Collection<Task<FileProcessingResult>> createTasks(
     int totalWorkerCount,
     int totalTaskCount,
-    FileRepository fileRepository,
-    Properties producerProperties
+    PipelineSupplier<Log> pipelineSupplier,
+    Properties producerProperties,
+    String logTopic,
+    String offsetTopic
   ) {
     if (totalWorkerCount < 1) {
       throw new IllegalArgumentException("Total worker count should be greater than zero");
@@ -59,13 +57,8 @@ public class Worker {
 
       tasks.add(new FileSourceTask(
         taskIndex,
-        // TODO: `@Bean` registration? or not
-        filePath -> {
-          PipelineBuilder<Log> builder = new FileBaseLogPipelineBuilder();
-          return builder.create(fileRepository, filePath, new JSONLogFactory(), Collections.emptyList());
-        },
-        // FIXME: offset, log topic 명 주입받기 or DSL 을 통한 외부 설정 주입
-        new BatchProduceService(producerProperties, "log-topic", "offset-topic"))
+        pipelineSupplier,
+        new BatchProduceService(producerProperties, logTopic, offsetTopic))
       );
     }
 

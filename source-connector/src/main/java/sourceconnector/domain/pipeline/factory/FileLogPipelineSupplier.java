@@ -8,6 +8,7 @@ import sourceconnector.domain.processor.BaseProcessor;
 import sourceconnector.repository.file.FileRepository;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Supplies a {@link Pipeline} instance for processing log files. <br>
@@ -18,10 +19,11 @@ public class FileLogPipelineSupplier implements PipelineSupplier<Log> {
   private final PipelineBuilder<Log> builder;
   private final FileRepository fileRepository;
   private final LogFactory logFactory;
-  private final List<BaseProcessor<Log>> processors;
+  private final Supplier<List<BaseProcessor<Log>>> processorsSupplier;
 
   @Override
   public Pipeline<Log> get(String filePath) {
+    List<BaseProcessor<Log>> processors = processorsSupplier.get();
     if (processors.isEmpty()) {
       return builder.createWithNoProcessor(fileRepository, filePath, logFactory);
     }

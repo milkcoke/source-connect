@@ -5,6 +5,11 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.openjdk.jmh.annotations.*;
+import sourceconnector.domain.log.Log;
+import sourceconnector.domain.log.factory.JSONLogFactory;
+import sourceconnector.domain.pipeline.factory.FileBaseLogPipelineBuilder;
+import sourceconnector.domain.pipeline.factory.FileLogPipelineSupplier;
+import sourceconnector.domain.pipeline.factory.PipelineSupplier;
 import sourceconnector.repository.file.FileLister;
 import sourceconnector.repository.file.LocalFileLister;
 import sourceconnector.repository.file.LocalFileRepository;
@@ -22,6 +27,12 @@ import java.util.concurrent.ExecutionException;
 @Warmup(iterations = 1)
 public class WorkerBenchmark {
   private final List<String> testFilePaths = new ArrayList<>();
+  private final PipelineSupplier<Log> pipelineSupplier = new FileLogPipelineSupplier(
+    new FileBaseLogPipelineBuilder(),
+    new LocalFileRepository(),
+    new JSONLogFactory(),
+    Collections::emptyList
+  );
   private Properties producerConfig;
 
   @Setup(Level.Trial)
@@ -51,7 +62,7 @@ public class WorkerBenchmark {
   @Benchmark
   public void singleTaskBenchmark() throws ExecutionException, InterruptedException {
     Worker worker = new Worker(0, new FileTaskAssignor(this.testFilePaths, 1));
-    worker.createTasks(1, 1, new LocalFileRepository(), this.producerConfig);
+    worker.createTasks(1, 1, pipelineSupplier, this.producerConfig, "log-topic", "offset-topic");
     worker.start();
   }
 
@@ -59,7 +70,7 @@ public class WorkerBenchmark {
   @Benchmark
   public void fiveTaskBenchmark() throws ExecutionException, InterruptedException {
     Worker worker = new Worker(0, new FileTaskAssignor(this.testFilePaths, 5));
-    worker.createTasks(1, 5, new LocalFileRepository(), this.producerConfig);
+    worker.createTasks(1, 5, pipelineSupplier, this.producerConfig, "log-topic", "offset-topic");
     worker.start();
   }
 
