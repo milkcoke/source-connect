@@ -1,3 +1,41 @@
+source:
+  storage:
+    type: local
+    paths:
+      - "your absolute path here"
+
+    configs:
+      recursive: true
+      filters:
+        - type: exclude
+          expressions:
+            - '.*empty.*'
+        - type: extension
+          expressions:
+            - .ndjson
+            - .csv
+    s3: # AWS S3
+      bucket: my-bucket
+      region: ap-northeast-2
+
+    blob: # Not yet supported
+      container:
+
+processing:
+  pipelines:
+    - type: trim
+    - type: skipBlank
+
+target:
+  kafka:
+    offsetTopic: offset-topic
+    sinkTopic: sink-topic
+
+app:
+  workerCount: 1
+  taskCount: 1
+  offsetManagerBaseUrl: http://localhost:8080
+
 spring:
   kafka:
     bootstrap-servers:
@@ -15,6 +53,7 @@ spring:
 
     consumer:
       max-poll-records: 50_000 # default: 1000
+      isolation-level: read_committed
       properties:
         poll.ms: 100 # default: 100
         session.timeout.ms: 45_000 # default: 45_000
@@ -26,9 +65,12 @@ spring:
         value.deserializer: org.apache.kafka.common.serialization.LongDeserializer
         security.protocol: PLAINTEXT
         sasl.mechanism: PLAIN
+
     admin:
       security:
         protocol: PLAINTEXT
+      properties:
+        sasl.mechanism: PLAIN
 
 
 management:

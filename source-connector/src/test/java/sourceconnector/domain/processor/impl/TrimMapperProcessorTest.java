@@ -1,11 +1,12 @@
-package sourceconnector.service.processor.impl;
+package sourceconnector.domain.processor.impl;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import sourceconnector.domain.factory.JSONLogFactory;
+import sourceconnector.domain.log.factory.JSONLogFactory;
 import sourceconnector.domain.log.JSONLog;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.LogMetadata;
+import sourceconnector.domain.processor.impl.TrimMapperProcessor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

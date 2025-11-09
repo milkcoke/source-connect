@@ -1,4 +1,4 @@
-package sourceconnector.domain.factory;
+package sourceconnector.domain.log.factory;
 
 import sourceconnector.domain.log.JSONLog;
 import sourceconnector.domain.log.Log;

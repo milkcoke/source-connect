@@ -7,6 +7,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import sourceconnector.domain.log.Log;
+import sourceconnector.domain.log.factory.JSONLogFactory;
+import sourceconnector.domain.pipeline.factory.FileBaseLogPipelineBuilder;
+import sourceconnector.domain.pipeline.factory.FileLogPipelineSupplier;
+import sourceconnector.domain.pipeline.factory.PipelineSupplier;
+import sourceconnector.domain.processor.impl.EmptyFilterProcessor;
+import sourceconnector.domain.processor.impl.TrimMapperProcessor;
 import sourceconnector.repository.file.LocalFileRepository;
 
 import java.util.*;
@@ -19,6 +26,12 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class WorkerTest {
   private final Properties producerProperties = new Properties();
+  private final PipelineSupplier<Log> pipelineSupplier = new FileLogPipelineSupplier(
+    new FileBaseLogPipelineBuilder(),
+    new LocalFileRepository(),
+    new JSONLogFactory(),
+    ()->List.of(new EmptyFilterProcessor(), new TrimMapperProcessor(new JSONLogFactory()))
+  );
 
   @BeforeAll
   void setUp() {
@@ -36,7 +49,10 @@ class WorkerTest {
     Worker worker = new Worker(0, new FileTaskAssignor(Collections.emptyList(), 0));
 
     // when then
-    assertThatThrownBy(() -> worker.createTasks(0, 1, new LocalFileRepository(), producerProperties
+    assertThatThrownBy(() -> worker.createTasks(
+      0, 1,
+      pipelineSupplier, producerProperties,
+      "log-topic", "offset-topic"
     ))
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("Total worker count should be greater than zero");
@@ -50,7 +66,11 @@ class WorkerTest {
     Worker worker = new Worker(0, new FileTaskAssignor(Collections.emptyList(), 0));
 
     // when then
-    assertThatThrownBy(() -> worker.createTasks(1, 0, new LocalFileRepository(), producerProperties))
+    assertThatThrownBy(() -> worker.createTasks(
+      1, 0,
+      pipelineSupplier, producerProperties,
+      "log-topic", "offset-topic"
+    ))
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("Total task count should be greater than zero");
   }
@@ -64,7 +84,11 @@ class WorkerTest {
       new FileTaskAssignor(List.of("file-0", "file-1"), 2)
     );
     // when
-    Collection<Task<FileProcessingResult>> tasks = worker.createTasks(1, 2, new LocalFileRepository(), producerProperties);
+    Collection<Task<FileProcessingResult>> tasks = worker.createTasks(
+      1, 2,
+      pipelineSupplier, producerProperties,
+      "log-topic", "offset-topic"
+    );
 
     // then
     assertThat(tasks).hasSize(2);
@@ -95,7 +119,11 @@ class WorkerTest {
       ),
         2)
     );
-    worker.createTasks(1, 2, new LocalFileRepository(), producerProperties);
+    Collection<Task<FileProcessingResult>> tasks = worker.createTasks(
+      1, 2,
+      pipelineSupplier, producerProperties,
+      "log-topic", "offset-topic"
+    );
 
     // when then
     assertDoesNotThrow(worker::start);

@@ -7,6 +7,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import sourceconnector.domain.log.Log;
+import sourceconnector.domain.log.factory.JSONLogFactory;
+import sourceconnector.domain.pipeline.factory.FileBaseLogPipelineBuilder;
+import sourceconnector.domain.pipeline.factory.FileLogPipelineSupplier;
+import sourceconnector.domain.pipeline.factory.PipelineSupplier;
 import sourceconnector.repository.file.LocalFileRepository;
 import sourceconnector.service.producer.BatchProduceService;
 
@@ -18,6 +23,12 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FileTaskAssignorTest {
   private final Properties producerProperties = new Properties();
+  private final PipelineSupplier<Log> pipelineSupplier = new FileLogPipelineSupplier(
+    new FileBaseLogPipelineBuilder(),
+    new LocalFileRepository(),
+    new JSONLogFactory(),
+    Collections::emptyList
+  );
 
   @BeforeAll
   void setUp() {
@@ -39,7 +50,7 @@ class FileTaskAssignorTest {
       filePaths.add("file-" + i);
     }
     TaskAssignor taskAssignor = new FileTaskAssignor(filePaths, 5);
-    FileSourceTask task0 = new FileSourceTask(0, new LocalFileRepository(), new BatchProduceService(producerProperties, "offset-topic", "log-topic"));
+    FileSourceTask task0 = new FileSourceTask(0, pipelineSupplier, new BatchProduceService(producerProperties, "offset-topic", "log-topic"));
 
     // when
     taskAssignor.assign(List.of(task0));
@@ -58,10 +69,10 @@ class FileTaskAssignorTest {
       filePaths.add("file-" + i);
     }
     TaskAssignor taskAssignor = new FileTaskAssignor(filePaths, 4);
-    FileSourceTask task0 = new FileSourceTask(0, new LocalFileRepository(), new BatchProduceService(producerProperties, "offset-topic", "log-topic"));
-    FileSourceTask task1 =  new FileSourceTask(1, new LocalFileRepository(), new BatchProduceService(producerProperties, "offset-topic", "log-topic"));
-    FileSourceTask task2 =  new FileSourceTask(2, new LocalFileRepository(), new BatchProduceService(producerProperties, "offset-topic", "log-topic"));
-    FileSourceTask task3 =   new FileSourceTask(3, new LocalFileRepository(), new BatchProduceService(producerProperties, "offset-topic", "log-topic"));
+    FileSourceTask task0 = new FileSourceTask(0, pipelineSupplier, new BatchProduceService(producerProperties, "offset-topic", "log-topic"));
+    FileSourceTask task1 =  new FileSourceTask(1, pipelineSupplier, new BatchProduceService(producerProperties, "offset-topic", "log-topic"));
+    FileSourceTask task2 =  new FileSourceTask(2, pipelineSupplier, new BatchProduceService(producerProperties, "offset-topic", "log-topic"));
+    FileSourceTask task3 =   new FileSourceTask(3, pipelineSupplier, new BatchProduceService(producerProperties, "offset-topic", "log-topic"));
 
     Collection<Task<FileProcessingResult>> tasks = List.of(task0, task1, task2, task3);
 
@@ -83,7 +94,7 @@ class FileTaskAssignorTest {
     // given
     TaskAssignor taskAssignor = new FileTaskAssignor(Collections.emptyList(), 1);
     Collection<Task<FileProcessingResult>> tasks = List.of(
-      new FileSourceTask( 0, new LocalFileRepository(), new BatchProduceService(producerProperties, "offset-topic", "log-topic"))
+      new FileSourceTask( 0, pipelineSupplier, new BatchProduceService(producerProperties, "offset-topic", "log-topic"))
     );
 
     // when then

@@ -5,6 +5,11 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.openjdk.jmh.annotations.*;
+import sourceconnector.domain.log.Log;
+import sourceconnector.domain.log.factory.JSONLogFactory;
+import sourceconnector.domain.pipeline.factory.FileBaseLogPipelineBuilder;
+import sourceconnector.domain.pipeline.factory.FileLogPipelineSupplier;
+import sourceconnector.domain.pipeline.factory.PipelineSupplier;
 import sourceconnector.repository.file.FileLister;
 import sourceconnector.repository.file.LocalFileLister;
 import sourceconnector.repository.file.LocalFileRepository;
@@ -26,6 +31,12 @@ public class FileSourceTaskBenchmark {
     new CompositeFileValidator(Collections.singletonList(
       new FileExtensionFilter(List.of(".ndjson")))
     )
+  );
+  private final PipelineSupplier<Log> pipelineSupplier = new FileLogPipelineSupplier(
+    new FileBaseLogPipelineBuilder(),
+    new LocalFileRepository(),
+    new JSONLogFactory(),
+    Collections::emptyList
   );
   private final List<String> testFilePaths = new ArrayList<>();
 
@@ -51,7 +62,7 @@ public class FileSourceTaskBenchmark {
   public FileProcessingResult singleTaskBenchmark() throws Exception {
     Task<FileProcessingResult> task = new FileSourceTask(
       0,
-      new LocalFileRepository(),
+      pipelineSupplier,
       new BatchProduceService(properties, "log-topic", "offset-topic")
     );
     task.assign(this.testFilePaths);

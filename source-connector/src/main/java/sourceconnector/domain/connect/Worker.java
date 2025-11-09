@@ -2,13 +2,11 @@ package sourceconnector.domain.connect;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import sourceconnector.repository.file.FileRepository;
+import sourceconnector.domain.log.Log;
+import sourceconnector.domain.pipeline.factory.PipelineSupplier;
 import sourceconnector.service.producer.BatchProduceService;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.*;
 
 /**
@@ -21,7 +19,6 @@ public class Worker {
   private final TaskAssignor taskAssignor;
   private ExecutorService executor;
   private final Collection<Task<FileProcessingResult>> tasks = new ArrayList<>();
-
   public Worker(int index, TaskAssignor taskAssignor) {
     this.id = String.format("Worker-%d", index);
     this.index = index;
@@ -37,8 +34,10 @@ public class Worker {
   public Collection<Task<FileProcessingResult>> createTasks(
     int totalWorkerCount,
     int totalTaskCount,
-    FileRepository fileRepository,
-    Properties producerProperties
+    PipelineSupplier<Log> pipelineSupplier,
+    Properties producerProperties,
+    String logTopic,
+    String offsetTopic
   ) {
     if (totalWorkerCount < 1) {
       throw new IllegalArgumentException("Total worker count should be greater than zero");
@@ -54,13 +53,12 @@ public class Worker {
     int endIndex = (this.index + 1) * quotient + Math.min(this.index + 1, remainder);
 
     for (int taskIndex = startIndex; taskIndex < endIndex; taskIndex++) {
-      producerProperties.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, String.format("Task-%d-", taskIndex));
+      producerProperties.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, String.format("Task-%d", taskIndex));
 
       tasks.add(new FileSourceTask(
         taskIndex,
-        fileRepository,
-        // FIXME: offset, log topic 명 주입받기 or DSL 을 통한 외부 설정 주입
-        new BatchProduceService(producerProperties, "log-topic", "offset-topic"))
+        pipelineSupplier,
+        new BatchProduceService(producerProperties, logTopic, offsetTopic))
       );
     }
 

@@ -3,7 +3,7 @@ package sourceconnector.service.batcher;
 import lombok.RequiredArgsConstructor;
 import sourceconnector.domain.batch.MessageBatch;
 import sourceconnector.domain.log.Log;
-import sourceconnector.service.pipeline.Pipeline;
+import sourceconnector.domain.pipeline.Pipeline;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,6 +13,11 @@ import java.util.List;
 public class LogBatcher implements Batchable<Log> {
   private final Pipeline<Log> pipeline;
   private final int batchSize;
+
+  @Override
+  public boolean hasNextBatch() {
+    return !pipeline.isComplete();
+  }
 
   @Override
   public MessageBatch<Log> nextBatch() {
