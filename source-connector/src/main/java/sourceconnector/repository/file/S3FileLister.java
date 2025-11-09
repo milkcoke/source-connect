@@ -1,6 +1,5 @@
 package sourceconnector.repository.file;
 
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.S3Object;
@@ -16,11 +15,11 @@ public class S3FileLister implements FileLister  {
   private final String bucket;
 
   public S3FileLister(
-    Region region,
+    S3Client s3Client,
     String bucket,
     FileValidator fileValidator
-    ) {
-    this.s3Client = S3Client.builder().region(region).build();
+  ) {
+    this.s3Client = s3Client;
     this.bucket = bucket;
     this.fileValidator = fileValidator;
   }
@@ -34,7 +33,6 @@ public class S3FileLister implements FileLister  {
   public List<String> listFiles(boolean recursive, String... paths) {
 
     List<String> objectPaths = new ArrayList<>();
-
     for (String path : paths) {
       ListObjectsV2Request.Builder requestBuilder = ListObjectsV2Request.builder()
         .bucket(this.bucket)

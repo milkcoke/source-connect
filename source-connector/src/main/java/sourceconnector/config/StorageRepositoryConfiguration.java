@@ -4,6 +4,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
 import sourceconnector.repository.file.*;
 import sourceconnector.repository.file.validator.FileValidator;
 
@@ -18,9 +19,16 @@ public class StorageRepositoryConfiguration {
   // --- S3 beans ---
   @Bean
   @ConditionalOnProperty(prefix = "source.storage", name = "type", havingValue = "s3")
-  public FileLister s3FileLister(S3Config s3Config, FileValidator fileValidator) {
+  public S3Client s3Client(S3Config s3Config) {
+    return S3Client.builder()
+      .region(Region.of(s3Config.region()))
+      .build();
+  }
+  @Bean
+  @ConditionalOnProperty(prefix = "source.storage", name = "type", havingValue = "s3")
+  public FileLister s3FileLister(S3Client s3Client, S3Config s3Config, FileValidator fileValidator) {
     return new S3FileLister(
-      Region.of(s3Config.region()),
+      s3Client,
       s3Config.bucket(),
       fileValidator
     );
@@ -28,8 +36,8 @@ public class StorageRepositoryConfiguration {
 
   @Bean
   @ConditionalOnProperty(prefix = "source.storage", name = "type", havingValue = "s3")
-  public FileRepository s3FileRepository(S3Config s3Config) {
-    return new S3FileRepository(Region.of(s3Config.region()), s3Config.bucket());
+  public FileRepository s3FileRepository(S3Client s3Client, S3Config s3Config) {
+    return new S3FileRepository(s3Client, s3Config.bucket());
   }
 
   // --- Local beans ---
