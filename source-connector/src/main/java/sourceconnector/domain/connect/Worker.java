@@ -53,7 +53,7 @@ public class Worker {
     int endIndex = (this.index + 1) * quotient + Math.min(this.index + 1, remainder);
 
     for (int taskIndex = startIndex; taskIndex < endIndex; taskIndex++) {
-      producerProperties.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, String.format("Task-%d-", taskIndex));
+      producerProperties.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, String.format("Task-%d", taskIndex));
 
       tasks.add(new FileSourceTask(
         taskIndex,
