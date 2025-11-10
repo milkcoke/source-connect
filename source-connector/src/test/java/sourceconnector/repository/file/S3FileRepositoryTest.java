@@ -19,13 +19,7 @@ class S3FileRepositoryTest extends S3TestSupport {
     // given
     Path file = Path.of("src/test/resources/sample-data/empty.ndjson");
     String s3Path = "test-path/empty.ndjson";
-    s3Client.putObject(
-      PutObjectRequest.builder()
-        .bucket(BUCKET_NAME)
-        .key(s3Path)
-        .build(),
-      RequestBody.fromFile(file)
-    );
+    this.upload(s3Path, file);
 
     S3FileRepository fileRepository = new S3FileRepository(
       s3Client,

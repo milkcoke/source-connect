@@ -9,12 +9,13 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
-import software.amazon.awssdk.services.s3.model.CreateBucketResponse;
 
 import java.net.URI;
+import java.nio.file.Path;
 
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.*;
 
@@ -60,5 +61,18 @@ abstract class S3TestSupport {
     }
   }
 
+  public void upload(String key, String content) {
+    s3Client.putObject(
+      builder -> builder.bucket(BUCKET_NAME).key(key).build(),
+      RequestBody.fromString(content)
+    );
+  }
+
+  public void upload(String key, Path path) {
+    s3Client.putObject(
+      builder -> builder.bucket(BUCKET_NAME).key(key).build(),
+      RequestBody.fromFile(path)
+    );
+  }
 
 }
