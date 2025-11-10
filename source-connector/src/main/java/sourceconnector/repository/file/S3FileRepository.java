@@ -10,6 +10,7 @@ public class S3FileRepository implements FileRepository {
   private final S3Client s3Client;
   private final String bucket;
 
+  // FIXME: NO need bucket name
   public S3FileRepository(S3Client s3Client, String bucket) {
     this.s3Client = s3Client;
     this.bucket = bucket;
