@@ -14,6 +14,7 @@ public class S3FileLister implements FileLister  {
   private final S3Client s3Client;
   private final String bucket;
 
+  // FIXME: No need bucket name
   public S3FileLister(
     S3Client s3Client,
     String bucket,
@@ -24,6 +25,7 @@ public class S3FileLister implements FileLister  {
     this.fileValidator = fileValidator;
   }
 
+  // TODO: Refactor for using S3 URI creator
   /**
    * Get all s3 object key paths <br>
    * this can handle both directory and file path
@@ -49,6 +51,7 @@ public class S3FileLister implements FileLister  {
         .flatMap(response -> response.contents().stream())
         .map(S3Object::key)
         .filter(fileValidator::isValid)
+        .map(key -> String.format("s3://%s/%s", this.bucket, key))
         .toList();
 
       objectPaths.addAll(keys);
