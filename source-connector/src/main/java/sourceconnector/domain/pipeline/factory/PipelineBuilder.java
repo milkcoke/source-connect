@@ -1,5 +1,6 @@
 package sourceconnector.domain.pipeline.factory;
 
+import sourceconnector.domain.file.FileKey;
 import sourceconnector.domain.log.factory.LogFactory;
 import sourceconnector.domain.pipeline.Pipeline;
 import sourceconnector.domain.processor.BaseProcessor;
@@ -12,7 +13,7 @@ public interface PipelineBuilder<T> {
    * Creates a pipeline that consists of one or more processors.
    *
    * @param fileRepository the repository used to retrieve the file from external storage
-   * @param filePath the path of the file to be processed
+   * @param fileKey the path of the file to be processed
    * @param logFactory the factory used to create {@code Log} instances for pipeline operations
    * @param processors the list of base processors to apply in order
    * @return a constructed {@link sourceconnector.domain.pipeline.Pipeline} instance
@@ -22,7 +23,7 @@ public interface PipelineBuilder<T> {
    */
   Pipeline<T> create(
     FileRepository fileRepository,
-    String filePath,
+    FileKey fileKey,
     LogFactory logFactory,
     List<BaseProcessor<T>> processors
   );
@@ -31,7 +32,7 @@ public interface PipelineBuilder<T> {
    * Creates a pipeline that performs no processing and simply bypasses the input data.
    *
    * @param fileRepository the repository used to retrieve the file from external storage
-   * @param filePath the path of the file to be processed
+   * @param fileKey the path of the file to be processed
    * @param logFactory the factory used to create {@code Log} instances for pipeline operations
    * @return a constructed {@link sourceconnector.domain.pipeline.Pipeline} instance that bypasses processing
    *
@@ -39,7 +40,7 @@ public interface PipelineBuilder<T> {
    */
   Pipeline<T> createWithNoProcessor(
     FileRepository fileRepository,
-    String filePath,
+    FileKey fileKey,
     LogFactory logFactory
   );
 }

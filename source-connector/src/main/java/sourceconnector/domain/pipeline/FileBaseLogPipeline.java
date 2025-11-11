@@ -3,6 +3,7 @@ package sourceconnector.domain.pipeline;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
+import sourceconnector.domain.file.FileKey;
 import sourceconnector.domain.log.factory.LogFactory;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.FileLogMetadata;
@@ -16,7 +17,7 @@ import java.util.NoSuchElementException;
 @Slf4j
 @Builder(access = AccessLevel.PUBLIC)
 public class FileBaseLogPipeline implements Pipeline<Log>, AutoCloseable {
-  private final String filePath;
+  private final FileKey fileKey;
   private final LineReader<String> reader;
   private final LogFactory logFactory;
   private final BaseProcessor<Log> startProcessor;
@@ -45,14 +46,14 @@ public class FileBaseLogPipeline implements Pipeline<Log>, AutoCloseable {
 
       Log input = this.logFactory.create(
         rawString,
-        new FileLogMetadata(this.filePath, this.reader.getLineNumber())
+        new FileLogMetadata(this.fileKey, this.reader.getLineNumber())
       );
       return this.startProcessor.process(input);
     } catch (IOException exception) {
       throw new FileLogReadException(
         String.format(
           "Failed to read from: %s, offset: %d",
-          filePath,
+          fileKey,
           this.reader.getLineNumber() + 1
         ),
         exception

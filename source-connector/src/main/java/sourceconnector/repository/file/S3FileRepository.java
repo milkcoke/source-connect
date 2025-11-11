@@ -3,6 +3,7 @@ package sourceconnector.repository.file;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
+import sourceconnector.domain.file.FileKey;
 
 import java.io.InputStream;
 
@@ -17,16 +18,16 @@ public class S3FileRepository implements FileRepository {
   }
 
   @Override
-  public InputStream getFile(String filePath) {
+  public InputStream getFile(FileKey fileKey) {
     try {
       GetObjectRequest request = GetObjectRequest.builder()
         .bucket(this.bucket)
-        .key(filePath)
+        .key(fileKey)
         .build();
 
       return s3Client.getObject(request);
     } catch (S3Exception e) {
-      throw new RuntimeException("Failed to get file from S3: " + filePath, e);
+      throw new RuntimeException("Failed to get file from S3: " + fileKey, e);
     }
   }
 }

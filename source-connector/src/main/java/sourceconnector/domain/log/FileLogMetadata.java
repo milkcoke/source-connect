@@ -1,16 +1,18 @@
 package sourceconnector.domain.log;
 
+import sourceconnector.domain.file.FileKey;
+
 /**
  *
- * @param filePath the file path log is saved
+ * @param fileKey the file path log is saved
  * @param offset offset in the log file
  */
 public record FileLogMetadata(
-  String filePath,
+  FileKey fileKey,
   long offset
 ) implements LogMetadata {
   @Override
   public String key() {
-    return filePath;
+    return fileKey.get();
   }
 }

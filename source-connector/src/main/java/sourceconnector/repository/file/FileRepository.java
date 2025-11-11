@@ -1,8 +1,9 @@
 package sourceconnector.repository.file;
 
+import sourceconnector.domain.file.FileKey;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 
 /**
  * Get the file contents from a file storage (e.g. LocalFile System, S3, GCS, Azure Blob Storage, etc.)
@@ -10,9 +11,9 @@ import java.util.List;
 public interface FileRepository {
   /**
    *
-   * @param filePath handling file path
+   * @param fileKey handling file path
    * @return {@link java.io.InputStream}
    * @throws IOException this is unrecoverable so application should be terminated.
    */
-  InputStream getFile(String filePath) throws IOException;
+  InputStream getFile(FileKey fileKey) throws IOException;
 }

@@ -1,5 +1,6 @@
 package sourceconnector.domain.pipeline.factory;
 
+import sourceconnector.domain.file.FileKey;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.factory.LogFactory;
 import sourceconnector.domain.pipeline.FileBaseLogPipeline;
@@ -18,7 +19,7 @@ public class FileBaseLogPipelineBuilder implements PipelineBuilder<Log> {
   @Override
   public Pipeline<Log> create(
     FileRepository fileRepository,
-    String filePath,
+    FileKey fileKey,
     LogFactory logFactory,
     List<BaseProcessor<Log>> processors
   ) {
@@ -32,13 +33,13 @@ public class FileBaseLogPipelineBuilder implements PipelineBuilder<Log> {
     }
     try{
         return FileBaseLogPipeline.builder()
-          .filePath(filePath)
-          .reader(new StringLineReader(fileRepository.getFile(filePath)))
+          .fileKey(fileKey)
+          .reader(new StringLineReader(fileRepository.getFile(fileKey)))
           .logFactory(logFactory)
           .startProcessor(processors.getFirst())
           .build();
     } catch (IOException e) {
-        throw new IllegalStateException("Failed to create log pipeline for file " + filePath, e);
+        throw new IllegalStateException("Failed to create log pipeline for file " + fileKey.get(), e);
     }
 
   }
@@ -46,19 +47,19 @@ public class FileBaseLogPipelineBuilder implements PipelineBuilder<Log> {
   @Override
   public Pipeline<Log> createWithNoProcessor(
     FileRepository fileRepository,
-    String filePath,
+    FileKey fileKey,
     LogFactory logFactory
   ) {
     try {
-      InputStream inputStream = fileRepository.getFile(filePath);
+      InputStream inputStream = fileRepository.getFile(fileKey);
       return FileBaseLogPipeline.builder()
-        .filePath(filePath)
+        .fileKey(fileKey)
         .reader(new StringLineReader(inputStream))
         .logFactory(logFactory)
         .startProcessor(new ByPassProcessor())
         .build();
     } catch (IOException e) {
-      throw new IllegalStateException("Failed to create pipeline for file " + filePath, e);
+      throw new IllegalStateException("Failed to create pipeline for file " + fileKey.get(), e);
     }
   }
 }
