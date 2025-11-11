@@ -22,7 +22,7 @@ class S3FileListerTest extends S3TestSupport {
       new NoConditionFileValidator()
     );
     // when
-    List<String> filePaths = fileLister.listFiles(true, "not-exist-path");
+    List<String> filePaths = fileLister.listFilesRecursively("not-exist-path");
     // then
     assertThat(filePaths).isEmpty();
   }
@@ -46,7 +46,7 @@ class S3FileListerTest extends S3TestSupport {
     );
 
     // when
-    List<String> filePaths = fileLister.listFiles(false, "resources/sample-data/");
+    List<String> filePaths = fileLister.listFiles("resources/sample-data/");
 
     // then
     assertThat(filePaths).hasSize(2)
@@ -75,7 +75,7 @@ class S3FileListerTest extends S3TestSupport {
     );
 
     // when
-    List<String> filePaths = fileLister.listFiles(true, "resources/sample-data/");
+    List<String> filePaths = fileLister.listFilesRecursively( "resources/sample-data/");
 
     // then
     assertThat(filePaths).hasSize(4)

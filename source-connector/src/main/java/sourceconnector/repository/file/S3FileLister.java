@@ -32,19 +32,39 @@ public class S3FileLister implements FileLister  {
    * @return {@code List<String>}
    */
   @Override
-  public List<String> listFiles(boolean recursive, String... paths) {
+  public List<String> listFiles(String... paths) {
 
     List<String> objectPaths = new ArrayList<>();
     for (String path : paths) {
-      ListObjectsV2Request.Builder requestBuilder = ListObjectsV2Request.builder()
+       ListObjectsV2Request request = ListObjectsV2Request.builder()
         .bucket(this.bucket)
-        .prefix(path);
+        .prefix(path)
+        .delimiter("/")
+        .build();
 
-      if (!recursive) {
-        requestBuilder.delimiter("/");
-      }
+      List<String> keys = this.s3Client.listObjectsV2Paginator(request)
+        .stream()
+        .flatMap(response -> response.contents().stream())
+        .map(S3Object::key)
+        .filter(fileValidator::isValid)
+        .map(key -> String.format("s3://%s/%s", this.bucket, key))
+        .toList();
 
-      ListObjectsV2Request request = requestBuilder.build();
+      objectPaths.addAll(keys);
+    }
+
+    return objectPaths;
+  }
+
+  @Override
+  public List<String> listFilesRecursively(String... paths) {
+
+    List<String> objectPaths = new ArrayList<>();
+    for (String path : paths) {
+      ListObjectsV2Request request = ListObjectsV2Request.builder()
+        .bucket(this.bucket)
+        .prefix(path)
+        .build();
 
       List<String> keys = this.s3Client.listObjectsV2Paginator(request)
         .stream()

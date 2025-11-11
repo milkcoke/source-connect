@@ -25,7 +25,7 @@ class LocalFileListerTest {
     FileLister fileLister = new LocalFileLister(validator);
 
     // when then
-    assertThatThrownBy(() -> fileLister.listFiles(false, "notExistPath"))
+    assertThatThrownBy(() -> fileLister.listFiles("notExistPath"))
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessageContaining("path does not exist:");
   }
@@ -39,7 +39,7 @@ class LocalFileListerTest {
     );
     FileLister fileLister = new LocalFileLister(validator);
     // when
-    List<String> fileList = fileLister.listFiles(false, "src/test/resources/sample-data");
+    List<String> fileList = fileLister.listFiles("src/test/resources/sample-data");
     // then
     assertThat(fileList).hasSize(3)
       .map(path->Path.of(path).getFileName().toString())
@@ -59,7 +59,7 @@ class LocalFileListerTest {
     );
     FileLister fileLister = new LocalFileLister(validator);
     // when
-    List<String> fileList = fileLister.listFiles(true, "src/test/resources/sample-data");
+    List<String> fileList = fileLister.listFilesRecursively("src/test/resources/sample-data");
     // then
     assertThat(fileList).hasSize(6)
       .map(path->Path.of(path).getFileName().toString())
@@ -82,7 +82,7 @@ class LocalFileListerTest {
     );
     FileLister fileLister = new LocalFileLister(validator);
     // when
-    List<String> fileList = fileLister.listFiles(true,
+    List<String> fileList = fileLister.listFilesRecursively(
       "src/test/resources/sample-data/subdir1",
       "src/test/resources/sample-data/subdir2/sub22.ndjson"
     );

@@ -56,7 +56,7 @@ public class WorkerBenchmark {
         new FileExtensionFilter(List.of(".ndjson")))
       )
     );
-    testFilePaths.addAll(fileLister.listFiles(false, testDirectory.toFile().getAbsolutePath()));
+    testFilePaths.addAll(fileLister.listFiles(testDirectory.toFile().getAbsolutePath()));
   }
 
   @Benchmark

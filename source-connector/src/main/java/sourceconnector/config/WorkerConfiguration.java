@@ -9,6 +9,7 @@ import sourceconnector.domain.connect.Worker;
 import sourceconnector.repository.file.FileLister;
 
 import java.io.IOException;
+import java.util.List;
 
 @Configuration
 public class WorkerConfiguration {
@@ -21,11 +22,12 @@ public class WorkerConfiguration {
     AppConfig appConfig
   ) throws IOException {
 
-    var allFilePaths = fileLister.listFiles(
-      fileSearchConfigs.isRecursive(),
-      storageConfig.paths().toArray(String[]::new)
-    );
-
+    List<String> allFilePaths;
+    if (fileSearchConfigs.isRecursive()) {
+      allFilePaths = fileLister.listFilesRecursively(storageConfig.paths().toArray(String[]::new));
+    } else {
+      allFilePaths = fileLister.listFiles(storageConfig.paths().toArray(String[]::new));
+    }
     return new FileTaskAssignor(allFilePaths, appConfig.taskCount());
   }
 
