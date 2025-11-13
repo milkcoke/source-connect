@@ -5,6 +5,8 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.openjdk.jmh.annotations.*;
+import sourceconnector.domain.file.FileKey;
+import sourceconnector.domain.file.LocalFileKey;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.factory.JSONLogFactory;
 import sourceconnector.domain.pipeline.factory.FileBaseLogPipelineBuilder;
@@ -26,7 +28,7 @@ import java.util.concurrent.ExecutionException;
 @BenchmarkMode(Mode.AverageTime)
 @Warmup(iterations = 1)
 public class WorkerBenchmark {
-  private final List<String> testFilePaths = new ArrayList<>();
+  private final List<FileKey> testFileKeys = new ArrayList<>();
   private final PipelineSupplier<Log> pipelineSupplier = new FileLogPipelineSupplier(
     new FileBaseLogPipelineBuilder(),
     new LocalFileRepository(),
@@ -51,17 +53,19 @@ public class WorkerBenchmark {
     this.producerConfig = properties;
 
     Path testDirectory = Paths.get("src/jmh/resources/large-testdata");
+    FileKey fileKey = LocalFileKey.from(testDirectory);
+
     final FileLister fileLister = new LocalFileLister(
       new CompositeFileValidator(Collections.singletonList(
         new FileExtensionFilter(List.of(".ndjson")))
       )
     );
-    testFilePaths.addAll(fileLister.listFiles(testDirectory.toFile().getAbsolutePath()));
+    testFileKeys.addAll(fileLister.listFiles(fileKey));
   }
 
   @Benchmark
   public void singleTaskBenchmark() throws ExecutionException, InterruptedException {
-    Worker worker = new Worker(0, new FileTaskAssignor(this.testFilePaths, 1));
+    Worker worker = new Worker(0, new FileTaskAssignor(this.testFileKeys, 1));
     worker.createTasks(1, 1, pipelineSupplier, this.producerConfig, "log-topic", "offset-topic");
     worker.start();
   }
@@ -69,7 +73,7 @@ public class WorkerBenchmark {
 
   @Benchmark
   public void fiveTaskBenchmark() throws ExecutionException, InterruptedException {
-    Worker worker = new Worker(0, new FileTaskAssignor(this.testFilePaths, 5));
+    Worker worker = new Worker(0, new FileTaskAssignor(this.testFileKeys, 5));
     worker.createTasks(1, 5, pipelineSupplier, this.producerConfig, "log-topic", "offset-topic");
     worker.start();
   }

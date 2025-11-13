@@ -1,5 +1,7 @@
 package sourceconnector.repository.file.filter;
 
+import sourceconnector.domain.file.FileKey;
+
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -16,7 +18,7 @@ public class FileExcludeFilter implements FileFilter {
   }
 
   @Override
-  public boolean accept(String filePath) {
-    return patterns.stream().noneMatch(regex -> regex.matcher(filePath).find());
+  public boolean accept(FileKey fileKey) {
+    return patterns.stream().noneMatch(regex -> regex.matcher(fileKey.get()).find());
   }
 }

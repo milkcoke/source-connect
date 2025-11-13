@@ -5,6 +5,8 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.openjdk.jmh.annotations.*;
+import sourceconnector.domain.file.FileKey;
+import sourceconnector.domain.file.LocalFileKey;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.factory.JSONLogFactory;
 import sourceconnector.domain.pipeline.factory.FileBaseLogPipelineBuilder;
@@ -38,7 +40,7 @@ public class FileSourceTaskBenchmark {
     new JSONLogFactory(),
     Collections::emptyList
   );
-  private final List<String> testFilePaths = new ArrayList<>();
+  private final List<FileKey> testFilePaths = new ArrayList<>();
 
   @Setup(Level.Trial)
   public void setup() throws IOException {
@@ -55,7 +57,8 @@ public class FileSourceTaskBenchmark {
     );
 
     Path testDirectory = Paths.get("src/jmh/resources/testdata");
-    testFilePaths.addAll(fileLister.listFiles(testDirectory.toFile().getAbsolutePath()));
+    FileKey fileKey = LocalFileKey.from(testDirectory);
+    testFilePaths.addAll(fileLister.listFiles(fileKey));
   }
 
   @Benchmark

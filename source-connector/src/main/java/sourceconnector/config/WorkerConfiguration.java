@@ -6,10 +6,10 @@ import org.springframework.context.annotation.Configuration;
 import sourceconnector.domain.connect.FileTaskAssignor;
 import sourceconnector.domain.connect.TaskAssignor;
 import sourceconnector.domain.connect.Worker;
+import sourceconnector.domain.file.FileKey;
 import sourceconnector.repository.file.FileLister;
 
 import java.io.IOException;
-import java.util.List;
 
 @Configuration
 public class WorkerConfiguration {
@@ -22,13 +22,15 @@ public class WorkerConfiguration {
     AppConfig appConfig
   ) throws IOException {
 
-    List<String> allFilePaths;
+    FileKey[] inputFileKeys = storageConfig.getAllFileKeys().toArray(new FileKey[0]);
+
     if (fileSearchConfigs.isRecursive()) {
-      allFilePaths = fileLister.listFilesRecursively(storageConfig.paths().toArray(String[]::new));
+      var foundFileKeys = fileLister.listFilesRecursively(inputFileKeys);
+      return new FileTaskAssignor(foundFileKeys, appConfig.taskCount());
     } else {
-      allFilePaths = fileLister.listFiles(storageConfig.paths().toArray(String[]::new));
+      var foundFileKeys = fileLister.listFiles(inputFileKeys);
+      return new FileTaskAssignor(foundFileKeys, appConfig.taskCount());
     }
-    return new FileTaskAssignor(allFilePaths, appConfig.taskCount());
   }
 
   @Bean

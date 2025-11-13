@@ -1,5 +1,6 @@
 package sourceconnector.repository.file.validator;
 
+import sourceconnector.domain.file.FileKey;
 import sourceconnector.repository.file.filter.FileFilter;
 
 import java.util.List;
@@ -17,7 +18,7 @@ public class CompositeFileValidator implements FileValidator {
    * If no file filter, always return {@code true}
    * @param filePath to validate
    */
-  public boolean isValid(String filePath) {
+  public boolean isValid(FileKey filePath) {
     return this.fileFilters.stream()
       .allMatch(fileFilter -> fileFilter.accept(filePath));
   }

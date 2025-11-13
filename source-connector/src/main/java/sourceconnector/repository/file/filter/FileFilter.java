@@ -1,6 +1,8 @@
 package sourceconnector.repository.file.filter;
 
+import sourceconnector.domain.file.FileKey;
+
 @FunctionalInterface
 public interface FileFilter {
-  boolean accept(String filePath);
+  boolean accept(FileKey fileKey);
 }

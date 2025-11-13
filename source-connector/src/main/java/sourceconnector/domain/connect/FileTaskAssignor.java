@@ -1,22 +1,23 @@
 package sourceconnector.domain.connect;
 
 import lombok.extern.slf4j.Slf4j;
+import sourceconnector.domain.file.FileKey;
 
 import java.util.Collection;
 import java.util.List;
 
 @Slf4j
 public class FileTaskAssignor implements TaskAssignor {
-  private final List<String> sortedAllFilePaths;
+  private final List<FileKey> sortedAllFilePaths;
   private final int totalTaskCount;
 
   /**
    * All file path should be ordered since assign files to the task without duplication.
-   * @param allFilePaths handled by the tasks
+   * @param fileKeys handled by the tasks
    * @param totalTaskCount all task count
    */
-  public FileTaskAssignor(List<String> allFilePaths, int totalTaskCount) {
-    this.sortedAllFilePaths = allFilePaths.stream()
+  public FileTaskAssignor(List<FileKey> fileKeys, int totalTaskCount) {
+    this.sortedAllFilePaths = fileKeys.stream()
       .sorted()
       .toList();
     this.totalTaskCount = totalTaskCount;
@@ -33,8 +34,8 @@ public class FileTaskAssignor implements TaskAssignor {
       int startIndex = taskIndex * quotient + Math.min(taskIndex, remainder);
       int endIndex = (taskIndex + 1) * quotient + Math.min(taskIndex + 1, remainder);
 
-      List<String> filePaths = this.sortedAllFilePaths.subList(startIndex, endIndex);
-      task.assign(filePaths);
+      List<FileKey> fileKeys = this.sortedAllFilePaths.subList(startIndex, endIndex);
+      task.assign(fileKeys);
     }
     log.info("Completed all task assignments");
   }

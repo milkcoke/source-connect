@@ -13,7 +13,7 @@ import static java.nio.file.StandardOpenOption.READ;
 public class LocalFileRepository implements FileRepository {
   /**
    * Get file from local filesystem
-   * @param filePath
+   * @param fileKey
    * @return InputStream
    */
   @Override

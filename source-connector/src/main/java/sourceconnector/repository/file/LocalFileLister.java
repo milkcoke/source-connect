@@ -1,6 +1,8 @@
 package sourceconnector.repository.file;
 
 import lombok.RequiredArgsConstructor;
+import sourceconnector.domain.file.FileKey;
+import sourceconnector.domain.file.LocalFileKey;
 import sourceconnector.repository.file.validator.FileValidator;
 
 import java.io.IOException;
@@ -9,23 +11,25 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+//TODO: FileKey 로 싹 바르기 vs String 으로하기
 @RequiredArgsConstructor
 public class LocalFileLister implements FileLister {
   private final FileValidator fileValidator;
 
   @Override
-  public List<String> listFiles(String... paths) {
+  public List<FileKey> listFiles(FileKey... fileKeys) {
 
-    if (paths == null || paths.length == 0) {
+    if (fileKeys == null || fileKeys.length == 0) {
       throw new IllegalArgumentException("paths cannot be null or empty");
     }
 
-    List<String> result = new ArrayList<>();
+    List<FileKey> result = new ArrayList<>();
 
-    for (String path : paths) {
-      Path absolutePath = Path.of(path).toAbsolutePath();
+    for (FileKey fileKey : fileKeys) {
+      Path absolutePath = Path.of(fileKey.get()).toAbsolutePath();
       this.validatePathExists(absolutePath);
       if (Files.isRegularFile(absolutePath)) {
         result.addAll(this.handleFile(absolutePath));
@@ -37,14 +41,14 @@ public class LocalFileLister implements FileLister {
   }
 
   @Override
-  public List<String> listFilesRecursively(String... paths) {
-    if (paths == null || paths.length == 0) {
+  public List<FileKey> listFilesRecursively(FileKey... fileKeys) {
+    if (fileKeys == null || fileKeys.length == 0) {
       throw new IllegalArgumentException("paths cannot be null or empty");
     }
 
-    List<String> result = new ArrayList<>();
-    for (String path : paths) {
-      Path absolutePath = Path.of(path).toAbsolutePath();
+    List<FileKey> result = new ArrayList<>();
+    for (FileKey fileKey : fileKeys) {
+      Path absolutePath = Path.of(fileKey.get()).toAbsolutePath();
       this.validatePathExists(absolutePath);
       if (Files.isRegularFile(absolutePath)) {
         result.addAll(this.handleFile(absolutePath));
@@ -62,31 +66,31 @@ public class LocalFileLister implements FileLister {
     }
   }
 
-  private List<String> handleFile(Path absFilePath) {
-    return fileValidator.isValid(absFilePath.toString())
-      ? List.of(absFilePath.toString())
+  private List<FileKey> handleFile(Path absFilePath) {
+    return fileValidator.isValid(LocalFileKey.from(absFilePath))
+      ? List.of(LocalFileKey.from(absFilePath))
       : Collections.emptyList();
   }
 
 
-  private List<String> handleDirectory(Path absDir) {
+  private List<FileKey> handleDirectory(Path absDir) {
     try (Stream<Path> stream = Files.list(absDir)) {
       return stream
         .filter(Files::isRegularFile)
-        .map(path -> path.toAbsolutePath().toString())
+        .map(LocalFileKey::from)
         .filter(fileValidator::isValid)
-        .toList();
+        .collect(Collectors.toUnmodifiableList());
     } catch (IOException ex) {
       throw new IllegalArgumentException("failed to list files in directory: " + absDir);
     }
   }
-  private List<String> handleDirectoryRecursively(Path absDir) {
+  private List<FileKey> handleDirectoryRecursively(Path absDir) {
     try (Stream<Path> stream = Files.walk(absDir, Integer.MAX_VALUE)) {
       return stream
         .filter(Files::isRegularFile)
-        .map(path -> path.toAbsolutePath().toString())
+        .map(LocalFileKey::from)
         .filter(fileValidator::isValid)
-        .toList();
+        .collect(Collectors.toUnmodifiableList());
     } catch (IOException ex) {
       throw new IllegalArgumentException("failed to list files in directory: " + absDir);
     }

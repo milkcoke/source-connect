@@ -1,5 +1,7 @@
 package sourceconnector.repository.file.filter;
 
+import sourceconnector.domain.file.FileKey;
+
 import java.util.List;
 
 public class FileExtensionFilter implements FileFilter {
@@ -13,7 +15,7 @@ public class FileExtensionFilter implements FileFilter {
   }
 
   @Override
-  public boolean accept(String filePath) {
-    return extensions.stream().anyMatch(filePath::endsWith);
+  public boolean accept(FileKey fileKey) {
+    return extensions.stream().anyMatch(extension -> fileKey.get().endsWith(extension));
   }
 }
