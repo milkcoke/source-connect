@@ -34,4 +34,10 @@ public record StorageConfig(
       throw new IllegalArgumentException("paths must not be null or empty");
     }
   }
+
+  public List<FileKey> getAllFileKeys() {
+    return paths.stream()
+      .map(type::toFileKey)
+      .toList();
+  }
 }
