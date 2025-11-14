@@ -3,6 +3,7 @@ package sourceconnector.domain.pipeline.factory;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import sourceconnector.domain.file.LocalFileKey;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.factory.JSONLogFactory;
 import sourceconnector.domain.log.factory.LogFactory;
@@ -28,13 +29,13 @@ class FileBaseLogPipelineBuilderTest {
   void createMissingProcessorTest() {
     // given
     FileBaseLogPipelineBuilder builder = new FileBaseLogPipelineBuilder();
-    File file = Path.of("src/test/resources/sample-data/large.ndjson").toFile();
+    Path localPath = Path.of("src/test/resources/sample-data/large.ndjson");
     LogFactory logFactory = new JSONLogFactory();
     // when then
     assertThatThrownBy(() ->
         builder.create(
           new LocalFileRepository(),
-          file.getAbsolutePath(),
+          LocalFileKey.from(localPath),
           logFactory,
           Collections.emptyList()
         ))
@@ -47,13 +48,13 @@ class FileBaseLogPipelineBuilderTest {
   void pipelineCreateTest() {
     // given
     FileBaseLogPipelineBuilder builder = new FileBaseLogPipelineBuilder();
-    File file = Path.of("src/test/resources/sample-data/large.ndjson").toFile();
+    Path path = Path.of("src/test/resources/sample-data/large.ndjson");
     LogFactory logFactory = new JSONLogFactory();
     // when then
     assertDoesNotThrow(() -> {
       builder.create(
         new LocalFileRepository(),
-        file.getAbsolutePath(),
+        LocalFileKey.from(path),
         logFactory,
         List.of(new TrimMapperProcessor(logFactory), new EmptyFilterProcessor())
       );
@@ -66,14 +67,14 @@ class FileBaseLogPipelineBuilderTest {
   void failToCreatePipelineTest() {
     // given
     FileBaseLogPipelineBuilder builder = new FileBaseLogPipelineBuilder();
-    File file = Path.of("invalidPath").toFile();
+    Path invalidPath = Path.of("invalidPath");
     LogFactory logFactory = new JSONLogFactory();
 
     // when then
     assertThatThrownBy(()->
         builder.createWithNoProcessor(
           new LocalFileRepository(),
-          file.getAbsolutePath(),
+          LocalFileKey.from(invalidPath),
           logFactory
         )
     ).isInstanceOf(IllegalStateException.class)
@@ -85,14 +86,14 @@ class FileBaseLogPipelineBuilderTest {
   void createWithNoProcessor() {
     // given
     FileBaseLogPipelineBuilder builder = new FileBaseLogPipelineBuilder();
-    File file = Path.of("src/test/resources/sample-data/large.ndjson").toFile();
+    Path localPath = Path.of("src/test/resources/sample-data/large.ndjson");
     LogFactory logFactory = new JSONLogFactory();
 
     // when then
     assertDoesNotThrow(() -> {
       builder.createWithNoProcessor(
         new LocalFileRepository(),
-        file.getAbsolutePath(),
+        LocalFileKey.from(localPath),
         logFactory
       );
     });
@@ -103,12 +104,12 @@ class FileBaseLogPipelineBuilderTest {
   void tryingGetResultCompletedPipelineTest() {
     // given
     FileBaseLogPipelineBuilder builder = new FileBaseLogPipelineBuilder();
-    File file = Path.of("src/test/resources/sample-data/empty.ndjson").toFile();
     LogFactory logFactory = new JSONLogFactory();
+    Path localPath = Path.of("src/test/resources/sample-data/empty.ndjson");
 
     Pipeline<Log>  pipeline = builder.createWithNoProcessor(
       new LocalFileRepository(),
-      file.getAbsolutePath(),
+      LocalFileKey.from(localPath),
       logFactory
     );
 

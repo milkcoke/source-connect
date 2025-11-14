@@ -5,9 +5,9 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.common.record.CompressionType;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import sourceconnector.domain.file.LocalFileKey;
 import sourceconnector.domain.log.LogMetadata;
 import sourceconnector.domain.offset.LocalFileOffsetRecord;
 import sourceconnector.domain.log.factory.JSONLogFactory;
@@ -32,7 +32,6 @@ import java.util.*;
 
 import static org.apache.kafka.clients.producer.ProducerConfig.*;
 
-@Disabled
 class SourceConnectorTest {
   private static final Properties props = new Properties();
   static {
@@ -54,12 +53,12 @@ class SourceConnectorTest {
   @Test
   void mainTest() {
 
-    File file = Path.of("src/test/resources/sample-data/large-ndjson.ndjson").toFile();
     PipelineBuilder<Log> pipelineBuilder = new FileBaseLogPipelineBuilder();
+    Path localPath = Path.of("src/test/resources/sample-data/large-ndjson.ndjson");
 
     Pipeline<Log> pipeline = pipelineBuilder.create(
       new LocalFileRepository(),
-      file.getPath(),
+      LocalFileKey.from(localPath),
       new JSONLogFactory(),
       List.of(new TrimMapperProcessor(new JSONLogFactory()), new EmptyFilterProcessor())
     );
@@ -114,7 +113,7 @@ class SourceConnectorTest {
       for (File file : files) {
         Pipeline<Log> pipeline = pipelineBuilder.create(
           new LocalFileRepository(),
-          file.getPath(),
+          LocalFileKey.from(file.toPath()),
           new JSONLogFactory(),
           List.of(new TrimMapperProcessor(new JSONLogFactory()), new EmptyFilterProcessor())
         );
@@ -154,7 +153,7 @@ class SourceConnectorTest {
   @Test
   void NothingToDoAfterProcessingAllFiles() throws IOException {
     // given
-    BatchProducer<String> producer = new BatchProduceService(props, "log", "local-offset");
+    BatchProducer<String> producer = new BatchProduceService(props, "log-topic", "local-offset");
     PipelineBuilder<Log> pipelineBuilder = new FileBaseLogPipelineBuilder();
     // when
     try (var stream = Files.walk(Paths.get("src/test/resources/sample-data"))) {
@@ -168,7 +167,7 @@ class SourceConnectorTest {
       for (File file : files) {
         Pipeline<Log> pipeline = pipelineBuilder.create(
           new LocalFileRepository(),
-          file.getPath(),
+          LocalFileKey.from(file.toPath()),
           new JSONLogFactory(),
           List.of(new TrimMapperProcessor(new JSONLogFactory()), new EmptyFilterProcessor())
         );

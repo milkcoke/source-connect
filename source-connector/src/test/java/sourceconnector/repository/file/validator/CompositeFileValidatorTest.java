@@ -2,10 +2,12 @@ package sourceconnector.repository.file.validator;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import sourceconnector.domain.file.LocalFileKey;
 import sourceconnector.repository.file.filter.FileExcludeFilter;
 import sourceconnector.repository.file.filter.FileExtensionFilter;
 import sourceconnector.repository.file.filter.FileIncludeFilter;
 
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
@@ -24,9 +26,9 @@ class CompositeFileValidatorTest {
     ));
 
     assertAll(
-      () -> assertThat(validator.isValid("sample.ndjson")).isTrue(),
-      () -> assertThat(validator.isValid("test.ndjson")).isFalse(),
-      () -> assertThat(validator.isValid("sample.csv")).isTrue()
+      () -> assertThat(validator.isValid(LocalFileKey.from(Path.of("sample.ndjson")))).isTrue(),
+      () -> assertThat(validator.isValid(LocalFileKey.from(Path.of("test.ndjson")))).isFalse(),
+      () -> assertThat(validator.isValid(LocalFileKey.from(Path.of("sample.csv")))).isTrue()
     );
   }
 

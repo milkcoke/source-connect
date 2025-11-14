@@ -2,6 +2,9 @@ package sourceconnector.repository.file;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import sourceconnector.domain.file.FileKey;
+import sourceconnector.domain.file.S3FileKey;
+import sourceconnector.domain.file.S3Uri;
 import sourceconnector.repository.file.validator.NoConditionFileValidator;
 
 import java.io.IOException;
@@ -18,13 +21,13 @@ class S3FileListerTest extends S3TestSupport {
     // given
     FileLister fileLister = new S3FileLister(
       s3Client,
-      BUCKET_NAME,
       new NoConditionFileValidator()
     );
+    FileKey s3FileKey = new S3Location(BUCKET_NAME, "not-exist-path.txt").toFileKey();
     // when
-    List<String> filePaths = fileLister.listFilesRecursively("not-exist-path");
+    List<FileKey>fileKeys = fileLister.listFilesRecursively(s3FileKey);
     // then
-    assertThat(filePaths).isEmpty();
+    assertThat(fileKeys).isEmpty();
   }
 
   @DisplayName("Should get file list with no recursive")
@@ -41,12 +44,15 @@ class S3FileListerTest extends S3TestSupport {
 
     FileLister fileLister = new S3FileLister(
       s3Client,
-      BUCKET_NAME,
       new NoConditionFileValidator()
     );
 
+    FileKey fileKey = new S3Location(BUCKET_NAME, "resources/sample-data/").toFileKey();
     // when
-    List<String> filePaths = fileLister.listFiles("resources/sample-data/");
+    List<String> filePaths = fileLister.listFiles(fileKey)
+      .stream()
+      .map(FileKey::get)
+      .toList();
 
     // then
     assertThat(filePaths).hasSize(2)
@@ -70,12 +76,15 @@ class S3FileListerTest extends S3TestSupport {
     this.uploadSamples(sampleFilNames);
     FileLister fileLister = new S3FileLister(
       s3Client,
-      BUCKET_NAME,
       new NoConditionFileValidator()
     );
 
+    FileKey fileKey = new S3Location(BUCKET_NAME, "resources/sample-data/").toFileKey();
     // when
-    List<String> filePaths = fileLister.listFilesRecursively( "resources/sample-data/");
+    List<String> filePaths = fileLister.listFilesRecursively(fileKey)
+      .stream()
+      .map(FileKey::get)
+      .toList();
 
     // then
     assertThat(filePaths).hasSize(4)

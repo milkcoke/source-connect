@@ -2,8 +2,10 @@ package sourceconnector.repository.file.options;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import sourceconnector.domain.file.LocalFileKey;
 import sourceconnector.repository.file.filter.FileIncludeFilter;
 
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
@@ -22,9 +24,9 @@ class FileIncludeFilterTest {
     ));
 
     // when
-    var result1 = filter.accept("/Users/Falcon/Downloads/Test.ndjson");
-    var result2 = filter.accept("README.md");
-    var result3 = filter.accept("document.txt");
+    var result1 = filter.accept(LocalFileKey.from(Path.of("/Users/Falcon/Downloads/Test.ndjson")));
+    var result2 = filter.accept(LocalFileKey.from(Path.of("README.md")));
+    var result3 = filter.accept(LocalFileKey.from(Path.of("document.txt")));
 
     // then
     assertTrue(result1);

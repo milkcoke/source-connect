@@ -3,9 +3,11 @@ package sourceconnector.repository.file.options;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import sourceconnector.domain.file.LocalFileKey;
 import sourceconnector.repository.file.filter.FileExcludeFilter;
 import sourceconnector.repository.file.filter.FileFilter;
 
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
@@ -21,8 +23,8 @@ class FileExcludeFilterTest {
       ".*\\.tmp$"
     ));
     // when
-    var result1 = filter.accept("/Users/Flacon/Downloads/Test.ndjson");
-    var result2 = filter.accept("tempfile.tmp");
+    var result1 = filter.accept(LocalFileKey.from(Path.of("Test.ndjson")));
+    var result2 = filter.accept(LocalFileKey.from(Path.of("tempfile.tmp")));
 
     // then
     assertTrue(result1);

@@ -1,5 +1,6 @@
 package sourceconnector.repository.file;
 
+import sourceconnector.domain.file.FileKey;
 import sourceconnector.domain.file.S3FileKey;
 import sourceconnector.domain.file.S3Uri;
 
@@ -20,8 +21,12 @@ public record S3Location(
     return new S3Location(s3Uri.bucket(), s3Uri.key());
   }
 
-  public static S3Location from(S3FileKey s3FileKey) {
-    S3Uri s3Uri = S3Uri.from(s3FileKey.get());
+  public static S3Location from(FileKey fileKey) {
+    S3Uri s3Uri = S3Uri.from(fileKey.get());
     return new S3Location(s3Uri.bucket(), s3Uri.key());
+  }
+
+  public FileKey toFileKey() {
+    return S3Uri.of(bucket, key).toFileKey();
   }
 }

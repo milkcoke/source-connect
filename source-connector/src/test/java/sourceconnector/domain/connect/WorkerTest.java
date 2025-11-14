@@ -7,6 +7,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import sourceconnector.domain.file.FileKey;
+import sourceconnector.domain.file.LocalFileKey;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.factory.JSONLogFactory;
 import sourceconnector.domain.pipeline.factory.FileBaseLogPipelineBuilder;
@@ -16,6 +18,7 @@ import sourceconnector.domain.processor.impl.EmptyFilterProcessor;
 import sourceconnector.domain.processor.impl.TrimMapperProcessor;
 import sourceconnector.repository.file.LocalFileRepository;
 
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
@@ -79,9 +82,12 @@ class WorkerTest {
   @Test
   void createTwoTasksTest() {
     // given
+    FileKey fileKey1 = LocalFileKey.from(Path.of("file-0"));
+    FileKey fileKey2 = LocalFileKey.from(Path.of("file-1"));
+
     Worker worker = new Worker(
       0,
-      new FileTaskAssignor(List.of("file-0", "file-1"), 2)
+      new FileTaskAssignor(List.of(fileKey1, fileKey2), 2)
     );
     // when
     Collection<Task<FileProcessingResult>> tasks = worker.createTasks(
@@ -109,13 +115,16 @@ class WorkerTest {
 
   @DisplayName("Success to start after that tasks are created")
   @Test
-  void successToStart() throws ExecutionException, InterruptedException {
+  void successToStart() {
     // given
+    Path path1 = Path.of("src/test/resources/sample-data/subdir1/sub1.ndjson");
+    Path path2= Path.of("src/test/resources/sample-data/empty.ndjson");
+
     Worker worker = new Worker(
       0,
       new FileTaskAssignor(List.of(
-        "src/test/resources/sample-data/subdir1/sub1.ndjson",
-        "src/test/resources/sample-data/empty.ndjson"
+        LocalFileKey.from(path1),
+        LocalFileKey.from(path2)
       ),
         2)
     );

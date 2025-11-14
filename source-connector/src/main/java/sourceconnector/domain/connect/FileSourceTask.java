@@ -3,6 +3,7 @@ package sourceconnector.domain.connect;
 import lombok.AccessLevel;
 import lombok.Getter;
 import offsetmanager.domain.OffsetStatus;
+import sourceconnector.domain.file.FileKey;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.LogMetadata;
 import sourceconnector.domain.offset.LocalFileOffsetRecord;
@@ -24,7 +25,7 @@ public class FileSourceTask implements Task<FileProcessingResult> {
 
   // visible for test
   @Getter(AccessLevel.PACKAGE)
-  private final List<String> filePaths = new ArrayList<>();
+  private final List<FileKey> fileKeys = new ArrayList<>();
   private final FileProcessingResult result = new FileProcessingResult();
 
   public FileSourceTask(
@@ -41,8 +42,8 @@ public class FileSourceTask implements Task<FileProcessingResult> {
   @Override
   public FileProcessingResult call() throws Exception {
     try {
-      for (var filePath: this.filePaths) {
-        Pipeline<Log> pipeline = pipelineSupplier.get(filePath);
+      for (var fileKey: this.fileKeys) {
+        Pipeline<Log> pipeline = pipelineSupplier.get(fileKey);
 
         LogBatcher batcher = new LogBatcher(pipeline, 10_000);
 
@@ -71,7 +72,7 @@ public class FileSourceTask implements Task<FileProcessingResult> {
         producer.sendBatch(
           new LocalFileOffsetRecord(
             // This is for handling no Log after filtered
-            filePath,
+            fileKey.get(),
             OffsetStatus.COMPLETED.getValue()
           ),
           Collections::emptyList
@@ -86,8 +87,8 @@ public class FileSourceTask implements Task<FileProcessingResult> {
   }
 
   @Override
-  public void assign(List<String> filePathList) {
-    filePaths.addAll(filePathList);
-    this.result.setTotalCount(filePaths.size());
+  public void assign(List<FileKey> fileKeys) {
+    this.fileKeys.addAll(fileKeys);
+    this.result.setTotalCount(this.fileKeys.size());
   }
 }

@@ -2,6 +2,9 @@ package sourceconnector.domain.log;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import sourceconnector.domain.file.LocalFileKey;
+
+import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -13,13 +16,14 @@ class JSONLogTest {
     // given
     JSONLog jsonLog = new JSONLog(
       "log payload",
-      new FileLogMetadata("localFile/file.ndjson", 0L)
+      new FileLogMetadata(LocalFileKey.from(Path.of("file.ndjson")), 0L)
     );
     // when then
     assertThat(jsonLog.get()).isEqualTo("log payload");
-    assertThat(jsonLog.getMetadata())
-      .extracting(LogMetadata::key, LogMetadata::offset)
-      .containsExactly("localFile/file.ndjson", 0L);
+
+    LogMetadata metadata = jsonLog.getMetadata();
+    assertThat(metadata.key()).contains("file.ndjson");
+    assertThat(metadata.offset()).isEqualTo(0L);
   }
 
 }

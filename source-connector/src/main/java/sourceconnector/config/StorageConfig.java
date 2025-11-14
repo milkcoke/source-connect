@@ -20,7 +20,7 @@ public record StorageConfig(
   @RequiredArgsConstructor
   public enum StorageType {
     LOCAL(path -> LocalFileKey.from(Path.of(path))),
-    S3(path -> S3FileKey.from(S3Uri.from(path)));
+    S3(path -> S3Uri.from(path).toFileKey());
 
     private final Function<String, FileKey> fileKeyFactory;
 

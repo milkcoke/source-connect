@@ -2,8 +2,9 @@ package sourceconnector.repository.file;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Location;
+import sourceconnector.domain.file.FileKey;
+import sourceconnector.domain.file.S3Uri;
 
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -17,17 +18,14 @@ class S3FileRepositoryTest extends S3TestSupport {
   @Test
   void getFileTest() {
     // given
-    Path file = Path.of("src/test/resources/sample-data/empty.ndjson");
-    String s3Path = "test-path/empty.ndjson";
-    this.upload(s3Path, file);
+    Path localFilePath = Path.of("src/test/resources/sample-data/empty.ndjson");
+    S3Uri s3Path = S3Uri.of(BUCKET_NAME, "sample-data/empty.ndjson");
+    this.upload(s3Path.toString(), localFilePath);
 
-    S3FileRepository fileRepository = new S3FileRepository(
-      s3Client,
-      BUCKET_NAME
-    );
+    S3FileRepository fileRepository = new S3FileRepository(s3Client);
 
     // when
-    InputStream inputStream = fileRepository.getFile(s3Path);
+    InputStream inputStream = fileRepository.getFile(s3Path.toFileKey());
 
     // then
     assertThat(inputStream).isNotNull();
@@ -37,16 +35,13 @@ class S3FileRepositoryTest extends S3TestSupport {
   @Test
   void notFoundFileTest() {
     // given
-    String s3Path = "test-path/not-exist-file.ndjson";
+    FileKey fileKey = S3Uri.of(BUCKET_NAME, "not-exist-file.csv").toFileKey();
 
-    S3FileRepository fileRepository = new S3FileRepository(
-      s3Client,
-      BUCKET_NAME
-    );
+    S3FileRepository fileRepository = new S3FileRepository(s3Client);
 
     // when then
-    assertThatThrownBy(() -> fileRepository.getFile(s3Path))
+    assertThatThrownBy(() -> fileRepository.getFile(fileKey))
       .isInstanceOf(RuntimeException.class)
-      .hasMessage("Failed to get file from S3: " + s3Path);
+      .hasMessage("Failed to get file from S3: " + fileKey.get());
   }
 }

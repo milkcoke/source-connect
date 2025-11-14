@@ -17,6 +17,7 @@ public class FileTaskAssignor implements TaskAssignor {
    * @param totalTaskCount all task count
    */
   public FileTaskAssignor(List<FileKey> fileKeys, int totalTaskCount) {
+    // TODO: How to be sorted FileKey?
     this.sortedAllFilePaths = fileKeys.stream()
       .sorted()
       .toList();

@@ -1,6 +1,7 @@
 package sourceconnector.domain.pipeline.factory;
 
 import lombok.RequiredArgsConstructor;
+import sourceconnector.domain.file.FileKey;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.factory.LogFactory;
 import sourceconnector.domain.pipeline.Pipeline;
@@ -22,11 +23,11 @@ public class FileLogPipelineSupplier implements PipelineSupplier<Log> {
   private final Supplier<List<BaseProcessor<Log>>> processorsSupplier;
 
   @Override
-  public Pipeline<Log> get(String filePath) {
+  public Pipeline<Log> get(FileKey fileKey) {
     List<BaseProcessor<Log>> processors = processorsSupplier.get();
     if (processors.isEmpty()) {
-      return builder.createWithNoProcessor(fileRepository, filePath, logFactory);
+      return builder.createWithNoProcessor(fileRepository, fileKey, logFactory);
     }
-    return builder.create(fileRepository, filePath, logFactory, processors);
+    return builder.create(fileRepository, fileKey, logFactory, processors);
   }
 }

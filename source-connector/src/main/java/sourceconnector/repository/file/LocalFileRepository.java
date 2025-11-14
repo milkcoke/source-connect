@@ -4,6 +4,7 @@ import sourceconnector.domain.file.FileKey;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,7 +19,7 @@ public class LocalFileRepository implements FileRepository {
    */
   @Override
   public InputStream getFile(FileKey fileKey) throws IOException {
-    Path path = Paths.get(fileKey.get());
+    Path path = Paths.get(URI.create(fileKey.get()));
     return Files.newInputStream(path, READ);
   }
 }

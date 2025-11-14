@@ -3,10 +3,12 @@ package sourceconnector.repository.file.filter;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import sourceconnector.domain.file.LocalFileKey;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,12 +19,11 @@ class FileExtensionFilterTest {
   void accept() {
     // given
     FileFilter filter = new FileExtensionFilter(List.of(".ndjson", ".md"));
-
     // when
-    var result1 = filter.accept("test.ndjson");
-    var result2 = filter.accept("README.md");
-    var result3 = filter.accept("image.png");
-    var result4 = filter.accept("temp.tmp");
+    var result1 = filter.accept(LocalFileKey.from(Path.of("test.ndjson")));
+    var result2 = filter.accept(LocalFileKey.from(Path.of("README.md")));
+    var result3 = filter.accept(LocalFileKey.from(Path.of("image.png")));
+    var result4 = filter.accept(LocalFileKey.from(Path.of("temp.tmp")));
 
     // then
     assertTrue(result1);

@@ -1,5 +1,6 @@
 package sourceconnector.domain.pipeline.factory;
 
+import sourceconnector.domain.file.FileKey;
 import sourceconnector.domain.pipeline.Pipeline;
 
 /**
@@ -8,5 +9,5 @@ import sourceconnector.domain.pipeline.Pipeline;
  */
 @FunctionalInterface
 public interface PipelineSupplier<T> {
-  Pipeline<T> get(String filePath);
+  Pipeline<T> get(FileKey fileKey);
 }

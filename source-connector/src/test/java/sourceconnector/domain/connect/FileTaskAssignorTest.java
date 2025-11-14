@@ -1,12 +1,11 @@
 package sourceconnector.domain.connect;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
+import sourceconnector.domain.file.FileKey;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.factory.JSONLogFactory;
 import sourceconnector.domain.pipeline.factory.FileBaseLogPipelineBuilder;
@@ -40,23 +39,32 @@ class FileTaskAssignorTest {
     ));
   }
 
+  @RequiredArgsConstructor
+  static class FakeFileKey implements FileKey {
+    private final String path;
+    @Override
+    public String get() {
+      return "";
+    }
+  }
+
   @DisplayName("First task has the number of 6 file paths when task 5 and file paths 30 provided")
   @Test
   void assignedFileCountTest() {
 
     // given
-    List<String> filePaths = new ArrayList<>();
+    List<FileKey> fileKeys = new ArrayList<>();
     for (int i = 0; i < 30; i++) {
-      filePaths.add("file-" + i);
+      fileKeys.add(new FakeFileKey("file-" + i ));
     }
-    TaskAssignor taskAssignor = new FileTaskAssignor(filePaths, 5);
+    TaskAssignor taskAssignor = new FileTaskAssignor(fileKeys, 5);
     FileSourceTask task0 = new FileSourceTask(0, pipelineSupplier, new BatchProduceService(producerProperties, "offset-topic", "log-topic"));
 
     // when
     taskAssignor.assign(List.of(task0));
 
     // then
-    assertThat(task0.getFilePaths())
+    assertThat(task0.getFileKeys())
       .hasSize(6);
   }
 
@@ -64,11 +72,11 @@ class FileTaskAssignorTest {
   @Test
   void assignedFileCountTest2() {
     // given
-    List<String> filePaths = new ArrayList<>();
+    List<FileKey> fileKeys = new ArrayList<>();
     for (int i = 0; i < 30; i++) {
-      filePaths.add("file-" + i);
+      fileKeys.add(new FakeFileKey("file-" + i));
     }
-    TaskAssignor taskAssignor = new FileTaskAssignor(filePaths, 4);
+    TaskAssignor taskAssignor = new FileTaskAssignor(fileKeys, 4);
     FileSourceTask task0 = new FileSourceTask(0, pipelineSupplier, new BatchProduceService(producerProperties, "offset-topic", "log-topic"));
     FileSourceTask task1 =  new FileSourceTask(1, pipelineSupplier, new BatchProduceService(producerProperties, "offset-topic", "log-topic"));
     FileSourceTask task2 =  new FileSourceTask(2, pipelineSupplier, new BatchProduceService(producerProperties, "offset-topic", "log-topic"));
@@ -81,10 +89,10 @@ class FileTaskAssignorTest {
 
     // then
     assertAll(
-      ()->assertThat(task0.getFilePaths()).hasSize(8),
-      ()->assertThat(task1.getFilePaths()).hasSize(8),
-      ()->assertThat(task2.getFilePaths()).hasSize(7),
-      ()->assertThat(task3.getFilePaths()).hasSize(7)
+      ()->assertThat(task0.getFileKeys()).hasSize(8),
+      ()->assertThat(task1.getFileKeys()).hasSize(8),
+      ()->assertThat(task2.getFileKeys()).hasSize(7),
+      ()->assertThat(task3.getFileKeys()).hasSize(7)
     );
   }
 

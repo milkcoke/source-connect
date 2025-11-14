@@ -39,6 +39,10 @@ public class S3Uri {
     return new S3Uri(bucket, key);
   }
 
+  public S3FileKey toFileKey() {
+    return new S3FileKey(this);
+  }
+
   public String bucket() {
     return this.bucket;
   }

@@ -26,18 +26,17 @@ public class StorageRepositoryConfiguration {
   }
   @Bean
   @ConditionalOnProperty(prefix = "source.storage", name = "type", havingValue = "s3")
-  public FileLister s3FileLister(S3Client s3Client, S3Config s3Config, FileValidator fileValidator) {
+  public FileLister s3FileLister(S3Client s3Client, FileValidator fileValidator) {
     return new S3FileLister(
       s3Client,
-      s3Config.bucket(),
       fileValidator
     );
   }
 
   @Bean
   @ConditionalOnProperty(prefix = "source.storage", name = "type", havingValue = "s3")
-  public FileRepository s3FileRepository(S3Client s3Client, S3Config s3Config) {
-    return new S3FileRepository(s3Client, s3Config.bucket());
+  public FileRepository s3FileRepository(S3Client s3Client) {
+    return new S3FileRepository(s3Client);
   }
 
   // --- Local beans ---

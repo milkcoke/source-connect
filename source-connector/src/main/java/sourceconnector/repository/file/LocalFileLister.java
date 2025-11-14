@@ -6,6 +6,7 @@ import sourceconnector.domain.file.LocalFileKey;
 import sourceconnector.repository.file.validator.FileValidator;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -14,7 +15,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-//TODO: FileKey 로 싹 바르기 vs String 으로하기
 @RequiredArgsConstructor
 public class LocalFileLister implements FileLister {
   private final FileValidator fileValidator;
@@ -48,7 +48,7 @@ public class LocalFileLister implements FileLister {
 
     List<FileKey> result = new ArrayList<>();
     for (FileKey fileKey : fileKeys) {
-      Path absolutePath = Path.of(fileKey.get()).toAbsolutePath();
+      Path absolutePath = Path.of(URI.create(fileKey.get())).toAbsolutePath();
       this.validatePathExists(absolutePath);
       if (Files.isRegularFile(absolutePath)) {
         result.addAll(this.handleFile(absolutePath));

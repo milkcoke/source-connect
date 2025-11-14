@@ -26,7 +26,7 @@ class LocalFileRepositoryTest {
     FileKey fileKey = LocalFileKey.from(Path.of("not-exist-file.txt"));
     Assertions.assertThatThrownBy(()->fileRepository.getFile(fileKey))
       .isInstanceOf(NoSuchFileException.class)
-      .hasMessage("not-exist-file.txt");
+      .hasMessageContaining("not-exist-file.txt");
   }
 
   @DisplayName("Should get inpustream when file exists")

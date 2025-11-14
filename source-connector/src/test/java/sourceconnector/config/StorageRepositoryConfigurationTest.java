@@ -56,7 +56,7 @@ class StorageRepositoryConfigurationTest {
     );
 
     // Provide S3Config manually
-    context.registerBean(S3Config.class, () -> new S3Config("my-bucket", "ap-northeast-2"));
+    context.registerBean(S3Config.class, () -> new S3Config("ap-northeast-2"));
     context.register(TestConfig.class);
     context.register(StorageRepositoryConfiguration.class);
 

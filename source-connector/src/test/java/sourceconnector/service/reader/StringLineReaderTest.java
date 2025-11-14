@@ -2,6 +2,8 @@ package sourceconnector.service.reader;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import sourceconnector.domain.file.FileKey;
+import sourceconnector.domain.file.LocalFileKey;
 import sourceconnector.repository.file.LocalFileRepository;
 
 import java.io.File;
@@ -18,8 +20,9 @@ class StringLineReaderTest {
   @Test
   void readAll() throws IOException {
     // given
-    File file = Path.of("src/test/resources/sample-data/large.ndjson").toFile();
-    InputStream inputStream = new LocalFileRepository().getFile(file.getPath());
+    Path localPath = Path.of("src/test/resources/sample-data/large.ndjson");
+    FileKey fileKey = LocalFileKey.from(localPath);
+    InputStream inputStream = new LocalFileRepository().getFile(fileKey);
     LineReader<String> reader = new StringLineReader(inputStream);
 
     // when
@@ -38,8 +41,9 @@ class StringLineReaderTest {
   @Test
   void emptyLineTest() throws IOException {
     // given
-    File file = Path.of("src/test/resources/sample-data/empty-included.ndjson").toFile();
-    InputStream inputStream = new LocalFileRepository().getFile(file.getPath());
+    Path localPath = Path.of("src/test/resources/sample-data/empty-included.ndjson");
+    FileKey fileKey = LocalFileKey.from(localPath);
+    InputStream inputStream = new LocalFileRepository().getFile(fileKey);
     LineReader<String> reader = new StringLineReader(inputStream);
     // when
     String result = null;
@@ -57,8 +61,9 @@ class StringLineReaderTest {
   @Test
   void startLineNumberTest() throws IOException {
     // given
-    File file = Path.of("src/test/resources/sample-data/empty-included.ndjson").toFile();
-    InputStream inputStream = new LocalFileRepository().getFile(file.getPath());
+    Path localPath = Path.of("src/test/resources/sample-data/empty-included.ndjson");
+    FileKey fileKey = LocalFileKey.from(localPath);
+    InputStream inputStream = new LocalFileRepository().getFile(fileKey);
     LineReader<String> reader = new StringLineReader(inputStream);
     // when then
     assertThat(reader.getLineNumber()).isEqualTo(0L);
@@ -72,8 +77,9 @@ class StringLineReaderTest {
   @Test
   void startFromSetLineNumberTest() throws IOException {
     // given
-    File file = Path.of("src/test/resources/sample-data/line-count.csv").toFile();
-    InputStream inputStream = new LocalFileRepository().getFile(file.getPath());
+    Path localPath = Path.of("src/test/resources/sample-data/line-count.csv");
+    FileKey fileKey = LocalFileKey.from(localPath);
+    InputStream inputStream = new LocalFileRepository().getFile(fileKey);
     // when
     LineReader<String> reader = StringLineReader.withInitialLineNumber(inputStream, 5);
     // then
@@ -84,8 +90,9 @@ class StringLineReaderTest {
   @Test
   void failSetLineNumberTest() throws IOException {
     // given
-    File file = Path.of("src/test/resources/sample-data/line-count.csv").toFile();
-    InputStream inputStream = new LocalFileRepository().getFile(file.getPath());
+    Path localPath = Path.of("src/test/resources/sample-data/line-count.csv");
+    FileKey fileKey = LocalFileKey.from(localPath);
+    InputStream inputStream = new LocalFileRepository().getFile(fileKey);
     // when then
     assertThatThrownBy(()->StringLineReader.withInitialLineNumber(inputStream, -100))
       .isInstanceOf(IllegalArgumentException.class)
