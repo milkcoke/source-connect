@@ -1,6 +1,5 @@
 package sourceconnector.domain.pipeline.factory;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import sourceconnector.domain.file.LocalFileKey;
@@ -12,7 +11,6 @@ import sourceconnector.domain.processor.impl.EmptyFilterProcessor;
 import sourceconnector.domain.processor.impl.TrimMapperProcessor;
 import sourceconnector.repository.file.LocalFileRepository;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;

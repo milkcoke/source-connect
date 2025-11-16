@@ -1,7 +1,6 @@
 package sourceconnector.repository.file;
 
 import sourceconnector.domain.file.FileKey;
-import sourceconnector.domain.file.S3FileKey;
 import sourceconnector.domain.file.S3Uri;
 
 public record S3Location(

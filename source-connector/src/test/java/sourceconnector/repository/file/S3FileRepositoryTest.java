@@ -2,7 +2,6 @@ package sourceconnector.repository.file;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import software.amazon.awssdk.services.s3.model.S3Location;
 import sourceconnector.domain.file.FileKey;
 import sourceconnector.domain.file.S3Uri;
 

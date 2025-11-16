@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import sourceconnector.domain.file.FileKey;
 import sourceconnector.domain.file.LocalFileKey;
-import sourceconnector.domain.file.S3FileKey;
 import sourceconnector.domain.file.S3Uri;
 
 import java.nio.file.Path;

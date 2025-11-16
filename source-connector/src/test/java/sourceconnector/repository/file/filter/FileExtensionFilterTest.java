@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import sourceconnector.domain.file.LocalFileKey;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 

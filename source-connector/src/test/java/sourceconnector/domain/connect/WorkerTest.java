@@ -20,11 +20,10 @@ import sourceconnector.repository.file.LocalFileRepository;
 
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class WorkerTest {
