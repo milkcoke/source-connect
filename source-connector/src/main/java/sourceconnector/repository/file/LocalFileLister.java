@@ -29,7 +29,7 @@ public class LocalFileLister implements FileLister {
     List<FileKey> result = new ArrayList<>();
 
     for (FileKey fileKey : fileKeys) {
-      Path absolutePath = Path.of(fileKey.get()).toAbsolutePath();
+      Path absolutePath = Path.of(URI.create(fileKey.get())).toAbsolutePath();
       this.validatePathExists(absolutePath);
       if (Files.isRegularFile(absolutePath)) {
         result.addAll(this.handleFile(absolutePath));

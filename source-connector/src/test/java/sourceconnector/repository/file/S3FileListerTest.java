@@ -3,8 +3,6 @@ package sourceconnector.repository.file;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import sourceconnector.domain.file.FileKey;
-import sourceconnector.domain.file.S3FileKey;
-import sourceconnector.domain.file.S3Uri;
 import sourceconnector.repository.file.validator.NoConditionFileValidator;
 
 import java.io.IOException;
@@ -100,8 +98,8 @@ class S3FileListerTest extends S3TestSupport {
 
     for (String file : fileNames) {
       Path localPath = Path.of("src/test/resources/sample-data/", file);
-      String s3Path = "resources/sample-data/" + file;
-      this.upload(s3Path, localPath);
+      S3Location s3Location = new S3Location(BUCKET_NAME, "resources/sample-data/" + file);
+      this.upload(s3Location, localPath);
     }
   }
 

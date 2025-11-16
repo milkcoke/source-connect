@@ -19,4 +19,17 @@ public class LocalFileKey implements FileKey {
   public String get() {
     return this.fileUri.toString();
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof LocalFileKey)) return false;
+
+    return this.get().equals(((LocalFileKey) o).get());
+  }
+
+  @Override
+  public int hashCode() {
+    return this.get().hashCode();
+  }
 }
