@@ -70,14 +70,13 @@ class LocalFileListerTest {
     List<FileKey> fileKeys = fileLister.listFilesRecursively(fileKey);
     // then
     assertThat(fileKeys).hasSize(6)
-      //TODO: Apply equals and hasCode according to the get() String result
       .containsExactlyInAnyOrder(
         LocalFileKey.from(Path.of("src/test/resources/sample-data/empty.ndjson")),
         LocalFileKey.from(Path.of("src/test/resources/sample-data/empty-included.ndjson")),
         LocalFileKey.from(Path.of("src/test/resources/sample-data/large.ndjson")),
-        LocalFileKey.from(Path.of("src/test/resources/sample-data/sub1.ndjson")),
-        LocalFileKey.from(Path.of("src/test/resources/sample-data/sub2.ndjson")),
-        LocalFileKey.from(Path.of("src/test/resources/sample-data/sub22.ndjson"))
+        LocalFileKey.from(Path.of("src/test/resources/sample-data/subdir1/sub1.ndjson")),
+        LocalFileKey.from(Path.of("src/test/resources/sample-data/subdir2/sub2.ndjson")),
+        LocalFileKey.from(Path.of("src/test/resources/sample-data/subdir2/sub22.ndjson"))
       );
   }
 

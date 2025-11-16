@@ -18,13 +18,13 @@ class S3FileRepositoryTest extends S3TestSupport {
   void getFileTest() {
     // given
     Path localFilePath = Path.of("src/test/resources/sample-data/empty.ndjson");
-    S3Uri s3Path = S3Uri.of(BUCKET_NAME, "sample-data/empty.ndjson");
-    this.upload(s3Path.toString(), localFilePath);
+    S3Location s3Location = new S3Location(BUCKET_NAME, "sample-data/empty.ndjson");
+    this.upload(s3Location, localFilePath);
 
     S3FileRepository fileRepository = new S3FileRepository(s3Client);
 
     // when
-    InputStream inputStream = fileRepository.getFile(s3Path.toFileKey());
+    InputStream inputStream = fileRepository.getFile(s3Location.toFileKey());
 
     // then
     assertThat(inputStream).isNotNull();
@@ -41,6 +41,6 @@ class S3FileRepositoryTest extends S3TestSupport {
     // when then
     assertThatThrownBy(() -> fileRepository.getFile(fileKey))
       .isInstanceOf(RuntimeException.class)
-      .hasMessage("Failed to get file from S3: " + fileKey.get());
+      .hasMessage("Failed to get file from: " + fileKey.get());
   }
 }

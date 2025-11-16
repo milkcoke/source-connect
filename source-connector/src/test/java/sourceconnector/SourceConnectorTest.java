@@ -54,7 +54,7 @@ class SourceConnectorTest {
   void mainTest() {
 
     PipelineBuilder<Log> pipelineBuilder = new FileBaseLogPipelineBuilder();
-    Path localPath = Path.of("src/test/resources/sample-data/large-ndjson.ndjson");
+    Path localPath = Path.of("src/test/resources/sample-data/large.ndjson");
 
     Pipeline<Log> pipeline = pipelineBuilder.create(
       new LocalFileRepository(),

@@ -26,7 +26,7 @@ public class S3FileRepository implements FileRepository {
 
       return s3Client.getObject(request);
     } catch (S3Exception e) {
-      throw new RuntimeException("Failed to get file from S3: " + fileKey, e);
+      throw new RuntimeException("Failed to get file from: " + fileKey.get(), e);
     }
   }
 }

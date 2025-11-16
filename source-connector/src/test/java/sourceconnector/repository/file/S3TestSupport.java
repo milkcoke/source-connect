@@ -13,6 +13,7 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 import java.net.URI;
 import java.nio.file.Path;
@@ -68,9 +69,12 @@ abstract class S3TestSupport {
     );
   }
 
-  public void upload(String key, Path path) {
-    s3Client.putObject(
-      builder -> builder.bucket(BUCKET_NAME).key(key).build(),
+  public void upload(S3Location s3Location, Path path) {
+    PutObjectResponse response = s3Client.putObject(
+      builder -> builder
+        .bucket(s3Location.bucket())
+        .key(s3Location.key())
+        .build(),
       RequestBody.fromFile(path)
     );
   }
