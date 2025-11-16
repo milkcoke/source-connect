@@ -12,6 +12,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.config.TopicConfig;
+import org.apache.kafka.common.errors.TopicExistsException;
 import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -60,7 +61,9 @@ class LocalKafkaOffsetRecordRepositoryTest {
       .config(TopicConfig.SEGMENT_MS_CONFIG, "10000")
       .build();
 
-    adminClient.createTopics(List.of(testTopic)).all().get();
+    try {
+      adminClient.createTopics(List.of(testTopic)).all().get();
+    } catch (TopicExistsException ignored) {}
 
     Properties consumerProps = new Properties();
     consumerProps.putAll(Map.of(

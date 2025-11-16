@@ -1,5 +1,6 @@
 package sourceconnector.repository;
 
+import offsetmanager.domain.OffsetRecord;
 import offsetmanager.domain.OffsetStatus;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.AdminClient;
@@ -11,10 +12,13 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.config.TopicConfig;
-import org.apache.kafka.common.serialization.*;
+import org.apache.kafka.common.errors.TopicExistsException;
+import org.apache.kafka.common.serialization.LongDeserializer;
+import org.apache.kafka.common.serialization.LongSerializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.*;
 import org.springframework.kafka.config.TopicBuilder;
-import offsetmanager.domain.OffsetRecord;
 import sourceconnector.repository.offset.v1.S3KafkaOffsetRecordRepository;
 
 import java.time.Duration;
@@ -57,8 +61,9 @@ class S3KafkaOffsetRecordRepositoryTest {
       .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
       .config(TopicConfig.SEGMENT_MS_CONFIG, "10000")
       .build();
-
-    adminClient.createTopics(List.of(testTopic)).all().get();
+    try {
+      adminClient.createTopics(List.of(testTopic)).all().get();
+    } catch (TopicExistsException ignored) {}
 
     Properties consumerProps = new Properties();
     consumerProps.putAll(Map.of(
