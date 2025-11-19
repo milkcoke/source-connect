@@ -1,6 +1,6 @@
 package offsetmanager.manager;
 
-import offsetmanager.domain.OffsetRecord;
+import offsetmanager.domain.offset.OffsetRecord;
 
 import java.util.List;
 import java.util.Optional;

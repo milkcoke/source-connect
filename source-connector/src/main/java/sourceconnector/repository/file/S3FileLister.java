@@ -2,10 +2,9 @@ package sourceconnector.repository.file;
 
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
-import sourceconnector.domain.file.FileKey;
+import offsetmanager.domain.file.FileKey;
 import sourceconnector.repository.file.validator.FileValidator;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 

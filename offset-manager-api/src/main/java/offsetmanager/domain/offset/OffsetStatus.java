@@ -1,4 +1,4 @@
-package offsetmanager.domain;
+package offsetmanager.domain.offset;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

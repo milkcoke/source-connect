@@ -2,8 +2,8 @@ package sourceconnector.repository.file;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import sourceconnector.domain.file.FileKey;
-import sourceconnector.domain.file.LocalFileKey;
+import offsetmanager.domain.file.FileKey;
+import offsetmanager.domain.file.LocalFileKey;
 import sourceconnector.repository.file.filter.FileExtensionFilter;
 import sourceconnector.repository.file.validator.CompositeFileValidator;
 import sourceconnector.repository.file.validator.FileValidator;

@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import sourceconnector.domain.connect.FileTaskAssignor;
 import sourceconnector.domain.connect.TaskAssignor;
 import sourceconnector.domain.connect.Worker;
-import sourceconnector.domain.file.FileKey;
+import offsetmanager.domain.file.FileKey;
 import sourceconnector.repository.file.FileLister;
 
 import java.io.IOException;

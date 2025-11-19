@@ -2,8 +2,8 @@ package sourceconnector.domain.connect;
 
 import lombok.AccessLevel;
 import lombok.Getter;
-import offsetmanager.domain.OffsetStatus;
-import sourceconnector.domain.file.FileKey;
+import offsetmanager.domain.file.FileKey;
+import offsetmanager.domain.offset.OffsetStatus;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.LogMetadata;
 import sourceconnector.domain.offset.LocalFileOffsetRecord;

@@ -1,6 +1,6 @@
 package sourceconnector.domain.log;
 
-import sourceconnector.domain.file.FileKey;
+import offsetmanager.domain.file.FileKey;
 
 /**
  *

@@ -1,6 +1,6 @@
 package sourceconnector.repository.offset.v1;
 
-import offsetmanager.domain.OffsetRecord;
+import offsetmanager.domain.offset.OffsetRecord;
 
 import java.util.concurrent.ExecutionException;
 

@@ -1,6 +1,6 @@
 package sourceconnector.domain.pipeline.factory;
 
-import sourceconnector.domain.file.FileKey;
+import offsetmanager.domain.file.FileKey;
 import sourceconnector.domain.log.factory.LogFactory;
 import sourceconnector.domain.pipeline.Pipeline;
 import sourceconnector.domain.processor.BaseProcessor;

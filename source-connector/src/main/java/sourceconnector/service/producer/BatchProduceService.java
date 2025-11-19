@@ -1,7 +1,7 @@
 package sourceconnector.service.producer;
 
 import lombok.extern.slf4j.Slf4j;
-import offsetmanager.domain.OffsetRecord;
+import offsetmanager.domain.offset.OffsetRecord;
 import sourceconnector.domain.batch.MessageBatch;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.KafkaProducer;

@@ -2,7 +2,7 @@ package sourceconnector.repository.file.options;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import sourceconnector.domain.file.LocalFileKey;
+import offsetmanager.domain.file.LocalFileKey;
 import sourceconnector.repository.file.filter.FileIncludeFilter;
 
 import java.nio.file.Path;

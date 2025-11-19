@@ -1,10 +1,10 @@
 package sourceconnector.config;
 
 import lombok.RequiredArgsConstructor;
+import offsetmanager.domain.file.LocalFileKey;
+import offsetmanager.domain.file.S3Uri;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import sourceconnector.domain.file.FileKey;
-import sourceconnector.domain.file.LocalFileKey;
-import sourceconnector.domain.file.S3Uri;
+import offsetmanager.domain.file.FileKey;
 
 import java.nio.file.Path;
 import java.util.List;

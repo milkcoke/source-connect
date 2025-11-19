@@ -2,7 +2,7 @@ package sourceconnector.domain.pipeline.factory;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import sourceconnector.domain.file.LocalFileKey;
+import offsetmanager.domain.file.LocalFileKey;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.factory.JSONLogFactory;
 import sourceconnector.domain.log.factory.LogFactory;

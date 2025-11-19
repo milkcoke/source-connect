@@ -1,4 +1,4 @@
-package offsetmanager.domain;
+package offsetmanager.domain.offset;
 
 public record DefaultOffsetRecord(
   String key,

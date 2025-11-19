@@ -1,7 +1,7 @@
 package sourceconnector.repository.offset.v2;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import offsetmanager.domain.OffsetRecord;
+import offsetmanager.domain.offset.OffsetRecord;
 
 import java.util.List;
 import java.util.Optional;

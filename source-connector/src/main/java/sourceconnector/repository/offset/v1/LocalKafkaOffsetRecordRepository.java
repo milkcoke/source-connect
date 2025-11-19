@@ -2,7 +2,7 @@ package sourceconnector.repository.offset.v1;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import offsetmanager.domain.OffsetRecord;
+import offsetmanager.domain.offset.OffsetRecord;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.DescribeTopicsResult;
 import org.apache.kafka.clients.admin.TopicDescription;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import static offsetmanager.domain.OffsetStatus.INITIAL;
+import static offsetmanager.domain.offset.OffsetStatus.INITIAL;
 
 @Slf4j
 @RequiredArgsConstructor

@@ -1,7 +1,7 @@
 package sourceconnector.repository;
 
-import offsetmanager.domain.OffsetRecord;
-import offsetmanager.domain.OffsetStatus;
+import offsetmanager.domain.offset.OffsetRecord;
+import offsetmanager.domain.offset.OffsetStatus;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;

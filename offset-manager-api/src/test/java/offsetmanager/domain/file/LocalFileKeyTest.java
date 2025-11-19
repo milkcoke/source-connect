@@ -1,4 +1,4 @@
-package sourceconnector.domain.file;
+package offsetmanager.domain.file;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

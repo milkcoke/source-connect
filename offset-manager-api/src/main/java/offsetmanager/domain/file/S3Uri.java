@@ -1,4 +1,4 @@
-package sourceconnector.domain.file;
+package offsetmanager.domain.file;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

@@ -6,8 +6,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import mockwebserver3.MockResponse;
 import mockwebserver3.MockWebServer;
-import offsetmanager.domain.DefaultOffsetRecord;
-import offsetmanager.domain.OffsetRecord;
+import offsetmanager.domain.offset.DefaultOffsetRecord;
+import offsetmanager.domain.offset.OffsetRecord;
 import org.junit.jupiter.api.*;
 
 import java.io.IOException;

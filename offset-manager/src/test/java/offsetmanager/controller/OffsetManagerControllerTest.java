@@ -3,7 +3,7 @@ package offsetmanager.controller;
 import offsetmanager.exception.OffsetNotFoundException;
 import offsetmanager.service.dto.LastOffsetRecordBatchResponse;
 import offsetmanager.service.dto.LastOffsetRecordResponse;
-import offsetmanager.domain.DefaultOffsetRecord;
+import offsetmanager.domain.offset.DefaultOffsetRecord;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;

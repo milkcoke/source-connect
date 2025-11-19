@@ -3,8 +3,8 @@ package sourceconnector.repository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import sourceconnector.domain.file.FileKey;
-import sourceconnector.domain.file.LocalFileKey;
+import offsetmanager.domain.file.FileKey;
+import offsetmanager.domain.file.LocalFileKey;
 import sourceconnector.repository.file.FileRepository;
 import sourceconnector.repository.file.LocalFileRepository;
 

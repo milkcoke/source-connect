@@ -1,6 +1,7 @@
 package sourceconnector.repository.file.filter;
 
-import sourceconnector.domain.file.FileKey;
+
+import offsetmanager.domain.file.FileKey;
 
 import java.util.List;
 

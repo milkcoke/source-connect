@@ -1,7 +1,7 @@
 package sourceconnector.repository.file;
 
-import sourceconnector.domain.file.FileKey;
-import sourceconnector.domain.file.S3Uri;
+import offsetmanager.domain.file.FileKey;
+import offsetmanager.domain.file.S3Uri;
 
 public record S3Location(
   String bucket,

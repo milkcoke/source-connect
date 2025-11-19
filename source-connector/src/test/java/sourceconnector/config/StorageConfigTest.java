@@ -1,14 +1,14 @@
 package sourceconnector.config;
 
+import offsetmanager.domain.file.S3FileKey;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
 import sourceconnector.config.StorageConfig.StorageType;
 import sourceconnector.config.util.YamlTestUtils;
-import sourceconnector.domain.file.FileKey;
-import sourceconnector.domain.file.LocalFileKey;
-import sourceconnector.domain.file.S3FileKey;
+import offsetmanager.domain.file.FileKey;
+import offsetmanager.domain.file.LocalFileKey;
 
 import java.io.IOException;
 import java.util.Collections;

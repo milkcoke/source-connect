@@ -3,7 +3,7 @@ package sourceconnector.repository.file;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
-import sourceconnector.domain.file.FileKey;
+import offsetmanager.domain.file.FileKey;
 
 import java.io.InputStream;
 

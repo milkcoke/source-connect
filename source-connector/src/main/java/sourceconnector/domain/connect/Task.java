@@ -1,6 +1,6 @@
 package sourceconnector.domain.connect;
 
-import sourceconnector.domain.file.FileKey;
+import offsetmanager.domain.file.FileKey;
 
 import java.util.List;
 import java.util.concurrent.Callable;

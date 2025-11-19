@@ -1,7 +1,7 @@
 package offsetmanager.service;
 
 import offsetmanager.exception.OffsetNotFoundException;
-import offsetmanager.domain.DefaultOffsetRecord;
+import offsetmanager.domain.offset.DefaultOffsetRecord;
 import offsetmanager.manager.OffsetManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

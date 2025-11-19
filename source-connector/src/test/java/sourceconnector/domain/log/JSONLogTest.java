@@ -1,8 +1,8 @@
 package sourceconnector.domain.log;
 
+import offsetmanager.domain.file.LocalFileKey;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import sourceconnector.domain.file.LocalFileKey;
 
 import java.nio.file.Path;
 

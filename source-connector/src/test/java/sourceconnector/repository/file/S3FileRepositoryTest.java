@@ -1,9 +1,9 @@
 package sourceconnector.repository.file;
 
+import offsetmanager.domain.file.S3Uri;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import sourceconnector.domain.file.FileKey;
-import sourceconnector.domain.file.S3Uri;
+import offsetmanager.domain.file.FileKey;
 
 import java.io.InputStream;
 import java.nio.file.Path;

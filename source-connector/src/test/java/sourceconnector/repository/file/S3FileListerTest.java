@@ -2,7 +2,7 @@ package sourceconnector.repository.file;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import sourceconnector.domain.file.FileKey;
+import offsetmanager.domain.file.FileKey;
 import sourceconnector.repository.file.validator.NoConditionFileValidator;
 
 import java.io.IOException;

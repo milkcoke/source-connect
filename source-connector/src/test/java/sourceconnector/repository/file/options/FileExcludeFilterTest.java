@@ -1,9 +1,9 @@
 package sourceconnector.repository.file.options;
 
+import offsetmanager.domain.file.LocalFileKey;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import sourceconnector.domain.file.LocalFileKey;
 import sourceconnector.repository.file.filter.FileExcludeFilter;
 import sourceconnector.repository.file.filter.FileFilter;
 

@@ -1,6 +1,6 @@
 package sourceconnector.repository.file.validator;
 
-import sourceconnector.domain.file.FileKey;
+import offsetmanager.domain.file.FileKey;
 
 public class NoConditionFileValidator implements FileValidator {
   @Override

@@ -2,7 +2,7 @@ package offsetmanager.service;
 
 import offsetmanager.exception.OffsetNotFoundException;
 import lombok.RequiredArgsConstructor;
-import offsetmanager.domain.OffsetRecord;
+import offsetmanager.domain.offset.OffsetRecord;
 import offsetmanager.manager.OffsetManager;
 import org.springframework.stereotype.Service;
 import offsetmanager.service.dto.LastOffsetRecordBatchResponse;

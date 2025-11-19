@@ -3,7 +3,7 @@ package sourceconnector.domain.pipeline;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
-import sourceconnector.domain.file.FileKey;
+import offsetmanager.domain.file.FileKey;
 import sourceconnector.domain.log.factory.LogFactory;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.FileLogMetadata;

@@ -3,7 +3,7 @@ package sourceconnector.service.batcher;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import sourceconnector.domain.batch.MessageBatch;
-import sourceconnector.domain.file.LocalFileKey;
+import offsetmanager.domain.file.LocalFileKey;
 import sourceconnector.domain.log.factory.JSONLogFactory;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.pipeline.factory.FileBaseLogPipelineBuilder;

@@ -1,8 +1,8 @@
 package offsetmanager.repository;
 
 import lombok.extern.slf4j.Slf4j;
-import offsetmanager.domain.DefaultOffsetRecord;
-import offsetmanager.domain.OffsetRecord;
+import offsetmanager.domain.offset.DefaultOffsetRecord;
+import offsetmanager.domain.offset.OffsetRecord;
 import offsetmanager.manager.OffsetManager;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.AdminClient;

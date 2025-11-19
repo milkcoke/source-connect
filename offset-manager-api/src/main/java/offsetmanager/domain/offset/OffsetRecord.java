@@ -1,4 +1,4 @@
-package offsetmanager.domain;
+package offsetmanager.domain.offset;
 
 
 /**
@@ -15,7 +15,7 @@ public interface OffsetRecord {
 
   /**
    * The offset value <br>
-   * Refer to the {@link offsetmanager.domain.OffsetStatus} defines special offset
+   * Refer to the {@link OffsetStatus} defines special offset
    */
   long offset();
 }

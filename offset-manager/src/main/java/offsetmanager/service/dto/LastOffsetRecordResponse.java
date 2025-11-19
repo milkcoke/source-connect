@@ -1,6 +1,6 @@
 package offsetmanager.service.dto;
 
-import offsetmanager.domain.OffsetRecord;
+import offsetmanager.domain.offset.OffsetRecord;
 
 public record LastOffsetRecordResponse(
   String key,

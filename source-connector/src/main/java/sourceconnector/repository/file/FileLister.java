@@ -1,6 +1,6 @@
 package sourceconnector.repository.file;
 
-import sourceconnector.domain.file.FileKey;
+import offsetmanager.domain.file.FileKey;
 
 import java.io.IOException;
 import java.util.List;

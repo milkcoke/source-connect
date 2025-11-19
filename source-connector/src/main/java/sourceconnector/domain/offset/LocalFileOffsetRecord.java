@@ -1,6 +1,6 @@
 package sourceconnector.domain.offset;
 
-import offsetmanager.domain.OffsetRecord;
+import offsetmanager.domain.offset.OffsetRecord;
 
 public record LocalFileOffsetRecord(
   String key,

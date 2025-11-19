@@ -1,6 +1,6 @@
 package sourceconnector.repository.file.validator;
 
-import sourceconnector.domain.file.FileKey;
+import offsetmanager.domain.file.FileKey;
 import sourceconnector.repository.file.filter.FileFilter;
 
 import java.util.List;

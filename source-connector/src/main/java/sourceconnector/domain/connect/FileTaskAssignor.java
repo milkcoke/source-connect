@@ -1,7 +1,7 @@
 package sourceconnector.domain.connect;
 
 import lombok.extern.slf4j.Slf4j;
-import sourceconnector.domain.file.FileKey;
+import offsetmanager.domain.file.FileKey;
 
 import java.util.Collection;
 import java.util.List;

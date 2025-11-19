@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import sourceconnector.domain.batch.MessageBatch;
 import sourceconnector.domain.batch.DefaultMessageBatchLogs;
-import offsetmanager.domain.OffsetRecord;
+import offsetmanager.domain.offset.OffsetRecord;
 import sourceconnector.domain.offset.S3OffsetRecord;
 import org.junit.jupiter.api.Test;
 

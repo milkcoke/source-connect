@@ -1,9 +1,7 @@
 package sourceconnector.service.producer;
 
-import offsetmanager.domain.OffsetRecord;
+import offsetmanager.domain.offset.OffsetRecord;
 import sourceconnector.domain.batch.MessageBatch;
-
-import java.io.Closeable;
 
 
 public interface BatchProducer<T>  extends AutoCloseable {

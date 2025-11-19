@@ -6,12 +6,11 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import offsetmanager.domain.DefaultOffsetRecord;
-import offsetmanager.domain.OffsetRecord;
+import offsetmanager.domain.offset.DefaultOffsetRecord;
+import offsetmanager.domain.offset.OffsetRecord;
 import offsetmanager.service.dto.LastOffsetRecordBatchResponse;
 import offsetmanager.service.dto.LastOffsetRecordResponse;
 
-import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;

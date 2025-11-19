@@ -1,8 +1,8 @@
 package sourceconnector.repository.file;
 
 import lombok.RequiredArgsConstructor;
-import sourceconnector.domain.file.FileKey;
-import sourceconnector.domain.file.LocalFileKey;
+import offsetmanager.domain.file.FileKey;
+import offsetmanager.domain.file.LocalFileKey;
 import sourceconnector.repository.file.validator.FileValidator;
 
 import java.io.IOException;
