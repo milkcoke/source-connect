@@ -144,9 +144,9 @@ class OffsetManagerTest {
   void upsertContinuously() throws InterruptedException {
     // given
     OffsetManager offsetManager = new OffsetManagerRepository(new KafkaConsumer<>(consumerConfig), this.offsetTopic);
-    FileKey keyA = FileKeyParser.parse("file:///many-a.txt");
-    FileKey keyB = FileKeyParser.parse("file:///many-b.txt");
-    FileKey keyC = FileKeyParser.parse("file:///many-c.txt");
+    FileKey keyA = FileKeyParser.parse("file:///key-a.txt");
+    FileKey keyB = FileKeyParser.parse("file:///key-b.txt");
+    FileKey keyC = FileKeyParser.parse("file:///key-c.txt");
     assertThat(offsetManager.findLatestOffsetRecord(keyA)).isEmpty();
     assertThat(offsetManager.findLatestOffsetRecord(keyB)).isEmpty();
     assertThat(offsetManager.findLatestOffsetRecord(keyC)).isEmpty();

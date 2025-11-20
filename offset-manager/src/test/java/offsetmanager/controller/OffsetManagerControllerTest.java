@@ -91,13 +91,13 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
     // FIXME: URL 형식의 key가 들어올 때 . C:/ (Drive name) 생성되는 부분 수정 필요
     when(offsetManagerService.readLastOffset("file:///path/to/file.txt"))
       .thenReturn(LastOffsetRecordResponse.from(
-        new DefaultOffsetRecord(FileKeyParser.parse("file:///path.to.file.txt"), 5L))
+        new DefaultOffsetRecord(FileKeyParser.parse("file:///path/to/file.txt"), 5L))
       );
 
     // when
     String responsePayload = mockMvc.perform(
       MockMvcRequestBuilders.get("/v1/offset-records")
-        .param("key", "lastKey")
+        .param("key", "file:///path/to/file.txt")
     ).andExpect(status().isOk())
       .andReturn()
       .getResponse()
