@@ -1,7 +1,9 @@
 package offsetmanager.domain.offset;
 
+import offsetmanager.domain.file.FileKey;
+
 public record DefaultOffsetRecord(
-  String key,
+  FileKey key,
   long offset
 ) implements OffsetRecord {
 }

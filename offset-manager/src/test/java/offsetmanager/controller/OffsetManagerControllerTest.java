@@ -1,5 +1,6 @@
 package offsetmanager.controller;
 
+import offsetmanager.domain.file.factory.FileKeyParser;
 import offsetmanager.exception.OffsetNotFoundException;
 import offsetmanager.service.dto.LastOffsetRecordBatchResponse;
 import offsetmanager.service.dto.LastOffsetRecordResponse;
@@ -87,8 +88,11 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
   @Test
   void lastOffsetReturnTest() throws Exception {
     // given
-    when(offsetManagerService.readLastOffset("lastKey"))
-      .thenReturn(LastOffsetRecordResponse.from(new DefaultOffsetRecord("lastKey", 5L)));
+    // FIXME: URL 형식의 key가 들어올 때 . C:/ (Drive name) 생성되는 부분 수정 필요
+    when(offsetManagerService.readLastOffset("file:///path/to/file.txt"))
+      .thenReturn(LastOffsetRecordResponse.from(
+        new DefaultOffsetRecord(FileKeyParser.parse("file:///path.to.file.txt"), 5L))
+      );
 
     // when
     String responsePayload = mockMvc.perform(
@@ -103,7 +107,7 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
     JSONAssert.assertEquals(
       """
         {
-          "key": "lastKey",
+          "key": "file:///path/to/file.txt",
           "offset": 5
         }
         """,
@@ -116,12 +120,12 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
   @Test
   void BatchLastOffsetReturnTest() throws Exception {
     // given
-    when(offsetManagerService.readLastOffsets(List.of("key1", "key2", "key3")))
+    when(offsetManagerService.readLastOffsets(List.of("file:///key1", "file:///key2", "file:///key3")))
       .thenReturn(
         LastOffsetRecordBatchResponse.from(List.of(
-          new DefaultOffsetRecord("key1", 5L),
-          new DefaultOffsetRecord("key2", 3L),
-          new DefaultOffsetRecord("key3", -1L)
+          new DefaultOffsetRecord(FileKeyParser.parse("file:///key1"), 5L),
+          new DefaultOffsetRecord(FileKeyParser.parse("file:///key2"), 3L),
+          new DefaultOffsetRecord(FileKeyParser.parse("file:///key3"), -1L)
         ))
       );
 
@@ -131,7 +135,7 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
         .contentType(MediaType.APPLICATION_JSON)
         .content("""
           {
-            "keys": ["key1", "key2", "key3"]
+            "keys": ["file:///key1", "file:///key2", "file:///key3"]
           }
           """)
     ).andExpect(status().isOk())
@@ -145,15 +149,15 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
         {
           "lastOffsetRecords": [
             {
-              "key": "key1",
+              "key": "file:///key1",
               "offset": 5
             },
             {
-              "key": "key2",
+              "key": "file:///key2",
               "offset": 3
             },
             {
-              "key": "key3",
+              "key": "file:///key3",
               "offset": -1
             }
           ]
@@ -168,7 +172,7 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
   @Test
   void batchResponseEmptyTest() throws Exception {
     // given
-    when(offsetManagerService.readLastOffsets(List.of("key1", "key2", "key3")))
+    when(offsetManagerService.readLastOffsets(List.of("file:///key1", "file:///key2", "file:///key3")))
       .thenReturn(
         LastOffsetRecordBatchResponse.from(Collections.emptyList())
       );
@@ -179,7 +183,7 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
         .contentType(MediaType.APPLICATION_JSON)
         .content("""
           {
-            "keys": ["key1", "key2", "key3"]
+            "keys": ["file:///key1", "file:///key2", "file:///key3"]
           }
           """)
     ).andExpect(status().isOk())

@@ -1,5 +1,7 @@
 package offsetmanager.service;
 
+import offsetmanager.domain.file.FileKey;
+import offsetmanager.domain.file.factory.FileKeyParser;
 import offsetmanager.exception.OffsetNotFoundException;
 import offsetmanager.domain.offset.DefaultOffsetRecord;
 import offsetmanager.manager.OffsetManager;
@@ -21,14 +23,16 @@ class OffsetManagerRepositoryTest {
   void readLastOffset() {
     // given
     OffsetManager mockManager = Mockito.mock(OffsetManager.class);
-    when(mockManager.findLatestOffsetRecord("existKey"))
-      .thenReturn(Optional.of(new DefaultOffsetRecord("existKey", 10L)));
+    FileKey fileKey = FileKeyParser.parse("file:///existKey.txt");
+
+    when(mockManager.findLatestOffsetRecord(fileKey))
+      .thenReturn(Optional.of(new DefaultOffsetRecord(fileKey, 10L)));
 
     OffsetManagerService remoteOffsetService = new OffsetManagerService(mockManager);
     // when
-    LastOffsetRecordResponse lastOffsetRecordResponse = remoteOffsetService.readLastOffset("existKey");
+    LastOffsetRecordResponse lastOffsetRecordResponse = remoteOffsetService.readLastOffset("file:///existKey.txt");
     // then
-    assertThat(lastOffsetRecordResponse.key()).isEqualTo("existKey");
+    assertThat(lastOffsetRecordResponse.key()).isEqualTo("file:///existKey.txt");
     assertThat(lastOffsetRecordResponse.offset()).isEqualTo(10L);
   }
 
@@ -37,13 +41,14 @@ class OffsetManagerRepositoryTest {
   void returnEmptyWhenNotExistKey() {
     // given
     OffsetManager mockManager = Mockito.mock(OffsetManager.class);
-    when(mockManager.findLatestOffsetRecord("notExistKey")).thenReturn(Optional.empty());
+    FileKey nonExistFileKey = FileKeyParser.parse("file:///nonExistKey.txt");
+    when(mockManager.findLatestOffsetRecord(nonExistFileKey)).thenReturn(Optional.empty());
 
     OffsetManagerService remoteOffsetService = new OffsetManagerService(mockManager);
     // when then
-    assertThatThrownBy(()-> remoteOffsetService.readLastOffset("notExistKey"))
+    assertThatThrownBy(()-> remoteOffsetService.readLastOffset("file:///notExistKey.txt"))
       .isInstanceOf(OffsetNotFoundException.class)
-      .hasMessage("Offset not found for key: notExistKey");
+      .hasMessage("Offset not found for key: file:///notExistKey.txt");
 
   }
 }

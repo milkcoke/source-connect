@@ -1,6 +1,8 @@
 package offsetmanager.repository;
 
 import lombok.extern.slf4j.Slf4j;
+import offsetmanager.domain.file.FileKey;
+import offsetmanager.domain.file.factory.FileKeyParser;
 import offsetmanager.domain.offset.DefaultOffsetRecord;
 import offsetmanager.domain.offset.OffsetRecord;
 import offsetmanager.manager.OffsetManager;
@@ -96,7 +98,7 @@ class OffsetManagerTest {
     // given
     OffsetManager offsetManager = new OffsetManagerRepository(new KafkaConsumer<>(consumerConfig), this.offsetTopic);
     // when
-    Optional<OffsetRecord> foundOffset = offsetManager.findLatestOffsetRecord("anyKey");
+    Optional<OffsetRecord> foundOffset = offsetManager.findLatestOffsetRecord(FileKeyParser.parse("file:///test/path.txt"));
     // then
     assertThat(foundOffset).isEmpty();
   }
@@ -107,17 +109,17 @@ class OffsetManagerTest {
     // given
     OffsetManager offsetManager = new OffsetManagerRepository(new KafkaConsumer<>(consumerConfig), this.offsetTopic);
     Producer<String, Long> producer = new KafkaProducer<>(producerConfig);
-    String keyA = "many-a.txt";
-    String keyB = "many-b.txt";
-    String keyC = "many-c.txt";
+    FileKey keyA = FileKeyParser.parse("file:///many-a.txt");
+    FileKey keyB = FileKeyParser.parse("file:///many-b.txt");
+    FileKey keyC = FileKeyParser.parse("file:///many-c.txt");
     producer.initTransactions();
     for (long i = 1; i <= 1000; i++) {
       if ((i - 1) % 100 == 0) {
         producer.beginTransaction();
       }
-      producer.send(new ProducerRecord<>(this.offsetTopic, keyA, i));
-      producer.send(new ProducerRecord<>(this.offsetTopic, keyB, i));
-      producer.send(new ProducerRecord<>(this.offsetTopic, keyC, i));
+      producer.send(new ProducerRecord<>(this.offsetTopic, keyA.get(), i));
+      producer.send(new ProducerRecord<>(this.offsetTopic, keyB.get(), i));
+      producer.send(new ProducerRecord<>(this.offsetTopic, keyC.get(), i));
       if (i % 100 == 0) {
         producer.commitTransaction();
       }
@@ -142,22 +144,22 @@ class OffsetManagerTest {
   void upsertContinuously() throws InterruptedException {
     // given
     OffsetManager offsetManager = new OffsetManagerRepository(new KafkaConsumer<>(consumerConfig), this.offsetTopic);
-    assertThat(offsetManager.findLatestOffsetRecord("keyA")).isEmpty();
-    assertThat(offsetManager.findLatestOffsetRecord("keyB")).isEmpty();
-    assertThat(offsetManager.findLatestOffsetRecord("keyC")).isEmpty();
+    FileKey keyA = FileKeyParser.parse("file:///many-a.txt");
+    FileKey keyB = FileKeyParser.parse("file:///many-b.txt");
+    FileKey keyC = FileKeyParser.parse("file:///many-c.txt");
+    assertThat(offsetManager.findLatestOffsetRecord(keyA)).isEmpty();
+    assertThat(offsetManager.findLatestOffsetRecord(keyB)).isEmpty();
+    assertThat(offsetManager.findLatestOffsetRecord(keyC)).isEmpty();
 
     Producer<String, Long> producer = new KafkaProducer<>(producerConfig);
-    String keyA = "many-d.txt";
-    String keyB = "many-e.txt";
-    String keyC = "many-f.txt";
     producer.initTransactions();
     for (long i = 1; i <= 1000; i++) {
       if ((i - 1) % 100 == 0) {
         producer.beginTransaction();
       }
-      producer.send(new ProducerRecord<>(this.offsetTopic, keyA, i));
-      producer.send(new ProducerRecord<>(this.offsetTopic, keyB, i));
-      producer.send(new ProducerRecord<>(this.offsetTopic, keyC, i));
+      producer.send(new ProducerRecord<>(this.offsetTopic, keyA.get(), i));
+      producer.send(new ProducerRecord<>(this.offsetTopic, keyB.get(), i));
+      producer.send(new ProducerRecord<>(this.offsetTopic, keyC.get(), i));
       if (i % 100 == 0) {
         producer.commitTransaction();
       }

@@ -1,6 +1,8 @@
 package offsetmanager.domain.offset;
 
 
+import offsetmanager.domain.file.FileKey;
+
 /**
  * Domain interface used by OffsetManager and SourceConnector Producer. <br>
  * Consists of object unique identifier and offset. <br>
@@ -11,7 +13,7 @@ public interface OffsetRecord {
    * The unique key representing the source object <br>
    * e.g., S3 bucket and object key, local file path
    */
-  String key();
+  FileKey key();
 
   /**
    * The offset value <br>

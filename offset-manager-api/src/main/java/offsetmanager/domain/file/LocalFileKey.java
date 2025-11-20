@@ -14,7 +14,6 @@ public class LocalFileKey implements FileKey {
     return new LocalFileKey(path.toUri());
   }
 
-  // TODO: Implement Comparable, Equals, HasCode
   @Override
   public String get() {
     return this.fileUri.toString();

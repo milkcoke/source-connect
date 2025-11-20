@@ -8,7 +8,7 @@ public record LastOffsetRecordResponse(
 ) {
   public static LastOffsetRecordResponse from(OffsetRecord offsetRecord) {
     return new LastOffsetRecordResponse(
-      offsetRecord.key(),
+      offsetRecord.key().get(),
       offsetRecord.offset()
     );
   }

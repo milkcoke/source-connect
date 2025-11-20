@@ -2,6 +2,8 @@ package offsetmanager.repository;
 
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
+import offsetmanager.domain.file.FileKey;
+import offsetmanager.domain.file.factory.FileKeyParser;
 import offsetmanager.domain.offset.DefaultOffsetRecord;
 import offsetmanager.domain.offset.OffsetRecord;
 import offsetmanager.manager.OffsetManager;
@@ -26,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Repository
 public class OffsetManagerRepository implements OffsetManager {
-  private final Map<String, OffsetRecord> offsetStore = new ConcurrentHashMap<>();
+  private final Map<FileKey, OffsetRecord> offsetStore = new ConcurrentHashMap<>();
   private final ExecutorService executorService = Executors.newSingleThreadExecutor();
   private final Consumer<String, Long> consumer;
   private final String offsetTopic;
@@ -54,11 +56,13 @@ public class OffsetManagerRepository implements OffsetManager {
     while(!completeScan) {
       ConsumerRecords<String, Long> records = consumer.poll(Duration.ofMillis(100));
       // 5-1. Process records and update offset store
-      records.forEach(record ->
+      records.forEach(record -> {
+        FileKey fileKey = FileKeyParser.parse(record.key());
         this.upsert(
-          record.key(),
-          new DefaultOffsetRecord(record.key(), record.value())
-        )
+          fileKey,
+          new DefaultOffsetRecord(fileKey, record.value())
+        );
+      }
       );
       // 5-2 Only check the partitions that are not fully scanned yet
       completeScan = endOffsets.entrySet().stream()
@@ -73,11 +77,12 @@ public class OffsetManagerRepository implements OffsetManager {
       while (true) {
         ConsumerRecords<String, Long> records = consumer.poll(Duration.ofMillis(100));
         for (ConsumerRecord<String, Long> record : records) {
+          FileKey fileKey = FileKeyParser.parse(record.key());
           if (record.value() == null) {
-            this.removeKey(record.key());
+            this.removeKey(fileKey);
             continue;
           }
-          this.upsert(record.key(), new DefaultOffsetRecord(record.key(), record.value()));
+          this.upsert(fileKey, new DefaultOffsetRecord(fileKey, record.value()));
         }
       }
     } catch (Exception e) {
@@ -86,7 +91,7 @@ public class OffsetManagerRepository implements OffsetManager {
   }
 
   @Override
-  public Optional<OffsetRecord> findLatestOffsetRecord(String key) {
+  public Optional<OffsetRecord> findLatestOffsetRecord(FileKey key) {
     if (this.offsetStore.containsKey(key)) {
       return Optional.of(this.offsetStore.get(key));
     }
@@ -95,7 +100,7 @@ public class OffsetManagerRepository implements OffsetManager {
   }
 
   @Override
-  public List<OffsetRecord> findLatestOffsetRecords(List<String> keys) {
+  public List<OffsetRecord> findLatestOffsetRecords(List<FileKey> keys) {
     return keys.stream()
       .map(this.offsetStore::get)
       .filter(Objects::nonNull)
@@ -103,12 +108,12 @@ public class OffsetManagerRepository implements OffsetManager {
   }
 
   @Override
-  public void upsert(String key, OffsetRecord offsetRecord) {
+  public void upsert(FileKey key, OffsetRecord offsetRecord) {
     this.offsetStore.put(key, offsetRecord);
   }
 
   @Override
-  public void removeKey(String key) {
+  public void removeKey(FileKey key) {
     this.offsetStore.remove(key);
   }
 
