@@ -1,5 +1,6 @@
 package offsetmanager.config;
 
+import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
@@ -14,6 +15,7 @@ public class KafkaConfig {
   @Bean
   public KafkaConsumer<String, Long> consumer(KafkaProperties kafkaProperties) {
     Properties properties = new Properties();
+    properties.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, String.join(",", kafkaProperties.getBootstrapServers()));
     properties.putAll(kafkaProperties.getConsumer().buildProperties(null));
     return new KafkaConsumer<>(properties);
   }
@@ -21,6 +23,7 @@ public class KafkaConfig {
   @Bean
   public AdminClient adminClient(KafkaProperties kafkaProperties) {
     Properties properties = new Properties();
+    properties.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, String.join(",", kafkaProperties.getBootstrapServers()));
     properties.putAll(kafkaProperties.getAdmin().buildProperties(null));
     return AdminClient.create(properties);
   }

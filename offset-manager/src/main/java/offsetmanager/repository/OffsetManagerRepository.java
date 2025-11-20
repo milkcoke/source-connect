@@ -31,12 +31,10 @@ public class OffsetManagerRepository implements OffsetManager {
   private final Map<FileKey, OffsetRecord> offsetStore = new ConcurrentHashMap<>();
   private final ExecutorService executorService = Executors.newSingleThreadExecutor();
   private final Consumer<String, Long> consumer;
-  private final String offsetTopic;
 
-  public OffsetManagerRepository(Consumer<String, Long> consumer, String offsetTopic) {
+  public OffsetManagerRepository(Consumer<String, Long> consumer, String offsetTopicName) {
     this.consumer = consumer;
-    this.offsetTopic = offsetTopic;
-    List<PartitionInfo> partitionInfoList = consumer.partitionsFor(offsetTopic);
+    List<PartitionInfo> partitionInfoList = consumer.partitionsFor(offsetTopicName);
     List<TopicPartition> topicPartitions = partitionInfoList.stream()
       .map(partitionInfo -> new TopicPartition(partitionInfo.topic(), partitionInfo.partition()))
       .toList();

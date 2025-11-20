@@ -24,6 +24,8 @@ spring:
       security:
         protocol: PLAINTEXT
 
+app:
+  offset-topic: offset-topic
 
 management:
   # /actuator/prometheus 노출
