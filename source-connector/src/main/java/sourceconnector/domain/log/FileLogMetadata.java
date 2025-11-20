@@ -12,7 +12,7 @@ public record FileLogMetadata(
   long offset
 ) implements LogMetadata {
   @Override
-  public String key() {
-    return fileKey.get();
+  public FileKey key() {
+    return fileKey;
   }
 }

@@ -1,5 +1,7 @@
 package sourceconnector.repository;
 
+import offsetmanager.domain.file.FileKey;
+import offsetmanager.domain.file.factory.FileKeyParser;
 import offsetmanager.domain.offset.OffsetRecord;
 import offsetmanager.domain.offset.OffsetStatus;
 import org.apache.kafka.clients.CommonClientConfigs;
@@ -105,14 +107,14 @@ class S3KafkaOffsetRecordRepositoryTest {
     } catch (Exception ignored) {
       System.out.printf(ignored.getMessage());
     }
-
+    FileKey fileKey = FileKeyParser.parse("file:///10000.ndjson");
     // when
-    OffsetRecord lastOffsetRecord = repository.findLastOffsetRecord(this.testTopicName, "10000");
+    OffsetRecord lastOffsetRecord = repository.findLastOffsetRecord(this.testTopicName, fileKey);
     // then
     assertThat(lastOffsetRecord)
       .extracting(OffsetRecord::key, OffsetRecord::offset)
       .containsExactly(
-        "10000",
+        fileKey,
         10_000L
       );
 
@@ -123,7 +125,7 @@ class S3KafkaOffsetRecordRepositoryTest {
   void findLastOffsetRecord() {
      OffsetRecord lastOffset = repository.findLastOffsetRecord(
       this.testTopicName,
-      "s3://test/2025/04/13/test.txt"
+       FileKeyParser.parse("s3://test/2025/04/13/test.txt")
     );
 
     assertThat(lastOffset)
@@ -138,9 +140,9 @@ class S3KafkaOffsetRecordRepositoryTest {
   @Test
   void getPartitionsForTopic() {
     // given
-    int partition1 = repository.getPartitionsForTopic(this.testTopicName, "s3://test/2025/04/13/test.txt");
-    int partition2 = repository.getPartitionsForTopic(this.testTopicName, "s3://test/2025/04/13/test.txt");
-    int partition3 = repository.getPartitionsForTopic(this.testTopicName, "s3://test/2025/04/13/test.txt");
+    int partition1 = repository.getPartitionsForTopic(this.testTopicName, FileKeyParser.parse("s3://test/2025/04/13/test.txt"));
+    int partition2 = repository.getPartitionsForTopic(this.testTopicName, FileKeyParser.parse("s3://test/2025/04/13/test.txt"));
+    int partition3 = repository.getPartitionsForTopic(this.testTopicName, FileKeyParser.parse("s3://test/2025/04/13/test.txt"));
 
     assertThat(List.of(partition1, partition2, partition3))
       .containsOnly(partition1);

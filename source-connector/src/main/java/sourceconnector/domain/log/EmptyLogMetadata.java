@@ -1,13 +1,14 @@
 package sourceconnector.domain.log;
 
-import org.apache.commons.lang3.StringUtils;
+import offsetmanager.domain.file.FileKey;
 
 public enum EmptyLogMetadata implements LogMetadata {
   INSTANCE;
 
   @Override
-  public String key() {
-    return StringUtils.EMPTY;
+  public FileKey key() {
+    // FIXME: return a proper empty FileKey if needed
+    return null;
   }
 
   @Override

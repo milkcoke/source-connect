@@ -1,5 +1,6 @@
 package sourceconnector.service.producer;
 
+import offsetmanager.domain.file.factory.FileKeyParser;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -52,7 +53,10 @@ class BatchProduceServiceTest {
       "log2",
       "log3"
     ));
-    OffsetRecord offsetRecord = new S3OffsetRecord("s3://test/2025/04/11/test.json", 3L);
+    OffsetRecord offsetRecord = new S3OffsetRecord(
+      FileKeyParser.parse("s3://test/2025/04/11/test.json"),
+      3L
+    );
     // when
     batchProduceService.sendBatch(offsetRecord, messageBatch);
 

@@ -2,6 +2,8 @@ package sourceconnector.repository.offset.v1;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import offsetmanager.domain.file.FileKey;
+import offsetmanager.domain.file.factory.FileKeyParser;
 import offsetmanager.domain.offset.OffsetRecord;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.DescribeTopicsResult;
@@ -31,14 +33,14 @@ public class LocalKafkaOffsetRecordRepository implements KafkaOffsetRecordReposi
   private final Duration timeout = Duration.ofMillis(100);
 
   @Override
-  public OffsetRecord findLastOffsetRecord(String topicName, String filePath) {
-    int partition = this.getPartitionsForTopic(topicName, filePath);
+  public OffsetRecord findLastOffsetRecord(String topicName, FileKey fileKey) {
+    int partition = this.getPartitionsForTopic(topicName, fileKey);
     TopicPartition topicPartition = new TopicPartition(topicName, partition);
     this.consumer.assign(List.of(topicPartition));
     long currentOffset = this.consumer.beginningOffsets(List.of(topicPartition)).get(topicPartition);
     long endOffset = this.consumer.endOffsets(List.of(topicPartition)).get(topicPartition);
 
-    LocalFileOffsetRecord lastOffsetRecord = new LocalFileOffsetRecord(filePath, INITIAL.getValue());
+    LocalFileOffsetRecord lastOffsetRecord = new LocalFileOffsetRecord(fileKey, INITIAL.getValue());
 
     while (currentOffset < endOffset) {
       this.consumer.seek(topicPartition, currentOffset);
@@ -59,10 +61,10 @@ public class LocalKafkaOffsetRecordRepository implements KafkaOffsetRecordReposi
 
       lastOffsetRecord = recordList
         .stream()
-        .filter(record -> record.key().equals(filePath))
+        .filter(record -> record.key().equals(fileKey.get()))
         .max(Comparator.comparingLong(ConsumerRecord::offset))
         .map(record -> new LocalFileOffsetRecord(
-          record.key(),
+          FileKeyParser.parse(record.key()),
           record.offset()
         ))
         .orElse(lastOffsetRecord);
@@ -71,14 +73,14 @@ public class LocalKafkaOffsetRecordRepository implements KafkaOffsetRecordReposi
     return lastOffsetRecord;
   }
 
-  public int getPartitionsForTopic(String topicName, String filePath){
+  public int getPartitionsForTopic(String topicName, FileKey fileKey){
     // get partition count of topic
     DescribeTopicsResult result = adminClient.describeTopics(Collections.singletonList(topicName));
     Map<String, KafkaFuture<TopicDescription>> futures = result.topicNameValues();
     try {
       TopicDescription description = futures.get(topicName).get();
       int partitionCount = description.partitions().size();
-      return Utils.murmur2(filePath.getBytes(StandardCharsets.UTF_8)) % partitionCount;
+      return Utils.murmur2(fileKey.get().getBytes(StandardCharsets.UTF_8)) % partitionCount;
     } catch (ExecutionException | InterruptedException e) {
       log.error("Failed to get partitions for topic {}", topicName, e);
       throw new PartitionNotFoundException(e.getMessage());

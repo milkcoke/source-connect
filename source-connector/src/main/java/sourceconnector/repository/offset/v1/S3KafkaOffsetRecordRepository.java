@@ -2,6 +2,8 @@ package sourceconnector.repository.offset.v1;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import offsetmanager.domain.file.FileKey;
+import offsetmanager.domain.file.factory.FileKeyParser;
 import offsetmanager.domain.offset.OffsetRecord;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.DescribeTopicsResult;
@@ -28,15 +30,15 @@ public class S3KafkaOffsetRecordRepository implements KafkaOffsetRecordRepositor
   private final Duration timeout = Duration.ofMillis(100);
 
   @Override
-  public OffsetRecord findLastOffsetRecord(String topicName, String s3key) {
-    int partition = this.getPartitionsForTopic(topicName, s3key);
+  public OffsetRecord findLastOffsetRecord(String topicName, FileKey fileKey) {
+    int partition = this.getPartitionsForTopic(topicName, fileKey);
     TopicPartition topicPartition = new TopicPartition(topicName, partition);
     this.consumer.assign(List.of(topicPartition));
     long currentOffset = this.consumer.beginningOffsets(List.of(topicPartition)).get(topicPartition);
     // Log End Offset (LEO) for each partition which is offset appended to the topic partition
     long endOffset = this.consumer.endOffsets(List.of(topicPartition)).get(topicPartition);
 
-    S3OffsetRecord lastOffsetRecord = new S3OffsetRecord(s3key, INITIAL.getValue());
+    S3OffsetRecord lastOffsetRecord = new S3OffsetRecord(fileKey, INITIAL.getValue());
 
     while (currentOffset < endOffset) {
       this.consumer.seek(topicPartition, currentOffset);
@@ -57,10 +59,10 @@ public class S3KafkaOffsetRecordRepository implements KafkaOffsetRecordRepositor
 
       lastOffsetRecord = recordList
         .stream()
-        .filter(record -> record.key().equals(s3key))
+        .filter(record -> record.key().equals(fileKey.get()))
         .max(Comparator.comparingLong(ConsumerRecord::offset))
         .map(record -> new S3OffsetRecord(
-          record.key(),
+          FileKeyParser.parse(record.key()),
           record.offset()
         ))
         .orElse(lastOffsetRecord);
@@ -69,14 +71,14 @@ public class S3KafkaOffsetRecordRepository implements KafkaOffsetRecordRepositor
     return lastOffsetRecord;
   }
 
-  public int getPartitionsForTopic(String topicName, String s3Key){
+  public int getPartitionsForTopic(String topicName, FileKey fileKey){
     // get partition count of topic
     DescribeTopicsResult result = adminClient.describeTopics(Collections.singletonList(topicName));
     Map<String, KafkaFuture<TopicDescription>> futures = result.topicNameValues();
     try {
       TopicDescription description = futures.get(topicName).get();
       int partitionCount = description.partitions().size();
-      return Utils.murmur2(s3Key.getBytes(StandardCharsets.UTF_8)) % partitionCount;
+      return Utils.murmur2(fileKey.get().getBytes(StandardCharsets.UTF_8)) % partitionCount;
     } catch (ExecutionException | InterruptedException e) {
       log.error("Failed to get partitions for topic {}", topicName, e);
       throw new PartitionNotFoundException(e.getMessage());

@@ -1,5 +1,8 @@
 package sourceconnector.repository;
 
+import offsetmanager.domain.file.FileKey;
+import offsetmanager.domain.file.LocalFileKey;
+import offsetmanager.domain.file.factory.FileKeyParser;
 import offsetmanager.domain.offset.OffsetRecord;
 import offsetmanager.domain.offset.OffsetStatus;
 import org.apache.kafka.clients.CommonClientConfigs;
@@ -22,6 +25,7 @@ import org.springframework.kafka.config.TopicBuilder;
 import sourceconnector.domain.offset.LocalFileOffsetRecord;
 import sourceconnector.repository.offset.v1.LocalKafkaOffsetRecordRepository;
 
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -92,7 +96,10 @@ class LocalKafkaOffsetRecordRepositoryTest {
   @Test
   void foundNoRecordTest() {
     // given when
-    OffsetRecord offsetRecord = this.repository.findLastOffsetRecord(this.testTopicName, "NotExistFile.ndjson");
+    OffsetRecord offsetRecord = this.repository.findLastOffsetRecord(
+      this.testTopicName,
+      LocalFileKey.from(Path.of("NotExistFile.ndjson"))
+    );
     // then
     assertThat(offsetRecord)
       .hasFieldOrPropertyWithValue("key", "NotExistFile.ndjson")
@@ -103,16 +110,16 @@ class LocalKafkaOffsetRecordRepositoryTest {
   @Test
   void getLastRecordTest() {
     // given
-    String filePath = "src/test/resources/sample-data/empty-included.ndjson";
+    FileKey fileKey = FileKeyParser.parse("file:///sample-data.ndjson");
 
     try (KafkaProducer<String, Long> producer = new KafkaProducer<>(props)) {
 
       for (long offset = 0; offset <= 100; offset++) {
-        OffsetRecord record = new LocalFileOffsetRecord(filePath, offset);
+        OffsetRecord record = new LocalFileOffsetRecord(fileKey, offset);
 
         producer.send(new ProducerRecord<>(
           this.testTopicName,
-          record.key(),
+          record.key().get(),
           record.offset()
         ));
       }
@@ -120,10 +127,10 @@ class LocalKafkaOffsetRecordRepositoryTest {
     }
 
     // when
-    OffsetRecord offsetRecord = this.repository.findLastOffsetRecord(this.testTopicName, filePath);
+    OffsetRecord offsetRecord = this.repository.findLastOffsetRecord(this.testTopicName, fileKey);
 
     // then
-    assertThat(offsetRecord.key()).isEqualTo(filePath);
+    assertThat(offsetRecord.key()).isEqualTo(fileKey);
     assertThat(offsetRecord.offset()).isEqualTo(100L);
   }
 }

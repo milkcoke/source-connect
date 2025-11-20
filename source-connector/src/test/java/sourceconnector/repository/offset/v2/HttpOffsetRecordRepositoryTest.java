@@ -56,7 +56,10 @@ class HttpOffsetRecordRepositoryTest {
     assertThat(offsetRecord)
       .isPresent()
       .get()
-      .isEqualTo(new DefaultOffsetRecord("test-key1", 100L));
+      .isEqualTo(new DefaultOffsetRecord(
+        "test-key1",
+        100L
+      ));
 
   }
 

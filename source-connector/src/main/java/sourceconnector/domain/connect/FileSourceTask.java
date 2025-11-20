@@ -3,6 +3,7 @@ package sourceconnector.domain.connect;
 import lombok.AccessLevel;
 import lombok.Getter;
 import offsetmanager.domain.file.FileKey;
+import offsetmanager.domain.offset.DefaultOffsetRecord;
 import offsetmanager.domain.offset.OffsetStatus;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.LogMetadata;
@@ -70,9 +71,9 @@ public class FileSourceTask implements Task<FileProcessingResult> {
 
         // Complete this file
         producer.sendBatch(
-          new LocalFileOffsetRecord(
+          new DefaultOffsetRecord(
             // This is for handling no Log after filtered
-            fileKey.get(),
+            fileKey,
             OffsetStatus.COMPLETED.getValue()
           ),
           Collections::emptyList

@@ -22,7 +22,7 @@ class JSONLogTest {
     assertThat(jsonLog.get()).isEqualTo("log payload");
 
     LogMetadata metadata = jsonLog.getMetadata();
-    assertThat(metadata.key()).contains("file.ndjson");
+    assertThat(metadata.key()).isEqualTo(LocalFileKey.from(Path.of("file.ndjson")));
     assertThat(metadata.offset()).isEqualTo(0L);
   }
 

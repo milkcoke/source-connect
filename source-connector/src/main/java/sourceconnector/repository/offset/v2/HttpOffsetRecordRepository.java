@@ -6,6 +6,7 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import offsetmanager.domain.file.factory.FileKeyParser;
 import offsetmanager.domain.offset.DefaultOffsetRecord;
 import offsetmanager.domain.offset.OffsetRecord;
 import offsetmanager.service.dto.LastOffsetRecordBatchResponse;
@@ -46,7 +47,10 @@ public class HttpOffsetRecordRepository implements OffsetRecordRepository {
                     response.body(),
                     LastOffsetRecordResponse.class
                 );
-                return Optional.of(new DefaultOffsetRecord(offsetRecord.key(), offsetRecord.offset()));
+                return Optional.of(new DefaultOffsetRecord(
+                  FileKeyParser.parse(offsetRecord.key()),
+                  offsetRecord.offset())
+                );
             } else if (responseStatus == NOT_FOUND.getStatusCode()) {
                 return Optional.empty();
             } else {
@@ -75,7 +79,10 @@ public class HttpOffsetRecordRepository implements OffsetRecordRepository {
                 );
                 return batchResponse.lastOffsetRecords()
                         .stream()
-                        .map(lastOffsetRecord -> new DefaultOffsetRecord(lastOffsetRecord.key(), lastOffsetRecord.offset()))
+                        .map(lastOffsetRecord -> new DefaultOffsetRecord(
+                          FileKeyParser.parse(lastOffsetRecord.key()),
+                          lastOffsetRecord.offset())
+                        )
                         .collect(Collectors.toList());
             }
 
