@@ -79,7 +79,7 @@ class StorageConfigTest {
     // given
     StorageConfig storageConfig = new StorageConfig(
       StorageType.LOCAL,
-      List.of("Users/downloads", "Users/downloads/sample.csv")
+      List.of("file:///Users/downloads", "file:///Users/downloads/sample.csv")
     );
     // when
     List<FileKey> fileKeys = storageConfig.getAllFileKeys();
@@ -121,7 +121,7 @@ class StorageConfigTest {
     // when then
     assertThatThrownBy(storageConfig::getAllFileKeys)
       .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("Invalid S3 URI format: " + "Users/Downloads/sample.csv");
+      .hasMessage("Unsupported file key schema: " + "Users/Downloads/sample.csv");
   }
 
 }

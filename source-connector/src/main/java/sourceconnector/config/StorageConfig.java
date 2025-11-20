@@ -1,15 +1,12 @@
 package sourceconnector.config;
 
 import lombok.RequiredArgsConstructor;
-import offsetmanager.domain.file.LocalFileKey;
-import offsetmanager.domain.file.S3Uri;
+import offsetmanager.domain.file.factory.FileKeyParser;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import offsetmanager.domain.file.FileKey;
 
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 
 @ConfigurationProperties(prefix = "source.storage")
 public record StorageConfig(
@@ -18,15 +15,10 @@ public record StorageConfig(
 ) {
   @RequiredArgsConstructor
   public enum StorageType {
-    LOCAL(path -> LocalFileKey.from(Path.of(path))),
-    S3(path -> S3Uri.from(path).toFileKey());
-
-    private final Function<String, FileKey> fileKeyFactory;
-
-    public FileKey toFileKey(String path) {
-      return fileKeyFactory.apply(path);
-    }
+    LOCAL,
+    S3;
   }
+
   public StorageConfig {
     Objects.requireNonNull(type, "storage type is required");
     if (paths == null || paths.isEmpty()) {
@@ -36,7 +28,7 @@ public record StorageConfig(
 
   public List<FileKey> getAllFileKeys() {
     return paths.stream()
-      .map(type::toFileKey)
+      .map(FileKeyParser::parse)
       .toList();
   }
 }
