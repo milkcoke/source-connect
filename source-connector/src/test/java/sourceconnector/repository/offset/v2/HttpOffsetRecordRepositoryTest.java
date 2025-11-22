@@ -6,6 +6,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import mockwebserver3.MockResponse;
 import mockwebserver3.MockWebServer;
+import offsetmanager.domain.file.FileKey;
+import offsetmanager.domain.file.factory.FileKeyParser;
 import offsetmanager.domain.offset.DefaultOffsetRecord;
 import offsetmanager.domain.offset.OffsetRecord;
 import org.junit.jupiter.api.*;
@@ -39,7 +41,7 @@ class HttpOffsetRecordRepositoryTest {
       .Builder()
       .body("""
         {
-          "key": "test-key1",
+          "key": "file:///test-key1",
           "offset": 100
         }
         """)
@@ -49,15 +51,16 @@ class HttpOffsetRecordRepositoryTest {
     String baseUrl = mockWebServer.url("/").toString();
 
     OffsetRecordRepository repository = new HttpOffsetRecordRepository(baseUrl);
+    FileKey fileKey = FileKeyParser.parse("file:///test-key1");
     // when
-    Optional<OffsetRecord> offsetRecord = repository.findLastOffsetRecord("test-key1");
+    Optional<OffsetRecord> offsetRecord = repository.findLastOffsetRecord(fileKey);
 
     // then
     assertThat(offsetRecord)
       .isPresent()
       .get()
       .isEqualTo(new DefaultOffsetRecord(
-        "test-key1",
+        fileKey,
         100L
       ));
 
@@ -75,8 +78,9 @@ class HttpOffsetRecordRepositoryTest {
     String baseUrl = mockWebServer.url("/").toString();
 
     OffsetRecordRepository repository = new HttpOffsetRecordRepository(baseUrl);
+    FileKey notExistFileKey = FileKeyParser.parse("file:///not-exist-key1");
     // when
-    Optional<OffsetRecord> offsetRecord = repository.findLastOffsetRecord("not-exists-key1");
+    Optional<OffsetRecord> offsetRecord = repository.findLastOffsetRecord(notExistFileKey);
     // then
     assertThat(offsetRecord).isEmpty();
   }
@@ -93,11 +97,11 @@ class HttpOffsetRecordRepositoryTest {
         {
           "lastOffsetRecords": [
             {
-              "key": "test-key2",
+              "key": "file:///test-key2",
               "offset": 200
             },
             {
-              "key": "test-key3",
+              "key": "file:///test-key3",
               "offset": 300
             }
           ]
@@ -108,16 +112,18 @@ class HttpOffsetRecordRepositoryTest {
 
     String baseUrl = mockWebServer.url("/").toString();
     OffsetRecordRepository repository = new HttpOffsetRecordRepository(baseUrl);
+    List<FileKey> fileKeys = List.of(
+      FileKeyParser.parse("file:///test-key2"),
+      FileKeyParser.parse("file:///test-key3")
+    );
+
     // when
-    List<OffsetRecord> offsetRecords = repository.findLastOffsetRecords(List.of(
-      "test-key2",
-      "test-key3"
-    ));
+    List<OffsetRecord> offsetRecords = repository.findLastOffsetRecords(fileKeys);
 
     assertThat(offsetRecords)
       .containsExactlyInAnyOrder(
-        new DefaultOffsetRecord("test-key2", 200L),
-        new DefaultOffsetRecord("test-key3", 300L)
+        new DefaultOffsetRecord(FileKeyParser.parse("file:///test-key2"), 200L),
+        new DefaultOffsetRecord(FileKeyParser.parse("file:///test-key3"), 300L)
       );
 
   }
@@ -139,12 +145,12 @@ class HttpOffsetRecordRepositoryTest {
     );
     String baseUrl = mockWebServer.url("/").toString();
     OffsetRecordRepository repository = new HttpOffsetRecordRepository(baseUrl);
-
+    List<FileKey> notExistFileKeys = List.of(
+      FileKeyParser.parse("file:///not-exists-key2"),
+      FileKeyParser.parse("file:///not-exists-key3")
+    );
     // when
-    List<OffsetRecord> offsetRecord = repository.findLastOffsetRecords(List.of(
-      "not-exists-key2",
-      "not-exists-key3"
-    ));
+    List<OffsetRecord> offsetRecord = repository.findLastOffsetRecords(notExistFileKeys);
     // then
     assertThat(offsetRecord)
       .hasSize(0)

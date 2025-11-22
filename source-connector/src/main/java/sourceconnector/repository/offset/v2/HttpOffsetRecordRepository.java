@@ -6,6 +6,7 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import offsetmanager.domain.file.FileKey;
 import offsetmanager.domain.file.factory.FileKeyParser;
 import offsetmanager.domain.offset.DefaultOffsetRecord;
 import offsetmanager.domain.offset.OffsetRecord;
@@ -33,8 +34,8 @@ public class HttpOffsetRecordRepository implements OffsetRecordRepository {
     private final String baseUrl;
 
     @Override
-    public Optional<OffsetRecord> findLastOffsetRecord(String key) {
-        URI url = URI.create(baseUrl).resolve("/v1/offset-records?key=" + key);
+    public Optional<OffsetRecord> findLastOffsetRecord(FileKey key) {
+        URI url = URI.create(baseUrl).resolve("/v1/offset-records?key=" + key.get());
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(url)
                 .GET()
@@ -62,9 +63,10 @@ public class HttpOffsetRecordRepository implements OffsetRecordRepository {
     }
 
     @Override
-    public List<OffsetRecord> findLastOffsetRecords(List<String> keys) throws JsonProcessingException {
+    public List<OffsetRecord> findLastOffsetRecords(List<FileKey> keys) throws JsonProcessingException {
         URI url = URI.create(baseUrl).resolve("/v1/offset-records");
-        String requestBody = objectMapper.writeValueAsString(keys);
+        List<String> fileKeys= keys.stream().map(FileKey::get).toList();
+        String requestBody = objectMapper.writeValueAsString(fileKeys);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(url)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
