@@ -96,13 +96,15 @@ class LocalKafkaOffsetRecordRepositoryTest {
   @Test
   void foundNoRecordTest() {
     // given when
+    FileKey notExistFileKey = LocalFileKey.from(Path.of("NotExistFile.ndjson"));
     OffsetRecord offsetRecord = this.repository.findLastOffsetRecord(
       this.testTopicName,
-      LocalFileKey.from(Path.of("NotExistFile.ndjson"))
+      notExistFileKey
     );
+
     // then
     assertThat(offsetRecord)
-      .hasFieldOrPropertyWithValue("key", "NotExistFile.ndjson")
+      .hasFieldOrPropertyWithValue("key", notExistFileKey)
       .hasFieldOrPropertyWithValue("offset", OffsetStatus.INITIAL.getValue());
   }
 
