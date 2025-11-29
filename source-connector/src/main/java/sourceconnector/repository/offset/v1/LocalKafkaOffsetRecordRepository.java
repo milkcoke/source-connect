@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import offsetmanager.domain.file.FileKey;
 import offsetmanager.domain.file.factory.FileKeyParser;
+import offsetmanager.domain.offset.DefaultOffsetRecord;
 import offsetmanager.domain.offset.OffsetRecord;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.DescribeTopicsResult;
@@ -13,7 +14,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.utils.Utils;
-import sourceconnector.domain.offset.LocalFileOffsetRecord;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -40,7 +40,7 @@ public class LocalKafkaOffsetRecordRepository implements KafkaOffsetRecordReposi
     long currentOffset = this.consumer.beginningOffsets(List.of(topicPartition)).get(topicPartition);
     long endOffset = this.consumer.endOffsets(List.of(topicPartition)).get(topicPartition);
 
-    LocalFileOffsetRecord lastOffsetRecord = new LocalFileOffsetRecord(fileKey, INITIAL.getValue());
+    DefaultOffsetRecord lastOffsetRecord = new DefaultOffsetRecord(fileKey, INITIAL.getValue());
 
     while (currentOffset < endOffset) {
       this.consumer.seek(topicPartition, currentOffset);
@@ -63,9 +63,9 @@ public class LocalKafkaOffsetRecordRepository implements KafkaOffsetRecordReposi
         .stream()
         .filter(record -> record.key().equals(fileKey.get()))
         .max(Comparator.comparingLong(ConsumerRecord::offset))
-        .map(record -> new LocalFileOffsetRecord(
+        .map(record -> new DefaultOffsetRecord(
           FileKeyParser.parse(record.key()),
-          record.offset()
+          record.value()
         ))
         .orElse(lastOffsetRecord);
     }
