@@ -103,7 +103,7 @@ public class InternalOffsetRecordRepository implements OffsetRecordRepository {
 
         if (recordList.isEmpty()) break;
 
-        currentOffset = recordList.getLast().offset();
+        currentOffset = recordList.getLast().offset() + 1;
 
         for (var record: recordList) {
           FileKey fileKey = FileKeyParser.parse(record.key());
