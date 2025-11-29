@@ -1,8 +1,9 @@
-package sourceconnector.repository;
+package sourceconnector.repository.offset.v1;
 
 import offsetmanager.domain.file.FileKey;
 import offsetmanager.domain.file.LocalFileKey;
 import offsetmanager.domain.file.factory.FileKeyParser;
+import offsetmanager.domain.offset.DefaultOffsetRecord;
 import offsetmanager.domain.offset.OffsetRecord;
 import offsetmanager.domain.offset.OffsetStatus;
 import org.apache.kafka.clients.CommonClientConfigs;
@@ -22,8 +23,6 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.*;
 import org.springframework.kafka.config.TopicBuilder;
-import sourceconnector.domain.offset.LocalFileOffsetRecord;
-import sourceconnector.repository.offset.v1.LocalKafkaOffsetRecordRepository;
 
 import java.nio.file.Path;
 import java.util.Collections;
@@ -117,7 +116,7 @@ class LocalKafkaOffsetRecordRepositoryTest {
     try (KafkaProducer<String, Long> producer = new KafkaProducer<>(props)) {
 
       for (long offset = 0; offset <= 100; offset++) {
-        OffsetRecord record = new LocalFileOffsetRecord(fileKey, offset);
+        OffsetRecord record = new DefaultOffsetRecord(fileKey, offset);
 
         producer.send(new ProducerRecord<>(
           this.testTopicName,

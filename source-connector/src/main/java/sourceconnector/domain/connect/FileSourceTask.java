@@ -7,10 +7,9 @@ import offsetmanager.domain.offset.DefaultOffsetRecord;
 import offsetmanager.domain.offset.OffsetStatus;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.LogMetadata;
-import sourceconnector.domain.offset.LocalFileOffsetRecord;
+import sourceconnector.domain.pipeline.Pipeline;
 import sourceconnector.domain.pipeline.factory.PipelineSupplier;
 import sourceconnector.service.batcher.LogBatcher;
-import sourceconnector.domain.pipeline.Pipeline;
 import sourceconnector.service.producer.BatchProducer;
 
 import java.util.ArrayList;
@@ -60,7 +59,7 @@ public class FileSourceTask implements Task<FileProcessingResult> {
             .toList();
 
           producer.sendBatch(
-            new LocalFileOffsetRecord(
+            new DefaultOffsetRecord(
               lastMessageMetadata.key(),
               lastMessageMetadata.offset()
             ),

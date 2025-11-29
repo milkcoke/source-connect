@@ -1,5 +1,6 @@
 package sourceconnector;
 
+import offsetmanager.domain.offset.DefaultOffsetRecord;
 import offsetmanager.domain.offset.OffsetStatus;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.common.record.CompressionType;
@@ -9,7 +10,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import offsetmanager.domain.file.LocalFileKey;
 import sourceconnector.domain.log.LogMetadata;
-import sourceconnector.domain.offset.LocalFileOffsetRecord;
 import sourceconnector.domain.log.factory.JSONLogFactory;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.pipeline.factory.FileBaseLogPipelineBuilder;
@@ -77,7 +77,7 @@ class SourceConnectorTest {
         .map(Log::get)
         .toList();
       producer.sendBatch(
-        new LocalFileOffsetRecord(
+        new DefaultOffsetRecord(
           lastMessageMetadata.key(),
           lastMessageMetadata.offset()
         ),
@@ -86,7 +86,7 @@ class SourceConnectorTest {
     }
 
     if (lastMessageMetadata != LogMetadata.EMPTY) {
-      producer.sendBatch(new LocalFileOffsetRecord(
+      producer.sendBatch(new DefaultOffsetRecord(
         lastMessageMetadata.key(),
         OffsetStatus.COMPLETED.getValue()
       ), Collections::emptyList);
@@ -130,7 +130,7 @@ class SourceConnectorTest {
             .map(Log::get)
             .toList();
           producer.sendBatch(
-            new LocalFileOffsetRecord(
+            new DefaultOffsetRecord(
               lastMessageMetadata.key(),
               lastMessageMetadata.offset()
             ),
@@ -139,7 +139,7 @@ class SourceConnectorTest {
         }
 
         if (lastMessageMetadata != LogMetadata.EMPTY) {
-          producer.sendBatch(new LocalFileOffsetRecord(
+          producer.sendBatch(new DefaultOffsetRecord(
             lastMessageMetadata.key(),
             OffsetStatus.COMPLETED.getValue()
           ), Collections::emptyList);
@@ -184,7 +184,7 @@ class SourceConnectorTest {
             .map(Log::get)
             .toList();
           producer.sendBatch(
-            new LocalFileOffsetRecord(
+            new DefaultOffsetRecord(
               lastMessageMetadata.key(),
               lastMessageMetadata.offset()
             ),
@@ -193,7 +193,7 @@ class SourceConnectorTest {
         }
 
         if (lastMessageMetadata != LogMetadata.EMPTY) {
-          producer.sendBatch(new LocalFileOffsetRecord(
+          producer.sendBatch(new DefaultOffsetRecord(
             lastMessageMetadata.key(),
             OffsetStatus.COMPLETED.getValue()
           ), Collections::emptyList);

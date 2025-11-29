@@ -1,6 +1,7 @@
 package sourceconnector.service.producer;
 
 import offsetmanager.domain.file.factory.FileKeyParser;
+import offsetmanager.domain.offset.DefaultOffsetRecord;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -15,7 +16,6 @@ import org.junit.jupiter.api.DisplayName;
 import sourceconnector.domain.batch.MessageBatch;
 import sourceconnector.domain.batch.DefaultMessageBatchLogs;
 import offsetmanager.domain.offset.OffsetRecord;
-import sourceconnector.domain.offset.S3OffsetRecord;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
@@ -53,7 +53,7 @@ class BatchProduceServiceTest {
       "log2",
       "log3"
     ));
-    OffsetRecord offsetRecord = new S3OffsetRecord(
+    OffsetRecord offsetRecord = new DefaultOffsetRecord(
       FileKeyParser.parse("s3://test/2025/04/11/test.json"),
       3L
     );
