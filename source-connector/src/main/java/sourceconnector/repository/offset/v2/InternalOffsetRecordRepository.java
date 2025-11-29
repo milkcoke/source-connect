@@ -1,6 +1,5 @@
 package sourceconnector.repository.offset.v2;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import offsetmanager.domain.file.FileKey;
@@ -21,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -62,7 +62,6 @@ public class InternalOffsetRecordRepository implements OffsetRecordRepository {
       Optional<OffsetRecord> currentLastOffsetRecord = recordList
         .stream()
         .filter(record -> record.key().equals(fileKey.get()))
-        // Not Max just return last value
         .max(Comparator.comparingLong(ConsumerRecord::offset))
         .map(record -> new DefaultOffsetRecord(
           FileKeyParser.parse(record.key()),
@@ -78,9 +77,47 @@ public class InternalOffsetRecordRepository implements OffsetRecordRepository {
   }
 
   @Override
-  public List<OffsetRecord> findLastOffsetRecords(List<FileKey> keys) throws JsonProcessingException {
+  public List<OffsetRecord> findLastOffsetRecords(List<FileKey> keys) {
+    if (keys.isEmpty()) return Collections.emptyList();
 
-    return List.of();
+    Map<Integer, List<FileKey>> keysByPartition = keys.stream()
+      .collect(Collectors.groupingBy(this::getPartitionsForTopic));
+
+    Map<FileKey, OffsetRecord> keyOffsetMap = new HashMap<>();
+    // Iterate through each partition
+    for (Map.Entry<Integer, List<FileKey>> entry: keysByPartition.entrySet()) {
+      int partition = entry.getKey();
+      Set<FileKey> fileKeySet = new HashSet<>(entry.getValue());
+
+      TopicPartition topicPartition = new TopicPartition(offsetTopic, partition);
+      this.consumer.assign(List.of(topicPartition));
+
+      long currentOffset = this.consumer.beginningOffsets(List.of(topicPartition)).get(topicPartition);
+      long endOffset = this.consumer.endOffsets(List.of(topicPartition)).get(topicPartition);
+
+
+      while (currentOffset < endOffset) {
+        consumer.seek(topicPartition, currentOffset);
+        List<ConsumerRecord<String, Long>> recordList = this.consumer
+          .poll(timeout)
+          .records(topicPartition);
+
+        if (recordList.isEmpty()) break;
+
+        currentOffset = recordList.getLast().offset();
+
+        for (var record: recordList) {
+          FileKey fileKey = FileKeyParser.parse(record.key());
+          if (!fileKeySet.contains(fileKey)) continue;
+          long offset = record.value();
+          // record last offset for each fileKey
+          keyOffsetMap.put(fileKey, new DefaultOffsetRecord(fileKey, offset));
+        }
+      }
+
+    }
+
+    return new ArrayList<>(keyOffsetMap.values());
   }
 
   private int getPartitionsForTopic(FileKey fileKey){

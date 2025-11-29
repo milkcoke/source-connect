@@ -212,4 +212,40 @@ class InternalOffsetRecordRepositoryTest {
         new DefaultOffsetRecord(fileKeys.get(2), 100L)
       );
   }
+
+  @DisplayName("Get last offset records in reverse")
+  @Test
+  void findLastOffsetsReverseOffsetValueTest() throws JsonProcessingException {
+    // given
+    List<FileKey> fileKeys = List.of(
+      FileKeyParser.parse("file:///sample-data1.ndjson"),
+      FileKeyParser.parse("file:///sample-data2.ndjson"),
+      FileKeyParser.parse("file:///sample-data3.ndjson")
+    );
+
+    producer.beginTransaction();
+    for (FileKey fileKey : fileKeys) {
+      for (long offset = 100; offset >= -1; offset--) {
+        OffsetRecord record = new DefaultOffsetRecord(fileKey, offset);
+
+        producer.send(new ProducerRecord<>(
+          this.offsetTopic,
+          record.key().get(),
+          record.offset()
+        ));
+      }
+    }
+    producer.commitTransaction();
+
+    // when
+    List<OffsetRecord> offsetRecords = this.repository.findLastOffsetRecords(fileKeys);
+    // then
+    assertThat(offsetRecords).hasSize(fileKeys.size())
+      .containsExactlyInAnyOrder(
+        new DefaultOffsetRecord(fileKeys.get(0), -1L),
+        new DefaultOffsetRecord(fileKeys.get(1), -1L),
+        new DefaultOffsetRecord(fileKeys.get(2), -1L)
+      );
+  }
+
 }
