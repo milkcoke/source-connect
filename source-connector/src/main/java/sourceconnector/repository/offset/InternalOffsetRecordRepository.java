@@ -1,4 +1,4 @@
-package sourceconnector.repository.offset.v2;
+package sourceconnector.repository.offset;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +14,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.utils.Utils;
-import sourceconnector.repository.offset.v1.KafkaOffsetRecordRepository;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -130,7 +129,7 @@ public class InternalOffsetRecordRepository implements OffsetRecordRepository {
       return Utils.murmur2(fileKey.get().getBytes(StandardCharsets.UTF_8)) % partitionCount;
     } catch (ExecutionException | InterruptedException e) {
       log.error("Failed to get partitions for topic {}", offsetTopic, e);
-      throw new KafkaOffsetRecordRepository.PartitionNotFoundException(e.getMessage());
+      throw new RuntimeException(e.getMessage());
     }
   }
 }

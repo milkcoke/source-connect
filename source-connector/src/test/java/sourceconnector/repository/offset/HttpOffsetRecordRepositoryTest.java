@@ -1,4 +1,4 @@
-package sourceconnector.repository.offset.v2;
+package sourceconnector.repository.offset;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.ws.rs.core.HttpHeaders;
