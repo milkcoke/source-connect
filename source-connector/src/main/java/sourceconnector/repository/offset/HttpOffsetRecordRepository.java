@@ -12,6 +12,7 @@ import offsetmanager.domain.offset.DefaultOffsetRecord;
 import offsetmanager.domain.offset.OffsetRecord;
 import offsetmanager.service.dto.LastOffsetRecordBatchResponse;
 import offsetmanager.service.dto.LastOffsetRecordResponse;
+import sourceconnector.service.offset.OffsetRecordRepository;
 
 import java.io.IOException;
 import java.net.URI;

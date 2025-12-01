@@ -1,0 +1,30 @@
+package sourceconnector.service.offset;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.RequiredArgsConstructor;
+import offsetmanager.domain.file.FileKey;
+import offsetmanager.domain.offset.OffsetRecord;
+import sourceconnector.domain.connect.OffsetRecordService;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@RequiredArgsConstructor
+public class OffsetRecordServiceImpl implements OffsetRecordService {
+  private final OffsetRecordRepository offsetRecordRepository;
+
+  @Override
+  public Map<FileKey, Long> offsetMap(List<FileKey> fileKeys) {
+    try {
+      List<OffsetRecord> offsetRecords = this.offsetRecordRepository.findLastOffsetRecords(fileKeys);
+      return offsetRecords.stream()
+        .collect(Collectors.toMap(
+          OffsetRecord::key,
+          OffsetRecord::offset
+        ));
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+}

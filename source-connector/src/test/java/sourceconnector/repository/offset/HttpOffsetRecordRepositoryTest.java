@@ -11,6 +11,7 @@ import offsetmanager.domain.file.factory.FileKeyParser;
 import offsetmanager.domain.offset.DefaultOffsetRecord;
 import offsetmanager.domain.offset.OffsetRecord;
 import org.junit.jupiter.api.*;
+import sourceconnector.service.offset.OffsetRecordRepository;
 
 import java.io.IOException;
 import java.util.List;

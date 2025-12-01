@@ -24,6 +24,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.*;
 import org.springframework.kafka.config.TopicBuilder;
+import sourceconnector.service.offset.OffsetRecordRepository;
 
 import java.nio.file.Path;
 import java.util.*;

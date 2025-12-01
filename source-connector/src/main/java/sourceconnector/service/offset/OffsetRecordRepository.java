@@ -1,4 +1,4 @@
-package sourceconnector.repository.offset;
+package sourceconnector.service.offset;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import offsetmanager.domain.file.FileKey;

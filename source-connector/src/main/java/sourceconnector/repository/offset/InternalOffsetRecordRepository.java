@@ -14,6 +14,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.utils.Utils;
+import sourceconnector.service.offset.OffsetRecordRepository;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
