@@ -54,8 +54,6 @@ public class InternalOffsetRecordRepository implements OffsetRecordRepository {
         .map(ConsumerRecord::offset)
         .get();
 
-      // FIXME: if one or more transactional marker records exist after last offset record
-      //   never reach to last record
       currentOffset = lastOffset + 1;
 
       Optional<OffsetRecord> currentLastOffsetRecord = recordList
@@ -93,7 +91,6 @@ public class InternalOffsetRecordRepository implements OffsetRecordRepository {
 
       long currentOffset = this.consumer.beginningOffsets(List.of(topicPartition)).get(topicPartition);
       long endOffset = this.consumer.endOffsets(List.of(topicPartition)).get(topicPartition);
-
 
       while (currentOffset < endOffset) {
         consumer.seek(topicPartition, currentOffset);
