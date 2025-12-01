@@ -12,9 +12,10 @@ import sourceconnector.domain.pipeline.factory.PipelineSupplier;
 import sourceconnector.service.batcher.LogBatcher;
 import sourceconnector.service.producer.BatchProducer;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FileSourceTask implements Task<FileProcessingResult> {
   private final String id;
@@ -25,7 +26,7 @@ public class FileSourceTask implements Task<FileProcessingResult> {
 
   // visible for test
   @Getter(AccessLevel.PACKAGE)
-  private final List<FileKey> fileKeys = new ArrayList<>();
+  private final Map<FileKey, Long> fileKeyOffsetMap = new HashMap<>();
   private final FileProcessingResult result = new FileProcessingResult();
 
   public FileSourceTask(
@@ -42,7 +43,7 @@ public class FileSourceTask implements Task<FileProcessingResult> {
   @Override
   public FileProcessingResult call() throws Exception {
     try {
-      for (var fileKey: this.fileKeys) {
+      for (var fileKey: this.fileKeyOffsetMap.keySet()) {
         Pipeline<Log> pipeline = pipelineSupplier.get(fileKey);
 
         LogBatcher batcher = new LogBatcher(pipeline, 10_000);
@@ -87,8 +88,8 @@ public class FileSourceTask implements Task<FileProcessingResult> {
   }
 
   @Override
-  public void assign(List<FileKey> fileKeys) {
-    this.fileKeys.addAll(fileKeys);
-    this.result.setTotalCount(this.fileKeys.size());
+  public void assign(Map<FileKey, Long> fileKeys) {
+    this.fileKeyOffsetMap.putAll(fileKeys);
+    this.result.setTotalCount(fileKeyOffsetMap.size());
   }
 }
