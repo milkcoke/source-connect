@@ -25,10 +25,11 @@ class OffsetManagerConfigTest {
   @DisplayName("baseUrl omission is allowed")
   @Test
   void yamlConfigurationTest() throws IOException {
+    // FIXME: How to allow baseUrl omission?
     // given
     Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
       offsetManager:
-        baseUrl: 
+        baseUrl: "internal://"
       """);
     Binder binder = new Binder(new MapConfigurationPropertySource(map));
 
