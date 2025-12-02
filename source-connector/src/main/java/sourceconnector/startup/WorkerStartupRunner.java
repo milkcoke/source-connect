@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
-import sourceconnector.config.AppConfig;
+import sourceconnector.config.ConnectConfig;
 import sourceconnector.config.TopicConfig;
 import sourceconnector.domain.connect.FileProcessingResult;
 import sourceconnector.domain.connect.Task;
@@ -18,7 +18,7 @@ import java.util.Properties;
 @Component
 @RequiredArgsConstructor
 public class WorkerStartupRunner implements ApplicationRunner {
-  private final AppConfig appConfig;
+  private final ConnectConfig appConfig;
   private final Worker worker;
   private final PipelineSupplier<Log> pipelineSupplier;
   private final Properties producerProperties;

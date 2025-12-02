@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import sourceconnector.domain.connect.FileTaskAssignor;
+import sourceconnector.domain.connect.OffsetRecordService;
 import sourceconnector.domain.connect.TaskAssignor;
 import sourceconnector.domain.connect.Worker;
 import offsetmanager.domain.file.FileKey;
@@ -19,17 +20,18 @@ public class WorkerConfiguration {
     FileLister fileLister,
     StorageConfig storageConfig,
     FileSearchConfigs fileSearchConfigs,
-    AppConfig appConfig
+    ConnectConfig connectConfig,
+    OffsetRecordService offsetRecordService
   ) throws IOException {
 
     FileKey[] inputFileKeys = storageConfig.getAllFileKeys().toArray(new FileKey[0]);
 
     if (fileSearchConfigs.isRecursive()) {
       var foundFileKeys = fileLister.listFilesRecursively(inputFileKeys);
-      return new FileTaskAssignor(foundFileKeys, appConfig.taskCount());
+      return new FileTaskAssignor(foundFileKeys, connectConfig.taskCount(), offsetRecordService);
     } else {
       var foundFileKeys = fileLister.listFiles(inputFileKeys);
-      return new FileTaskAssignor(foundFileKeys, appConfig.taskCount());
+      return new FileTaskAssignor(foundFileKeys, connectConfig.taskCount(), offsetRecordService);
     }
   }
 

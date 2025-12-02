@@ -1,7 +1,15 @@
 package sourceconnector.domain.connect;
 
+import org.apache.kafka.clients.CommonClientConfigs;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.config.TopicConfig;
+import org.apache.kafka.common.errors.TopicExistsException;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
+import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -9,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import offsetmanager.domain.file.FileKey;
 import offsetmanager.domain.file.LocalFileKey;
+import org.springframework.kafka.config.TopicBuilder;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.factory.JSONLogFactory;
 import sourceconnector.domain.pipeline.factory.FileBaseLogPipelineBuilder;
@@ -17,9 +26,12 @@ import sourceconnector.domain.pipeline.factory.PipelineSupplier;
 import sourceconnector.domain.processor.impl.EmptyFilterProcessor;
 import sourceconnector.domain.processor.impl.TrimMapperProcessor;
 import sourceconnector.repository.file.LocalFileRepository;
+import sourceconnector.repository.offset.InternalOffsetRecordRepository;
+import sourceconnector.service.offset.OffsetRecordServiceImpl;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -34,6 +46,19 @@ class WorkerTest {
     new JSONLogFactory(),
     ()->List.of(new EmptyFilterProcessor(), new TrimMapperProcessor(new JSONLogFactory()))
   );
+  private OffsetRecordService offsetRecordService;
+
+  private final NewTopic offsetTopic = TopicBuilder.name("test-offset")
+    .compact()
+    .partitions(1)
+    .replicas(3)
+    .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
+    .config(TopicConfig.SEGMENT_MS_CONFIG, "10000")
+    .build();
+  private final NewTopic logTopic = TopicBuilder.name("test-log")
+    .partitions(3)
+    .replicas(3)
+    .build();
 
   @BeforeAll
   void setUp() {
@@ -42,13 +67,39 @@ class WorkerTest {
       ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
       ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class
     ));
+
+    Properties adminProps = new Properties();
+    adminProps.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093");
+
+    AdminClient adminClient = AdminClient.create(adminProps);
+    try {
+      adminClient.createTopics(List.of(this.logTopic, this.offsetTopic)).all().get();
+    } catch (TopicExistsException ignored) {
+    } catch (InterruptedException | ExecutionException e) {
+      throw new RuntimeException(e);
+    }
+
+    Properties consumerProps = new Properties();
+    consumerProps.putAll(Map.of(
+      CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
+      ConsumerConfig.GROUP_ID_CONFIG, "benchmark-offset-consumer",
+      ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringSerializer.class,
+      ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class
+    ));
+
+    this.offsetRecordService = new OffsetRecordServiceImpl(
+      new InternalOffsetRecordRepository(
+        new KafkaConsumer<>(consumerProps),
+        adminClient,
+        offsetTopic.name())
+    );
   }
 
   @DisplayName("Should throw IllegalArgumentException when worker count is 0")
   @Test
   void createNoWorkerTest() {
     // given
-    Worker worker = new Worker(0, new FileTaskAssignor(Collections.emptyList(), 0));
+    Worker worker = new Worker(0, new FileTaskAssignor(Collections.emptyList(), 0, this.offsetRecordService));
 
     // when then
     assertThatThrownBy(() -> worker.createTasks(
@@ -65,7 +116,7 @@ class WorkerTest {
   @Test
   void createNoTasksTest() {
     // given
-    Worker worker = new Worker(0, new FileTaskAssignor(Collections.emptyList(), 0));
+    Worker worker = new Worker(0, new FileTaskAssignor(Collections.emptyList(), 0, this.offsetRecordService));
 
     // when then
     assertThatThrownBy(() -> worker.createTasks(
@@ -86,7 +137,7 @@ class WorkerTest {
 
     Worker worker = new Worker(
       0,
-      new FileTaskAssignor(List.of(fileKey1, fileKey2), 2)
+      new FileTaskAssignor(List.of(fileKey1, fileKey2), 2, this.offsetRecordService)
     );
     // when
     Collection<Task<FileProcessingResult>> tasks = worker.createTasks(
@@ -104,7 +155,7 @@ class WorkerTest {
   @Test
   void NoTaskStartTest() {
     // given
-    Worker worker = new Worker(0, new FileTaskAssignor(Collections.emptyList(), 0));
+    Worker worker = new Worker(0, new FileTaskAssignor(Collections.emptyList(), 0, this.offsetRecordService));
 
     // when then
     assertThatThrownBy(worker::start)
@@ -125,7 +176,9 @@ class WorkerTest {
         LocalFileKey.from(path1),
         LocalFileKey.from(path2)
       ),
-        2)
+        2,
+        this.offsetRecordService
+      )
     );
     Collection<Task<FileProcessingResult>> tasks = worker.createTasks(
       1, 2,

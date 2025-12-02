@@ -31,10 +31,12 @@ target:
     offsetTopic: offset-topic
     sinkTopic: sink-topic
 
-app:
+connect:
   workerCount: 1
   taskCount: 1
-  offsetManagerBaseUrl: http://localhost:8080
+
+offsetManager:
+  baseUrl: http://localhost:8080
 
 spring:
   kafka:
