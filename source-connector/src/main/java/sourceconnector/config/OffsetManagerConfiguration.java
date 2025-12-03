@@ -1,5 +1,6 @@
 package sourceconnector.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.springframework.context.annotation.Bean;
@@ -10,8 +11,11 @@ import sourceconnector.repository.offset.InternalOffsetRecordRepository;
 import sourceconnector.service.offset.OffsetRecordRepository;
 import sourceconnector.service.offset.OffsetRecordServiceImpl;
 
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 
+@Slf4j
 @Configuration
 public class OffsetManagerConfiguration {
 
@@ -23,21 +27,25 @@ public class OffsetManagerConfiguration {
     TopicConfig topicConfig
   ) {
 
-    // TODO: Refactor this
-    URL url = offsetManagerConfig.baseUrl();
-    if (url == null) {
+    String baseUrl = offsetManagerConfig.baseUrl();
+    if (baseUrl == null || baseUrl.isEmpty()) {
+      log.info("baseUrl is omitted, {} is to be used.", InternalOffsetRecordRepository.class.getSimpleName());
       return new InternalOffsetRecordRepository(kafkaConsumer, adminClient, topicConfig.offsetTopic());
     }
 
-    String protocol = url.getProtocol();
+    try {
+      URL url = URI.create(offsetManagerConfig.baseUrl()).toURL();
+      String protocol = url.getProtocol();
 
-    switch (protocol) {
-      case "http", "https" -> {
-         return new HttpOffsetRecordRepository(url.toString());
+      switch (protocol) {
+        case "http", "https" -> {
+          return new HttpOffsetRecordRepository(url.toString());
+        }
+        default -> throw new IllegalArgumentException("Unsupported protocol: " + protocol);
       }
-      default -> throw new IllegalArgumentException("Unknown protocol: " + protocol);
+    } catch (MalformedURLException e) {
+      throw new IllegalArgumentException("Invalid baseUrl: " + baseUrl);
     }
-
   }
 
   @Bean
