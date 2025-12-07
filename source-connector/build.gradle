@@ -19,7 +19,7 @@ dependencies {
   implementation("org.springframework.kafka:spring-kafka:3.3.10")
   implementation('org.apache.commons:commons-lang3:3.18.0')
   implementation('org.apache.kafka:connect-runtime:3.7.1')
-  implementation("com.fasterxml.jackson.core:jackson-databind:2.20.1")
+  implementation 'tools.jackson.core:jackson-databind:3.0.3'
   implementation('jakarta.ws.rs:jakarta.ws.rs-api:4.0.0')
   implementation("software.amazon.awssdk:s3:2.38.4")
 
