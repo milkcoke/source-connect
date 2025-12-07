@@ -1,5 +1,5 @@
 plugins {
-	id("org.springframework.boot") version "3.5.6"
+	id("org.springframework.boot") version "3.5.7"
 	id("io.spring.dependency-management") version "1.1.7"
 	id("com.google.cloud.tools.jib") version "3.4.5"
 	kotlin("plugin.spring") version "2.1.20"
@@ -22,8 +22,8 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.kafka:spring-kafka")
-	implementation("org.apache.kafka:kafka-clients:3.9.0")
-	implementation("org.apache.kafka:kafka-streams:3.9.0")
+	implementation("org.apache.kafka:kafka-clients:3.9.1")
+	implementation("org.apache.kafka:kafka-streams:3.9.1")
 	implementation ("io.micrometer:micrometer-registry-prometheus:1.13.4")
 
 	// https://github.com/awslabs/aws-sdk-kotlin/issues/765

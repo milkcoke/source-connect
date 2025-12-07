@@ -1,7 +1,5 @@
 package sourceconnector.repository.offset;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +11,8 @@ import offsetmanager.domain.offset.OffsetRecord;
 import offsetmanager.service.dto.LastOffsetRecordBatchResponse;
 import offsetmanager.service.dto.LastOffsetRecordResponse;
 import sourceconnector.service.offset.OffsetRecordRepository;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.net.URI;
@@ -31,7 +31,7 @@ import static jakarta.ws.rs.core.Response.Status.OK;
 @RequiredArgsConstructor
 public class HttpOffsetRecordRepository implements OffsetRecordRepository {
     private final HttpClient httpClient = HttpClient.newHttpClient();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = JsonMapper.builder().build();
     private final String baseUrl;
 
     @Override
@@ -64,7 +64,7 @@ public class HttpOffsetRecordRepository implements OffsetRecordRepository {
     }
 
     @Override
-    public List<OffsetRecord> findLastOffsetRecords(List<FileKey> keys) throws JsonProcessingException {
+    public List<OffsetRecord> findLastOffsetRecords(List<FileKey> keys) {
         URI url = URI.create(baseUrl).resolve("/v1/offset-records");
         List<String> fileKeys= keys.stream().map(FileKey::get).toList();
         String requestBody = objectMapper.writeValueAsString(fileKeys);

@@ -1,6 +1,5 @@
 package sourceconnector.repository.offset;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -88,7 +87,7 @@ class HttpOffsetRecordRepositoryTest {
 
   @DisplayName("Should get last offset record list when exists")
   @Test
-  void findLastOffsetRecordsTest() throws JsonProcessingException {
+  void findLastOffsetRecordsTest() {
     // given
     mockWebServer.enqueue(new MockResponse
       .Builder()
@@ -131,7 +130,7 @@ class HttpOffsetRecordRepositoryTest {
 
   @DisplayName("Should get empty list when last offset record not exists")
   @Test
-  void failedToGetRecordListTest() throws JsonProcessingException {
+  void failedToGetRecordListTest() {
     // given
     mockWebServer.enqueue(new MockResponse
       .Builder()

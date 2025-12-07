@@ -1,6 +1,5 @@
 package sourceconnector.repository.offset;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import offsetmanager.domain.file.FileKey;
 import offsetmanager.domain.file.LocalFileKey;
 import offsetmanager.domain.file.factory.FileKeyParser;
@@ -166,7 +165,7 @@ class InternalOffsetRecordRepositoryTest {
 
   @DisplayName("Should return empty list when no offset records exist for the given FileKeys")
   @Test
-  void notFoundOffsetsTest() throws JsonProcessingException {
+  void notFoundOffsetsTest() {
     // given
     List<FileKey> notExistFileKeys = List.of(
       LocalFileKey.from(Path.of("NotExistFile1.ndjson")),
@@ -181,7 +180,7 @@ class InternalOffsetRecordRepositoryTest {
 
   @DisplayName("Get last offset records for multiple FileKeys")
   @Test
-  void findLastOffsetRecords() throws JsonProcessingException {
+  void findLastOffsetRecords() {
     // given
     List<FileKey> fileKeys = List.of(
       FileKeyParser.parse("file:///sample-data1.ndjson"),
@@ -216,7 +215,7 @@ class InternalOffsetRecordRepositoryTest {
 
   @DisplayName("Get last offset records in reverse")
   @Test
-  void findLastOffsetsReverseOffsetValueTest() throws JsonProcessingException {
+  void findLastOffsetsReverseOffsetValueTest() {
     // given
     List<FileKey> fileKeys = List.of(
       FileKeyParser.parse("file:///sample-data1.ndjson"),
