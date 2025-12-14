@@ -14,10 +14,11 @@ import offsetmanager.service.dto.LastOffsetRecordResponse;
 @Validated
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api")
 public class OffsetManagerController {
   private final OffsetManagerService offsetManagerService;
 
-  @GetMapping("/v1/offset-records")
+  @GetMapping(value = "/offset-records", version = "v1")
   public LastOffsetRecordResponse getLastOffsetRecord(
     @NotEmpty
     @Size(min = 5, message = "Key must be at least 5 length")
@@ -27,7 +28,7 @@ public class OffsetManagerController {
     return this.offsetManagerService.readLastOffset(key);
   }
 
-  @PostMapping("/v1/offset-records")
+  @PostMapping(value = "/offset-records", version = "v1")
   public LastOffsetRecordBatchResponse getLastOffsetRecords(
     @RequestBody
     LastOffsetRecordBatchRequest request

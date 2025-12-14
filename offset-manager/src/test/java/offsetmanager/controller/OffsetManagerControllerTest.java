@@ -5,38 +5,48 @@ import offsetmanager.exception.OffsetNotFoundException;
 import offsetmanager.service.dto.LastOffsetRecordBatchResponse;
 import offsetmanager.service.dto.LastOffsetRecordResponse;
 import offsetmanager.domain.offset.DefaultOffsetRecord;
+import org.json.JSONException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.client.RestTestClient;
+import org.springframework.web.client.ApiVersionInserter;
 
 import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class OffsetManagerControllerTest extends ControllerTestSupport {
 
+  private RestTestClient client;
+
+  @BeforeEach
+  void setUp() {
+    client = RestTestClient.bindTo(mockMvc)
+      .apiVersionInserter(ApiVersionInserter.useHeader("X-API-Version"))
+      .defaultApiVersion("v1")
+      .build();
+  }
+
   @DisplayName("Should throw 404 Not Found when the offset record does not exist")
   @Test
-  void OffsetNotFoundTest() throws Exception {
+  void OffsetNotFoundTest() throws JSONException {
     // given
     when(offsetManagerService.readLastOffset("notExistKey"))
       .thenThrow(new OffsetNotFoundException("notExistKey"));
 
-    String responsePayload = mockMvc.perform(
-      // when
-      MockMvcRequestBuilders.get("/v1/offset-records")
-        .param("key", "notExistKey")
-    )
-      .andExpect(status().isNotFound())
-      .andReturn()
-      .getResponse()
-      .getContentAsString();
+    String responseBody = client.get()
+      .uri("/api/offset-records?key=notExistKey")
+      .exchange()
+      .expectStatus().isNotFound()
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(String.class)
+      .returnResult()
+      .getResponseBody();
 
     // then
     JSONAssert.assertEquals(
@@ -47,7 +57,7 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
           "message": "Offset not found for key: notExistKey"
         }
         """,
-      responsePayload,
+      responseBody,
       JSONCompareMode.STRICT
     );
 
@@ -55,18 +65,15 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
 
   @DisplayName("Should return 400 Bad Request when the key parameter is invalid")
   @Test
-  void invalidKeyRequestTest() throws Exception {
+  void invalidKeyRequestTest() throws  JSONException{
     // given
-    String responsePayload = mockMvc.perform(
-      // when
-      MockMvcRequestBuilders.get("/v1/offset-records")
-       .param("key", "a")
-    )
-      .andDo(print())
-      .andExpect(status().isBadRequest())
-      .andReturn()
-      .getResponse()
-      .getContentAsString();
+    String responsePayload = client.get()
+      .uri("/api/offset-records?key=a")
+      .exchange()
+      .expectStatus().isBadRequest()
+      .expectBody(String.class)
+      .returnResult()
+      .getResponseBody();
 
     JSONAssert.assertEquals(
       """
@@ -86,7 +93,7 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
 
   @DisplayName("Should get last offset record successfully")
   @Test
-  void lastOffsetReturnTest() throws Exception {
+  void lastOffsetReturnTest() throws JSONException {
     // given
     // FIXME: URL 형식의 key가 들어올 때 . C:/ (Drive name) 생성되는 부분 수정 필요
     when(offsetManagerService.readLastOffset("file:///path/to/file.txt"))
@@ -95,14 +102,13 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
       );
 
     // when
-    String responsePayload = mockMvc.perform(
-      MockMvcRequestBuilders.get("/v1/offset-records")
-        .param("key", "file:///path/to/file.txt")
-    ).andExpect(status().isOk())
-      .andReturn()
-      .getResponse()
-      .getContentAsString();
-
+    String responsePayload = client.get()
+      .uri("/api/offset-records/key={key}", "file:///path/to/file.txt")
+      .exchange()
+      .expectStatus().isOk()
+      .expectBody(String.class)
+      .returnResult()
+      .getResponseBody();
     // then
     JSONAssert.assertEquals(
       """
@@ -118,7 +124,7 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
 
   @DisplayName("Should get each last offset record successfully in batch")
   @Test
-  void BatchLastOffsetReturnTest() throws Exception {
+  void BatchLastOffsetReturnTest() throws JSONException {
     // given
     when(offsetManagerService.readLastOffsets(List.of("file:///key1", "file:///key2", "file:///key3")))
       .thenReturn(
@@ -130,20 +136,20 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
       );
 
     // when
-    String responsePayload = mockMvc.perform(
-      MockMvcRequestBuilders.post("/v1/offset-records")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("""
+    String responsePayload = client.post()
+      .uri("/api/offset-records")
+      .contentType(MediaType.APPLICATION_JSON)
+          .body("""
           {
             "keys": ["file:///key1", "file:///key2", "file:///key3"]
           }
           """)
-    ).andExpect(status().isOk())
-      .andReturn()
-      .getResponse()
-      .getContentAsString();
+      .exchange()
+      .expectStatus().isOk()
+      .expectBody(String.class)
+      .returnResult()
+      .getResponseBody();
 
-    // then
     JSONAssert.assertEquals(
       """
         {
@@ -170,7 +176,7 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
 
   @DisplayName("Return status 200 when request is valid even though retrieved list is empty")
   @Test
-  void batchResponseEmptyTest() throws Exception {
+  void batchResponseEmptyTest() throws JSONException {
     // given
     when(offsetManagerService.readLastOffsets(List.of("file:///key1", "file:///key2", "file:///key3")))
       .thenReturn(
@@ -178,18 +184,18 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
       );
 
     // when
-    String responsePayload = mockMvc.perform(
-      MockMvcRequestBuilders.post("/v1/offset-records")
+    String responsePayload = client.post()
+        .uri("/api/offset-records")
         .contentType(MediaType.APPLICATION_JSON)
-        .content("""
+        .body("""
           {
             "keys": ["file:///key1", "file:///key2", "file:///key3"]
           }
-          """)
-    ).andExpect(status().isOk())
-      .andReturn()
-      .getResponse()
-      .getContentAsString();
+        """)
+          .exchange()
+          .expectBody(String.class)
+          .returnResult()
+          .getResponseBody();
 
     // then
     JSONAssert.assertEquals(
