@@ -24,6 +24,14 @@ spring:
       security:
         protocol: PLAINTEXT
 
+  mvc:
+    apiversion:
+      default: v1
+      supported:
+        - v1
+      use:
+        header: X-API-Version
+
 app:
   offset-topic: offset-topic
 
