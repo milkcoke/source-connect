@@ -95,15 +95,17 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
   @Test
   void lastOffsetReturnTest() throws JSONException {
     // given
-    // FIXME: URL 형식의 key가 들어올 때 . C:/ (Drive name) 생성되는 부분 수정 필요
-    when(offsetManagerService.readLastOffset("file:///path/to/file.txt"))
+    when(offsetManagerService.readLastOffset("s3://my-bucket/test.ndjson"))
       .thenReturn(LastOffsetRecordResponse.from(
-        new DefaultOffsetRecord(FileKeyParser.parse("file:///path/to/file.txt"), 5L))
+        new DefaultOffsetRecord(FileKeyParser.parse("s3://my-bucket/test.ndjson"), 5L))
       );
 
     // when
     String responsePayload = client.get()
-      .uri("/api/offset-records/key={key}", "file:///path/to/file.txt")
+      .uri(uriBuilder ->
+        uriBuilder.path("/api/offset-records")
+          .queryParam("key", "s3://my-bucket/test.ndjson")
+          .build())
       .exchange()
       .expectStatus().isOk()
       .expectBody(String.class)
@@ -113,7 +115,7 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
     JSONAssert.assertEquals(
       """
         {
-          "key": "file:///path/to/file.txt",
+          "key": "s3://my-bucket/test.ndjson",
           "offset": 5
         }
         """,
@@ -126,12 +128,12 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
   @Test
   void BatchLastOffsetReturnTest() throws JSONException {
     // given
-    when(offsetManagerService.readLastOffsets(List.of("file:///key1", "file:///key2", "file:///key3")))
+    when(offsetManagerService.readLastOffsets(List.of("s3://my-bucket/key1.txt", "s3://my-bucket/key2.txt", "s3://my-bucket/key3.txt")))
       .thenReturn(
         LastOffsetRecordBatchResponse.from(List.of(
-          new DefaultOffsetRecord(FileKeyParser.parse("file:///key1"), 5L),
-          new DefaultOffsetRecord(FileKeyParser.parse("file:///key2"), 3L),
-          new DefaultOffsetRecord(FileKeyParser.parse("file:///key3"), -1L)
+          new DefaultOffsetRecord(FileKeyParser.parse("s3://my-bucket/key1.txt"), 5L),
+          new DefaultOffsetRecord(FileKeyParser.parse("s3://my-bucket/key2.txt"), 3L),
+          new DefaultOffsetRecord(FileKeyParser.parse("s3://my-bucket/key3.txt"), -1L)
         ))
       );
 
@@ -141,7 +143,7 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
       .contentType(MediaType.APPLICATION_JSON)
           .body("""
           {
-            "keys": ["file:///key1", "file:///key2", "file:///key3"]
+            "keys": ["s3://my-bucket/key1.txt", "s3://my-bucket/key2.txt", "s3://my-bucket/key3.txt"]
           }
           """)
       .exchange()
@@ -155,15 +157,15 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
         {
           "lastOffsetRecords": [
             {
-              "key": "file:///key1",
+              "key": "s3://my-bucket/key1.txt",
               "offset": 5
             },
             {
-              "key": "file:///key2",
+              "key": "s3://my-bucket/key2.txt",
               "offset": 3
             },
             {
-              "key": "file:///key3",
+              "key": "s3://my-bucket/key3.txt",
               "offset": -1
             }
           ]
@@ -178,7 +180,11 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
   @Test
   void batchResponseEmptyTest() throws JSONException {
     // given
-    when(offsetManagerService.readLastOffsets(List.of("file:///key1", "file:///key2", "file:///key3")))
+    when(offsetManagerService.readLastOffsets(List.of(
+      "s3://my-bucket/file1.txt",
+      "s3://my-bucket/file2.txt",
+      "s3://my-bucket/file3.txt"))
+    )
       .thenReturn(
         LastOffsetRecordBatchResponse.from(Collections.emptyList())
       );
@@ -189,7 +195,7 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
         .contentType(MediaType.APPLICATION_JSON)
         .body("""
           {
-            "keys": ["file:///key1", "file:///key2", "file:///key3"]
+            "keys": ["s3://my-bucket/file1.txt", "s3://my-bucket/file2.txt", "s3://my-bucket/file3.txt"]
           }
         """)
           .exchange()
