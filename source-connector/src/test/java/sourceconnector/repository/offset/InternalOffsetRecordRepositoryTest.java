@@ -16,7 +16,6 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.IsolationLevel;
 import org.apache.kafka.common.config.TopicConfig;
-import org.apache.kafka.common.errors.TopicExistsException;
 import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -54,7 +53,7 @@ class InternalOffsetRecordRepositoryTest {
   }
 
   @BeforeAll
-  void setup() throws ExecutionException, InterruptedException {
+  void setup() throws InterruptedException {
     Properties adminProps = new Properties();
     adminProps.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093");
 
@@ -69,7 +68,8 @@ class InternalOffsetRecordRepositoryTest {
 
     try {
       adminClient.createTopics(List.of(testTopic)).all().get();
-    } catch (TopicExistsException ignored) {}
+    } catch (ExecutionException ignored) {
+    }
 
     Properties consumerProps = new Properties();
     consumerProps.putAll(Map.of(

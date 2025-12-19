@@ -1,5 +1,7 @@
 package sourceconnector.domain.connect;
 
+import offsetmanager.domain.file.FileKey;
+import offsetmanager.domain.file.LocalFileKey;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -7,16 +9,14 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.config.TopicConfig;
-import org.apache.kafka.common.errors.TopicExistsException;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.LongDeserializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import offsetmanager.domain.file.FileKey;
-import offsetmanager.domain.file.LocalFileKey;
 import org.springframework.kafka.config.TopicBuilder;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.factory.JSONLogFactory;
@@ -74,16 +74,14 @@ class WorkerTest {
     AdminClient adminClient = AdminClient.create(adminProps);
     try {
       adminClient.createTopics(List.of(this.logTopic, this.offsetTopic)).all().get();
-    } catch (TopicExistsException ignored) {
-    } catch (InterruptedException | ExecutionException e) {
-      throw new RuntimeException(e);
+    } catch (InterruptedException | ExecutionException ignored) {
     }
 
     Properties consumerProps = new Properties();
     consumerProps.putAll(Map.of(
       CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
       ConsumerConfig.GROUP_ID_CONFIG, "benchmark-offset-consumer",
-      ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringSerializer.class,
+      ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
       ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class
     ));
 
