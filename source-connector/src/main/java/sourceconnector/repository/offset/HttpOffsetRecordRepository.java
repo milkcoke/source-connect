@@ -95,4 +95,9 @@ public class HttpOffsetRecordRepository implements OffsetRecordRepository {
 
         return Collections.emptyList();
     }
+
+  @Override
+  public void close() throws Exception {
+    this.httpClient.close();
+  }
 }

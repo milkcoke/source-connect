@@ -130,4 +130,10 @@ public class InternalOffsetRecordRepository implements OffsetRecordRepository {
       throw new RuntimeException(e.getMessage());
     }
   }
+
+  @Override
+  public void close() throws Exception {
+    this.consumer.close();
+    this.adminClient.close();
+  }
 }
