@@ -34,7 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class InternalOffsetRecordRepositoryTest {
-  private static final NewTopic testTopic = TopicBuilder.name("offset-topic")
+  private static final NewTopic testTopic = TopicBuilder.name("internal-offset-test")
     .compact()
     .partitions(1)
     .replicas(3)
@@ -42,28 +42,6 @@ class InternalOffsetRecordRepositoryTest {
     .config(TopicConfig.SEGMENT_MS_CONFIG, "10000")
     .build();
   private static final KafkaProducer<String, Long> producer;
-  private final Map<String, Object> consumerMap =
-    Map.of(
-      CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093",
-      ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
-      ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class,
-      ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, 57_671_680, // 55MB
-      ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 50_000,
-      ConsumerConfig.ISOLATION_LEVEL_CONFIG, IsolationLevel.READ_COMMITTED.toString()
-    );
-  private final Properties consumerProps = new Properties();
-  {
-    consumerProps.putAll(consumerMap);
-  }
-
-  private final Properties adminProps = new Properties();
-  {
-   adminProps.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093");
-    try(AdminClient adminClient = AdminClient.create(adminProps)) {
-      adminClient.createTopics(Collections.singleton(this.testTopic)).all().get();
-    }catch (InterruptedException | ExecutionException ignored){
-    }
-  }
 
 
   static {
@@ -83,8 +61,31 @@ class InternalOffsetRecordRepositoryTest {
     producer.initTransactions();
   }
 
+  private final Properties consumerProps = new Properties();
+  {
+    consumerProps.putAll(Map.of(
+      CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093",
+      ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
+      ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class,
+      ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, 57_671_680, // 55MB
+      ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 50_000,
+      ConsumerConfig.ISOLATION_LEVEL_CONFIG, IsolationLevel.READ_COMMITTED.toString()
+    ));
+  }
+
+  private final Properties adminProps = new Properties();
+  {
+   adminProps.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093");
+    try(AdminClient adminClient = AdminClient.create(adminProps)) {
+      adminClient.createTopics(Collections.singletonList(testTopic)).all().get();
+    } catch (InterruptedException | ExecutionException ignored){
+    }
+  }
+
+
   @AfterAll
   static void teardown() throws ExecutionException, InterruptedException {
+    producer.close();
     Properties adminProps = new Properties();
     adminProps.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093");
     AdminClient adminClient = AdminClient.create(adminProps);
