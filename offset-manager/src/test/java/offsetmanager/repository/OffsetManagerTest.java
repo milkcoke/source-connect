@@ -17,7 +17,6 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.IsolationLevel;
 import org.apache.kafka.common.config.TopicConfig;
-import org.apache.kafka.common.errors.TopicExistsException;
 import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -36,10 +35,7 @@ class OffsetManagerTest {
 
   private final String offsetTopic = "remote-offset-topic";
   private final Properties producerConfig = new Properties();
-  private final Properties consumerConfig = new Properties();
-
-  @BeforeAll
-  void setup() throws InterruptedException {
+  {
     producerConfig.putAll(Map.of(
         CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
         ProducerConfig.ACKS_CONFIG, "-1",
@@ -50,11 +46,31 @@ class OffsetManagerTest {
         ProducerConfig.TRANSACTIONAL_ID_CONFIG, "test-local"
       )
     );
+  }
+
+  private Producer<String, Long> producer;
+  private AdminClient adminClient;
+  private final Properties consumerConfig = new Properties();
+  {
+    consumerConfig.putAll(Map.of(
+      CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093",
+      ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
+      ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class,
+      ConsumerConfig.ISOLATION_LEVEL_CONFIG, IsolationLevel.READ_COMMITTED.name().toLowerCase(),
+      ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, 57_671_680, // 55MB
+      ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 500
+    ));
+  }
+
+  @BeforeAll
+  void setup() throws InterruptedException {
+    producer = new KafkaProducer<>(producerConfig);
+    producer.initTransactions();
 
     Properties adminProps = new Properties();
     adminProps.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093");
 
-    AdminClient adminClient = AdminClient.create(adminProps);
+    adminClient = AdminClient.create(adminProps);
     NewTopic testTopic = TopicBuilder.name(this.offsetTopic)
       .compact()
       .partitions(3)
@@ -65,29 +81,14 @@ class OffsetManagerTest {
 
     try {
       adminClient.createTopics(List.of(testTopic)).all().get();
-    } catch (ExecutionException exception) {
-        if (exception.getCause() instanceof TopicExistsException) {
-            log.error(exception.getMessage(), exception);
-        }
+    } catch (ExecutionException ignored) {
     }
-
-    consumerConfig.putAll(Map.of(
-      CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093",
-      ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
-      ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class,
-      ConsumerConfig.ISOLATION_LEVEL_CONFIG, IsolationLevel.READ_COMMITTED.name().toLowerCase(),
-      ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, 57_671_680, // 55MB
-      ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 500
-    ));
-
-    Thread.sleep(6_000);
+    Thread.sleep(3_000);
   }
 
   @AfterAll
   void teardown() throws ExecutionException, InterruptedException {
-    Properties adminProps = new Properties();
-    adminProps.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093");
-    AdminClient adminClient = AdminClient.create(adminProps);
+    producer.close();
     adminClient.deleteTopics(Collections.singleton(this.offsetTopic)).all().get();
     adminClient.close();
   }
@@ -108,11 +109,9 @@ class OffsetManagerTest {
   void findAllOffsetRecordsTest() throws InterruptedException {
     // given
     OffsetManager offsetManager = new OffsetManagerRepository(new KafkaConsumer<>(consumerConfig), this.offsetTopic);
-    Producer<String, Long> producer = new KafkaProducer<>(producerConfig);
     FileKey keyA = FileKeyParser.parse("file:///many-a.txt");
     FileKey keyB = FileKeyParser.parse("file:///many-b.txt");
     FileKey keyC = FileKeyParser.parse("file:///many-c.txt");
-    producer.initTransactions();
     for (long i = 1; i <= 1000; i++) {
       if ((i - 1) % 100 == 0) {
         producer.beginTransaction();
@@ -151,8 +150,6 @@ class OffsetManagerTest {
     assertThat(offsetManager.findLatestOffsetRecord(keyB)).isEmpty();
     assertThat(offsetManager.findLatestOffsetRecord(keyC)).isEmpty();
 
-    Producer<String, Long> producer = new KafkaProducer<>(producerConfig);
-    producer.initTransactions();
     for (long i = 1; i <= 1000; i++) {
       if ((i - 1) % 100 == 0) {
         producer.beginTransaction();

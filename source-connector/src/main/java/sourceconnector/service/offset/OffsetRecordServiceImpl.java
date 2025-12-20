@@ -21,5 +21,5 @@ public class OffsetRecordServiceImpl implements OffsetRecordService {
         OffsetRecord::key,
         OffsetRecord::offset
       ));
-}
+  }
 }
