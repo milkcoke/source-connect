@@ -4,16 +4,17 @@ import offsetmanager.KafkaTestSupport;
 import offsetmanager.domain.file.FileKey;
 import offsetmanager.domain.file.factory.FileKeyParser;
 import offsetmanager.domain.offset.DefaultOffsetRecord;
-import offsetmanager.domain.offset.OffsetRecord;
 import offsetmanager.exception.OffsetNotFoundException;
 import offsetmanager.manager.OffsetManager;
 import offsetmanager.repository.OffsetManagerRepository;
+import offsetmanager.service.dto.LastOffsetRecordBatchResponse;
 import offsetmanager.service.dto.LastOffsetRecordResponse;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,31 +43,81 @@ class OffsetManagerServiceTest {
       String offsetTopic = "temp-offset-manager-test";
       createTestTopic(offsetTopic, 1);
       OffsetManager offsetManager = new OffsetManagerRepository(createConsumer(), offsetTopic);
-      producer.beginTransaction();
-      for (int i = 0; i <= 100; i++) {
-        FileKey fileKey = FileKeyParser.parse("file:///test-file.txt");
-        OffsetRecord offsetRecord = new DefaultOffsetRecord(fileKey, i);
-        producer.send(new ProducerRecord<>(
-          offsetTopic,
-          offsetRecord.key().get(),
-          offsetRecord.offset())
-        );
-      }
-      producer.commitTransaction();
-
+      produceFileKeyOffset(offsetTopic, FileKeyParser.parse("file:///test-file.txt"), 100L);
       Thread.sleep(500L);
+      OffsetManagerService offsetManagerService = new OffsetManagerService(offsetManager);
       // when
-      Optional<OffsetRecord> latestOffsetRecord = offsetManager.findLatestOffsetRecord(
-        FileKeyParser.parse("file:///test-file.txt")
-      );
+      LastOffsetRecordResponse response = offsetManagerService.readLastOffset("file:///test-file.txt");
 
       // then
-      assertThat(latestOffsetRecord.get()).isEqualTo(
-        new DefaultOffsetRecord(
-          FileKeyParser.parse("file:///test-file.txt"),
-          100L
-        )
-      );
+      assertThat(response.key()).isEqualTo("file:///test-file.txt");
+      assertThat(response.offset()).isEqualTo(100L);
+    }
+
+    @DisplayName("Should return last offset list of FileKeys")
+    @Test
+    void lastFileKeysOffsetTest() throws InterruptedException {
+      String offsetTopic = "temp-offset-manager-test";
+      createTestTopic(offsetTopic, 1);
+      OffsetManager offsetManager = new OffsetManagerRepository(createConsumer(), offsetTopic);
+      produceFileKeyOffset(offsetTopic, FileKeyParser.parse("s3://test-bucket/file-key-1.txt"), 100L);
+      produceFileKeyOffset(offsetTopic, FileKeyParser.parse("s3://test-bucket/file-key-2.txt"), 100L);
+      produceFileKeyOffset(offsetTopic, FileKeyParser.parse("s3://test-bucket/file-key-3.txt"), 100L);
+
+      Thread.sleep(500L);
+      OffsetManagerService offsetManagerService = new OffsetManagerService(offsetManager);
+      // when
+      LastOffsetRecordBatchResponse response = offsetManagerService.readLastOffsets(List.of(
+        "s3://test-bucket/file-key-1.txt",
+        "s3://test-bucket/file-key-2.txt",
+        "s3://test-bucket/file-key-3.txt"
+      ));
+      // then
+      assertThat(response.lastOffsetRecords()).hasSize(3)
+        .containsExactlyInAnyOrder(
+          new LastOffsetRecordResponse("s3://test-bucket/file-key-1.txt", 100L),
+          new LastOffsetRecordResponse("s3://test-bucket/file-key-2.txt", 100L),
+          new LastOffsetRecordResponse("s3://test-bucket/file-key-3.txt", 100L)
+        );
+    }
+
+    @DisplayName("Should throw OffsetNotFoundException when the key does not exist")
+    @Test
+    void returnEmptyWhenNotExistKey() {
+      // given
+      String offsetTopic = "temp-offset-manager-test";
+      createTestTopic(offsetTopic, 1);
+      OffsetManager offsetManager = new OffsetManagerRepository(createConsumer(), offsetTopic);
+      OffsetManagerService offsetManagerService = new OffsetManagerService(offsetManager);
+      // when then
+      assertThatThrownBy(() -> offsetManagerService.readLastOffset("file:///notExistKey.txt"))
+        .isInstanceOf(OffsetNotFoundException.class)
+        .hasMessage("Offset not found for key: file:///notExistKey.txt");
+    }
+
+    @DisplayName("Should return empty batch when none of the keys exist")
+    @Test
+    void returnEmptyBatchWhenNotExistsKey() {
+      // given
+      String offsetTopic = "temp-offset-manager-test";
+      createTestTopic(offsetTopic, 1);
+      OffsetManager offsetManager = new OffsetManagerRepository(createConsumer(), offsetTopic);
+      OffsetManagerService offsetManagerService = new OffsetManagerService(offsetManager);
+
+      // when
+      LastOffsetRecordBatchResponse response = offsetManagerService.readLastOffsets(List.of(
+        "s3://test-bucket/non-exist-key-1.txt",
+        "s3://test-bucket/non-exist-key-2.txt"
+      ));
+      // then
+      assertThat(response.lastOffsetRecords()).isEmpty();
+    }
+
+    void produceFileKeyOffset(String offsetTopic, FileKey fileKey, long offset) {
+      producer.beginTransaction();
+      String fileKeyStr = fileKey.get();
+      producer.send(new ProducerRecord<>(offsetTopic, fileKeyStr, offset));
+      producer.commitTransaction();
     }
   }
 
