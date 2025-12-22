@@ -2,10 +2,10 @@ package offsetmanager;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.internals.AutoOffsetResetStrategy;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.common.IsolationLevel;
 import org.apache.kafka.common.config.TopicConfig;
@@ -31,7 +31,7 @@ import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CON
 import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
 import static org.apache.kafka.clients.producer.ProducerConfig.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
+import static org.awaitility.Awaitility.await;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Testcontainers
@@ -55,7 +55,7 @@ public abstract class KafkaTestSupport {
     // just to initialize the container before tests
     kafkaContainer.start();
     Map<String, Object> adminProps = Map.of(
-      AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers()
+      BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers()
     );
     adminClient = AdminClient.create(adminProps);
   }
@@ -75,10 +75,7 @@ public abstract class KafkaTestSupport {
       NewTopic newTopic = TopicBuilder
         .name(topicName)
         .partitions(partitions)
-        /*
-         Replicas should be set to 1 because
-         the kafka broker is single node in the test container
-         */
+        // Replicas should be set to 1 because the kafka broker is single node in the test container
         .replicas(1)
         .compact()
         .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "1")
@@ -87,14 +84,13 @@ public abstract class KafkaTestSupport {
 
       adminClient.createTopics(Collections.singletonList(newTopic)).all().get();
       await()
-        .atMost(Duration.ofSeconds(10))
+        .atMost(Duration.ofSeconds(3))
         .pollInterval(Duration.ofMillis(500))
         .ignoreExceptions()
         .untilAsserted(()->{
-          System.out.printf("Checking topic %s existence...\n", topicName);
           Map<String, TopicDescription> description = adminClient.describeTopics(Collections.singletonList(topicName))
             .allTopicNames().get();
-          assertThat(description.containsKey(topicName));
+          assertThat(description.containsKey(topicName)).isTrue();
           assertThat(description.get(topicName).partitions().size()).isEqualTo(partitions);
         });
     } catch (Exception e) {
@@ -123,6 +119,7 @@ public abstract class KafkaTestSupport {
       VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class,
       MAX_PARTITION_FETCH_BYTES_CONFIG, 57_671_680, // 55MB
       MAX_POLL_RECORDS_CONFIG, 50_000,
+      AUTO_OFFSET_RESET_CONFIG, AutoOffsetResetStrategy.EARLIEST.name(),
       ISOLATION_LEVEL_CONFIG, IsolationLevel.READ_COMMITTED.toString()
     );
     return new KafkaConsumer<>(props);

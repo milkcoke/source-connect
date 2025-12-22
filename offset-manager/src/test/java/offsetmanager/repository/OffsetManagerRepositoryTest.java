@@ -1,103 +1,47 @@
 package offsetmanager.repository;
 
-import lombok.extern.slf4j.Slf4j;
+import offsetmanager.KafkaTestSupport;
 import offsetmanager.domain.file.FileKey;
 import offsetmanager.domain.file.factory.FileKeyParser;
 import offsetmanager.domain.offset.DefaultOffsetRecord;
 import offsetmanager.domain.offset.OffsetRecord;
 import offsetmanager.manager.OffsetManager;
-import org.apache.kafka.clients.CommonClientConfigs;
-import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.NewTopic;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.IsolationLevel;
-import org.apache.kafka.common.config.TopicConfig;
-import org.apache.kafka.common.serialization.LongDeserializer;
-import org.apache.kafka.common.serialization.LongSerializer;
-import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.common.serialization.StringSerializer;
-import org.junit.jupiter.api.*;
-import org.springframework.kafka.config.TopicBuilder;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
-import java.util.*;
-import java.util.concurrent.ExecutionException;
+import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Slf4j
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class OffsetManagerTest {
+class OffsetManagerRepositoryTest extends KafkaTestSupport {
 
   private final String offsetTopic = "remote-offset-topic";
-  private final Properties producerConfig = new Properties();
-  {
-    producerConfig.putAll(Map.of(
-        CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
-        ProducerConfig.ACKS_CONFIG, "-1",
-        ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
-        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, LongSerializer.class,
-        ProducerConfig.LINGER_MS_CONFIG, 100,
-        ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true,
-        ProducerConfig.TRANSACTIONAL_ID_CONFIG, "test-local"
-      )
-    );
-  }
-
   private Producer<String, Long> producer;
-  private AdminClient adminClient;
-  private final Properties consumerConfig = new Properties();
-  {
-    consumerConfig.putAll(Map.of(
-      CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093",
-      ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
-      ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class,
-      ConsumerConfig.ISOLATION_LEVEL_CONFIG, IsolationLevel.READ_COMMITTED.name().toLowerCase(),
-      ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, 57_671_680, // 55MB
-      ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 500
-    ));
-  }
 
   @BeforeAll
-  void setup() throws InterruptedException {
-    producer = new KafkaProducer<>(producerConfig);
+  void setup() {
+    this.producer = createProducer();
     producer.initTransactions();
-
-    Properties adminProps = new Properties();
-    adminProps.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093");
-
-    adminClient = AdminClient.create(adminProps);
-    NewTopic testTopic = TopicBuilder.name(this.offsetTopic)
-      .compact()
-      .partitions(3)
-      .replicas(3)
-      .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
-      .config(TopicConfig.SEGMENT_MS_CONFIG, "10000")
-      .build();
-
-    try {
-      adminClient.createTopics(List.of(testTopic)).all().get();
-    } catch (ExecutionException ignored) {
-    }
-    Thread.sleep(3_000);
+    createTestTopic(offsetTopic, 3);
   }
 
   @AfterAll
-  void teardown() throws ExecutionException, InterruptedException {
+  void teardown() {
     producer.close();
-    adminClient.deleteTopics(Collections.singleton(this.offsetTopic)).all().get();
-    adminClient.close();
   }
 
   @DisplayName("Nothing to do update but background update thread starts")
   @Test
-  void initializeTest() {
+  void emptyOffsetTopicTest() {
     // given
-    OffsetManager offsetManager = new OffsetManagerRepository(new KafkaConsumer<>(consumerConfig), this.offsetTopic);
+    KafkaConsumer<String, Long> consumer = createConsumer();
+    OffsetManager offsetManager = new OffsetManagerRepository(consumer, this.offsetTopic);
     // when
     Optional<OffsetRecord> foundOffset = offsetManager.findLatestOffsetRecord(FileKeyParser.parse("file:///test/path.txt"));
     // then
@@ -108,7 +52,8 @@ class OffsetManagerTest {
   @Test
   void findAllOffsetRecordsTest() throws InterruptedException {
     // given
-    OffsetManager offsetManager = new OffsetManagerRepository(new KafkaConsumer<>(consumerConfig), this.offsetTopic);
+    KafkaConsumer<String, Long> consumer = createConsumer();
+    OffsetManager offsetManager = new OffsetManagerRepository(consumer, this.offsetTopic);
     FileKey keyA = FileKeyParser.parse("file:///many-a.txt");
     FileKey keyB = FileKeyParser.parse("file:///many-b.txt");
     FileKey keyC = FileKeyParser.parse("file:///many-c.txt");
@@ -142,7 +87,8 @@ class OffsetManagerTest {
   @Test
   void upsertContinuously() throws InterruptedException {
     // given
-    OffsetManager offsetManager = new OffsetManagerRepository(new KafkaConsumer<>(consumerConfig), this.offsetTopic);
+    KafkaConsumer<String, Long> consumer = createConsumer();
+    OffsetManager offsetManager = new OffsetManagerRepository(consumer, this.offsetTopic);
     FileKey keyA = FileKeyParser.parse("file:///key-a.txt");
     FileKey keyB = FileKeyParser.parse("file:///key-b.txt");
     FileKey keyC = FileKeyParser.parse("file:///key-c.txt");
