@@ -85,10 +85,11 @@ public class Worker {
       for (var future : futures) {
         FileProcessingResult result = future.get();
         log.info(
-          "totalCount: {}, successCount: {}, failCount: {}",
+          "totalCount: {}, successCount: {}, failCount: {}, skippedCount: {}",
           result.getTotalCount(),
           result.getSuccessCount(),
-          result.getFailureCount()
+          result.getFailureCount(),
+          result.getSkippedCount()
         );
       }
 
