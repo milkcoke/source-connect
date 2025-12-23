@@ -9,6 +9,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.config.TopicConfig;
+import org.apache.kafka.common.record.CompressionType;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -63,6 +64,7 @@ class WorkerTest {
   @BeforeAll
   void setUp() {
     producerProperties.putAll(Map.of(
+      ProducerConfig.COMPRESSION_TYPE_CONFIG, CompressionType.LZ4.name,
       ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
       ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
       ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class

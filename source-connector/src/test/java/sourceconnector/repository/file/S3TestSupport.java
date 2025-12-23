@@ -60,13 +60,6 @@ abstract class S3TestSupport {
     }
   }
 
-  public void upload(String key, String content) {
-    s3Client.putObject(
-      builder -> builder.bucket(BUCKET_NAME).key(key).build(),
-      RequestBody.fromString(content)
-    );
-  }
-
   public void upload(S3Location s3Location, Path path) {
     PutObjectResponse response = s3Client.putObject(
       builder -> builder

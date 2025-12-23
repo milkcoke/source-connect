@@ -9,6 +9,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.config.TopicConfig;
+import org.apache.kafka.common.record.CompressionType;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -31,6 +32,7 @@ import sourceconnector.service.producer.BatchProduceService;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
+import static org.apache.kafka.clients.producer.ProducerConfig.COMPRESSION_TYPE_CONFIG;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -61,6 +63,7 @@ class FileTaskAssignorTest {
   @BeforeAll
   void setUp() {
     producerProperties.putAll(Map.of(
+      COMPRESSION_TYPE_CONFIG, CompressionType.LZ4.name,
       ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
       ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
       ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class,

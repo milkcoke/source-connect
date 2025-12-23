@@ -2,21 +2,25 @@ package sourceconnector.service.producer;
 
 import offsetmanager.domain.file.factory.FileKeyParser;
 import offsetmanager.domain.offset.DefaultOffsetRecord;
+import offsetmanager.domain.offset.OffsetRecord;
 import org.apache.kafka.clients.CommonClientConfigs;
-import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.record.CompressionType;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
-import sourceconnector.domain.batch.MessageBatch;
-import sourceconnector.domain.batch.DefaultMessageBatchLogs;
-import offsetmanager.domain.offset.OffsetRecord;
 import org.junit.jupiter.api.Test;
+import sourceconnector.domain.batch.DefaultMessageBatchLogs;
+import sourceconnector.domain.batch.MessageBatch;
 
 import java.nio.ByteBuffer;
 import java.time.Duration;
@@ -31,11 +35,12 @@ class BatchProduceServiceTest {
   static {
     props.putAll(Map.of(
         CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
-        org.apache.kafka.clients.producer.ProducerConfig.ACKS_CONFIG, "-1",
-        org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
-        org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
-        org.apache.kafka.clients.producer.ProducerConfig.LINGER_MS_CONFIG, 100,
-        ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true
+        ProducerConfig.ACKS_CONFIG, "-1",
+        ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
+        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
+        ProducerConfig.LINGER_MS_CONFIG, 100,
+        ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true,
+        ProducerConfig.COMPRESSION_TYPE_CONFIG, CompressionType.LZ4.name
 //        ProducerConfig.TRANSACTIONAL_ID_CONFIG, "test-s3"
       )
     );
