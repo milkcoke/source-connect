@@ -123,8 +123,9 @@ public class InternalOffsetRecordRepository implements OffsetRecordRepository {
     Map<String, KafkaFuture<TopicDescription>> futures = result.topicNameValues();
     try {
       TopicDescription description = futures.get(offsetTopic).get();
-      int partitionCount = description.partitions().size();
-      return Utils.murmur2(fileKey.get().getBytes(StandardCharsets.UTF_8)) % partitionCount;
+      int numPartitions = description.partitions().size();
+      byte[] serializedKey = fileKey.get().getBytes(StandardCharsets.UTF_8);
+      return Utils.toPositive(Utils.murmur2(serializedKey)) % numPartitions;
     } catch (ExecutionException | InterruptedException e) {
       log.error("Failed to get partitions for topic {}", offsetTopic, e);
       throw new RuntimeException(e.getMessage());
