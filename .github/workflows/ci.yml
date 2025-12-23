@@ -47,8 +47,11 @@ jobs:
     needs: test
     uses: ./.github/workflows/push-job.yml
     with:
-      image_tag: ${{ github.sha }},latest
+      image_tag: ${{ github.sha }}
     secrets: inherit
+    permissions:
+      contents: read
+      packages: write
 
   # =================================================================
   # JOB 3: Push Release Image (Tagged with Git Tag)
@@ -58,4 +61,8 @@ jobs:
     needs: test
     uses: ./.github/workflows/push-job.yml
     with:
-      image_tag: ${{ github.ref_name }},latest
+      image_tag: ${{ github.ref_name }}
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
