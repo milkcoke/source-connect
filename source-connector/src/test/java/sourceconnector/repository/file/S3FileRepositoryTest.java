@@ -4,6 +4,7 @@ import offsetmanager.domain.file.S3Uri;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import offsetmanager.domain.file.FileKey;
+import sourceconnector.support.S3TestSupport;
 
 import java.io.InputStream;
 import java.nio.file.Path;

@@ -1,4 +1,4 @@
-package sourceconnector.repository.file;
+package sourceconnector.support;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -14,13 +14,14 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+import sourceconnector.repository.file.S3Location;
 
 import java.net.URI;
 import java.nio.file.Path;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Testcontainers
-abstract class S3TestSupport {
+public abstract class S3TestSupport {
   protected final String BUCKET_NAME = "test-bucket";
   protected final Region REGION = Region.AP_NORTHEAST_2;
   protected S3Client s3Client;

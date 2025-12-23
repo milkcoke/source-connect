@@ -1,6 +1,6 @@
 package offsetmanager.service;
 
-import offsetmanager.KafkaTestSupport;
+import offsetmanager.support.KafkaTestSupport;
 import offsetmanager.domain.file.FileKey;
 import offsetmanager.domain.file.factory.FileKeyParser;
 import offsetmanager.domain.offset.DefaultOffsetRecord;

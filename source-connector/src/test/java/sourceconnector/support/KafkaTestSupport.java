@@ -1,4 +1,4 @@
-package offsetmanager;
+package sourceconnector.support;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
@@ -48,10 +48,10 @@ public abstract class KafkaTestSupport {
     DockerImageName.parse("apache/kafka:4.1.1")
   );
 
-  private AdminClient adminClient;
+  private static AdminClient adminClient;
 
   @BeforeAll
-  void init() {
+  static void init() {
     // just to initialize the container before tests
     kafkaContainer.start();
     Map<String, Object> adminProps = Map.of(
@@ -61,7 +61,7 @@ public abstract class KafkaTestSupport {
   }
 
   @AfterAll
-  void cleanup() {
+  static void cleanup() {
     kafkaContainer.close();
     adminClient.close();
   }
