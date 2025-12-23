@@ -21,6 +21,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -36,10 +37,11 @@ public class HttpOffsetRecordRepository implements OffsetRecordRepository {
 
     @Override
     public Optional<OffsetRecord> findLastOffsetRecord(FileKey key) {
-        URI url = URI.create(baseUrl).resolve("/v1/offset-records?key=" + key.get());
+        URI url = URI.create(baseUrl).resolve("/api/offset-records?key=" + key.get());
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(url)
                 .GET()
+                .header("X-API-Version", "v1")
                 .build();
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -65,12 +67,15 @@ public class HttpOffsetRecordRepository implements OffsetRecordRepository {
 
     @Override
     public List<OffsetRecord> findLastOffsetRecords(List<FileKey> keys) {
-        URI url = URI.create(baseUrl).resolve("/v1/offset-records");
+        URI url = URI.create(baseUrl).resolve("/api/offset-records");
         List<String> fileKeys= keys.stream().map(FileKey::get).toList();
-        String requestBody = objectMapper.writeValueAsString(fileKeys);
+        String requestBody = objectMapper.writeValueAsString(Map.of("keys", fileKeys));
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(url)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                .headers(
+                  HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON,
+                  "X-API-Version", "v1"
+                )
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .build();
         try {
