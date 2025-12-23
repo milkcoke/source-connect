@@ -6,5 +6,12 @@ package sourceconnector.domain.pipeline;
  */
 public interface Pipeline<T> {
   T getResult();
+
+  /**
+   * Move the pipeline to the given offset position
+   * @param offset
+   * @throws IllegalArgumentException when the given offset is negative
+   */
+  void toPosition(long offset);
   boolean isComplete();
 }

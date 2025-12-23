@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import offsetmanager.domain.file.FileKey;
+import offsetmanager.domain.offset.OffsetStatus;
 import sourceconnector.domain.log.factory.LogFactory;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.FileLogMetadata;
@@ -22,6 +23,23 @@ public class FileBaseLogPipeline implements Pipeline<Log>, AutoCloseable {
   private final LogFactory logFactory;
   private final BaseProcessor<Log> startProcessor;
   private boolean isComplete = false;
+
+  @Override
+  public void toPosition(long offset) {
+    if (offset < OffsetStatus.INITIAL.getValue()) {
+      throw new IllegalArgumentException("Offset should be greater or equal to zero");
+    }
+    try {
+      for(long i = 0; i < offset; i++) {
+        String line = this.reader.read();
+        if (line == null) {
+          throw new FileLogReadException(String.format("Offset: %d exceeds file length in file: %s", offset, fileKey.get()), null);
+        }
+      }
+    } catch (IOException e) {
+      throw new FileLogReadException(String.format("Failed to seek to offset: %d in file: %s", offset, fileKey.get()), e.getCause());
+    }
+  }
 
   /**
    * @throws FileLogReadException when reading line failed
