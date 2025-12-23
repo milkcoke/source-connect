@@ -2,13 +2,13 @@ package offsetmanager.controller;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
-import offsetmanager.controller.dto.LastOffsetRecordBatchRequest;
+import offsetmanager.api.v1.dto.LastOffsetRecordBatchRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import offsetmanager.service.OffsetManagerService;
-import offsetmanager.service.dto.LastOffsetRecordBatchResponse;
-import offsetmanager.service.dto.LastOffsetRecordResponse;
+import offsetmanager.api.v1.dto.LastOffsetRecordBatchResponse;
+import offsetmanager.api.v1.dto.LastOffsetRecordResponse;
 
 
 @Validated

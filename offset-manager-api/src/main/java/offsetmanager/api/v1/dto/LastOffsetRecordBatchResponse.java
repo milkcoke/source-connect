@@ -1,4 +1,4 @@
-package offsetmanager.service.dto;
+package offsetmanager.api.v1.dto;
 
 import offsetmanager.domain.offset.OffsetRecord;
 

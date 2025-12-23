@@ -2,8 +2,8 @@ package offsetmanager.controller;
 
 import offsetmanager.domain.file.factory.FileKeyParser;
 import offsetmanager.exception.OffsetNotFoundException;
-import offsetmanager.service.dto.LastOffsetRecordBatchResponse;
-import offsetmanager.service.dto.LastOffsetRecordResponse;
+import offsetmanager.api.v1.dto.LastOffsetRecordBatchResponse;
+import offsetmanager.api.v1.dto.LastOffsetRecordResponse;
 import offsetmanager.domain.offset.DefaultOffsetRecord;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;

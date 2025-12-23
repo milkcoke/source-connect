@@ -7,10 +7,9 @@ import lombok.RequiredArgsConstructor;
 import offsetmanager.domain.offset.OffsetRecord;
 import offsetmanager.manager.OffsetManager;
 import org.springframework.stereotype.Service;
-import offsetmanager.service.dto.LastOffsetRecordBatchResponse;
-import offsetmanager.service.dto.LastOffsetRecordResponse;
+import offsetmanager.api.v1.dto.LastOffsetRecordBatchResponse;
+import offsetmanager.api.v1.dto.LastOffsetRecordResponse;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
