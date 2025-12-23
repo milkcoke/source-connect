@@ -108,8 +108,10 @@ jobs:
       - changes
       - test-offset-manager
     uses: ./.github/workflows/push-job.yml
-    permissions: { contents: read, packages: write }
     with:
       module: offset-manager
       image_tag: ${{ github.ref_name }},
     secrets: inherit
+    permissions:
+      contents: read
+      packages: write
