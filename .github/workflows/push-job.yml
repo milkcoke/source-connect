@@ -36,7 +36,8 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
       - name: Build and Push Image with Jib
-        run: ./gradlew :${{ inputs.module }}:jib \
+        run: |
+          ./gradlew :${{ inputs.module }}:jib \
           -Djib.from.image=eclipse-temurin:25-jre-alpine \
           -Djib.to.tags=${{ inputs.image_tag }},latest \
-          -Djib.to.image=ghcr.io/${{ github.repository_owner }}/sourceconnect/source-connector
+          -Djib.to.image=ghcr.io/${{ github.repository_owner }}/sourceconnect/${{ inputs.module }}
