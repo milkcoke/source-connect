@@ -2,6 +2,10 @@ name: Reusable Push Image
 on:
   workflow_call:
     inputs:
+      module:
+        description: 'The Gradle module name to build (e.g. source-connector)'
+        required: true
+        type: string
       image_tag:
         description: The tag to apply to the container image
         required: true
@@ -25,6 +29,8 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper/
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -34,7 +40,7 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
       - name: Build and Push Image with Jib
-        run: ./gradlew :source-connector jib \
+        run: ./gradlew :${{ inputs.module }}:jib \
           -Djib.from.image=eclipse-temurin:25-jre-alpine \
           -Djib.to.tags=${{ inputs.image_tag }},latest \
           -Djib.to.image=ghcr.io/${{ github.repository_owner }}/sourceconnect/source-connector

@@ -13,40 +13,72 @@ on:
       - 'release/*'
 
 jobs:
-  test:
+  # =================================================================
+  # JOB 1: Detect which modules have changed
+  # =================================================================
+  changes:
     runs-on: ubuntu-latest
-    container:
-      image: eclipse-temurin:25-jdk-alpine
-      volumes:
-        - /var/run/docker.sock:/var/run/docker.sock
+    permissions:
+      pull-requests: read # Required for PRs
+    outputs:
+      # This job will output a boolean for each module
+      source_connector: ${{ steps.filter.outputs.source_connector }}
+      offset_manager: ${{ steps.filter.outputs.offset_manager }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.3.1
-
-      - name: Setup Gradle Cache
-        uses: actions/cache@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper/
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          filters: >-
+            offset_manager:
+              - 'offset-manager-api/**'
+              - 'offset-manager/**'
 
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-
-      - name: Build and run test
-        run: ./gradlew test
+            source_connector:
+              - 'offset-manager-api/**'
+              - 'offset-manager/**'
+              - 'source-connector/**'
+  # =================================================================
+  # JOB 2: Call the reusable 'test-job.yml' for each changed module.
+  # =================================================================
+  test-source-connector:
+    if: needs.changes.outputs.source_connector == 'true'
+    needs: changes
+    uses: ./.github/workflows/test-job.yml
+    with:
+      module: source-connector
+  test-offset-manager:
+    if: needs.changes.outputs.offset_manager == 'true'
+    needs: changes
+    uses: ./.github/workflows/test-job.yml
+    with:
+      module: offset-manager
 
   # =================================================================
-  # JOB 2: Push Development Image (Tagged with Commit SHA)
+  # JOB 3: Call 'push-job.yml' for Pushing DEV images (Tagged with Commit SHA)
   # =================================================================
-  push-dev-image:
-    if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/')
-    needs: test
+  push-dev-source-connector:
+    if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/') && needs.changes.outputs.source_connector == 'true'
+    needs:
+      - changes
+      - test-source-connector
     uses: ./.github/workflows/push-job.yml
     with:
+      module: source-connector
+      image_tag: ${{ github.sha }}
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+  push-dev-offset-manager:
+    if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/') && needs.changes.outputs.offset_manager == 'true'
+    needs:
+      - changes
+      - test-offset-manager
+    uses: ./.github/workflows/push-job.yml
+    with:
+      module: offset-manager
       image_tag: ${{ github.sha }}
     secrets: inherit
     permissions:
@@ -54,15 +86,30 @@ jobs:
       packages: write
 
   # =================================================================
-  # JOB 3: Push Release Image (Tagged with Git Tag)
+  # JOB 4: Call 'push-job.yml' for Pushing Release Image (Tagged with Git Tag)
   # =================================================================
-  push-release-image:
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    needs: test
+  push-release-source-connector:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && needs.changes.outputs.source_connector == 'true'
+    needs:
+      - changes
+      - test-source-connector
     uses: ./.github/workflows/push-job.yml
     with:
+      module: source-connector
       image_tag: ${{ github.ref_name }}
     secrets: inherit
     permissions:
       contents: read
       packages: write
+
+  push-release-offset-manager:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && needs.changes.outputs.offset_manager == 'true'
+    needs:
+      - changes
+      - test-offset-manager
+    uses: ./.github/workflows/push-job.yml
+    permissions: { contents: read, packages: write }
+    with:
+      module: offset-manager
+      image_tag: ${{ github.ref_name }},
+    secrets: inherit
