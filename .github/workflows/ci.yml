@@ -1,0 +1,61 @@
+name: Source Connect CI
+on:
+  push:
+    branches:
+      - main
+      - 'release/*'
+      - 'feature/*'
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+      - 'release/*'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: eclipse-temurin:25-jdk-alpine
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.3.1
+
+      - name: Setup Gradle Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper/
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build and run test
+        run: ./gradlew test
+
+  # =================================================================
+  # JOB 2: Push Development Image (Tagged with Commit SHA)
+  # =================================================================
+  push-dev-image:
+    if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/')
+    needs: test
+    uses: ./.github/workflows/push-job.yml
+    with:
+      image_tag: ${{ github.sha }},latest
+    secrets: inherit
+
+  # =================================================================
+  # JOB 3: Push Release Image (Tagged with Git Tag)
+  # =================================================================
+  push-release-image:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: test
+    uses: ./.github/workflows/push-job.yml
+    with:
+      image_tag: ${{ github.ref_name }},latest
