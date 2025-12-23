@@ -10,8 +10,8 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.common.IsolationLevel;
 import org.apache.kafka.common.config.TopicConfig;
 import org.apache.kafka.common.record.CompressionType;
+import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.LongDeserializer;
-import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.AfterAll;
@@ -26,10 +26,12 @@ import org.testcontainers.utility.DockerImageName;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Properties;
 
 import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
 import static org.apache.kafka.clients.producer.ProducerConfig.*;
+import static org.apache.kafka.clients.producer.ProducerConfig.COMPRESSION_TYPE_CONFIG;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
@@ -48,20 +50,32 @@ public abstract class KafkaTestSupport {
     DockerImageName.parse("apache/kafka:4.1.1")
   );
 
-  private static AdminClient adminClient;
+  protected final Properties producerProperties = new Properties();
+
+
+  protected AdminClient adminClient;
 
   @BeforeAll
-  static void init() {
+  void init() {
     // just to initialize the container before tests
     kafkaContainer.start();
-    Map<String, Object> adminProps = Map.of(
-      BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers()
-    );
-    adminClient = AdminClient.create(adminProps);
+    adminClient = this.createAdminClient();
+
+    this.producerProperties.putAll(Map.of(
+      BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers(),
+      KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
+      VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class,
+      TRANSACTIONAL_ID_CONFIG, "kafka-test-producer",
+      ACKS_CONFIG, "-1",
+      LINGER_MS_CONFIG, 100,
+      BATCH_SIZE_CONFIG, 524288,
+      ENABLE_IDEMPOTENCE_CONFIG, true,
+      COMPRESSION_TYPE_CONFIG, CompressionType.LZ4.name
+    ));
   }
 
   @AfterAll
-  static void cleanup() {
+  void cleanup() {
     kafkaContainer.close();
     adminClient.close();
   }
@@ -70,7 +84,7 @@ public abstract class KafkaTestSupport {
    * Creates a topic with specific partitions and configs.
    * Use this in a @BeforeAll or at the start of your test.
    */
-  protected void createTestTopic(String topicName, int partitions) {
+  protected void createOffsetTopic(String topicName, int partitions) {
     try {
       NewTopic newTopic = TopicBuilder
         .name(topicName)
@@ -98,18 +112,41 @@ public abstract class KafkaTestSupport {
     }
   }
 
-  // Helper method to create a producer pointing to the container
-  protected KafkaProducer<String, Long> createProducer() {
-    Map<String, Object> props = Map.of(
-      BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers(),
-      KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
-      VALUE_SERIALIZER_CLASS_CONFIG, LongSerializer.class,
-      TRANSACTIONAL_ID_CONFIG, "kafka-test-producer",
-      ACKS_CONFIG, "all",
-      ENABLE_IDEMPOTENCE_CONFIG, true,
-      COMPRESSION_TYPE_CONFIG, CompressionType.LZ4.name
+  protected void createLogTopic(String topicName, int partitions) {
+    try {
+      NewTopic newTopic = TopicBuilder
+        .name(topicName)
+        .partitions(partitions)
+        // Replicas should be set to 1 because the kafka broker is single node in the test container
+        .replicas(1)
+        .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "1")
+        .build();
+
+      adminClient.createTopics(Collections.singletonList(newTopic)).all().get();
+      await()
+        .atMost(Duration.ofSeconds(3))
+        .pollInterval(Duration.ofMillis(500))
+        .ignoreExceptions()
+        .untilAsserted(()->{
+          Map<String, TopicDescription> description = adminClient.describeTopics(Collections.singletonList(topicName))
+            .allTopicNames().get();
+          assertThat(description.containsKey(topicName)).isTrue();
+          assertThat(description.get(topicName).partitions().size()).isEqualTo(partitions);
+        });
+    } catch (Exception e) {
+      log.error("Topic Creation Failed to: {}", e.getMessage());
+    }
+  }
+
+  protected AdminClient createAdminClient() {
+    Map<String, Object> adminProps = Map.of(
+      BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers()
     );
-    return new KafkaProducer<>(props);
+    return AdminClient.create(adminProps);
+  }
+  // Helper method to create a producer pointing to the container
+  protected KafkaProducer<String, byte[]> createProducer() {
+    return new KafkaProducer<>(producerProperties);
   }
 
   protected KafkaConsumer<String, Long> createConsumer() {

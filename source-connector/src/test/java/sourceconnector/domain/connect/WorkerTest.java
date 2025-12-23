@@ -2,23 +2,9 @@ package sourceconnector.domain.connect;
 
 import offsetmanager.domain.file.FileKey;
 import offsetmanager.domain.file.LocalFileKey;
-import org.apache.kafka.clients.CommonClientConfigs;
-import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.NewTopic;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.config.TopicConfig;
-import org.apache.kafka.common.record.CompressionType;
-import org.apache.kafka.common.serialization.ByteArraySerializer;
-import org.apache.kafka.common.serialization.LongDeserializer;
-import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.springframework.kafka.config.TopicBuilder;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.factory.JSONLogFactory;
 import sourceconnector.domain.pipeline.factory.FileBaseLogPipelineBuilder;
@@ -29,70 +15,40 @@ import sourceconnector.domain.processor.impl.TrimMapperProcessor;
 import sourceconnector.repository.file.LocalFileRepository;
 import sourceconnector.repository.offset.InternalOffsetRecordRepository;
 import sourceconnector.service.offset.OffsetRecordServiceImpl;
+import sourceconnector.support.KafkaTestSupport;
 
 import java.nio.file.Path;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class WorkerTest {
-  private final Properties producerProperties = new Properties();
+class WorkerTest extends KafkaTestSupport {
   private final PipelineSupplier<Log> pipelineSupplier = new FileLogPipelineSupplier(
     new FileBaseLogPipelineBuilder(),
     new LocalFileRepository(),
     new JSONLogFactory(),
     ()->List.of(new EmptyFilterProcessor(), new TrimMapperProcessor(new JSONLogFactory()))
   );
+
+  private final String offsetTopic = "test-offset-topic";
+  private final String logTopic = "test-log";
+
   private OffsetRecordService offsetRecordService;
 
-  private final NewTopic offsetTopic = TopicBuilder.name("test-offset")
-    .compact()
-    .partitions(1)
-    .replicas(3)
-    .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
-    .config(TopicConfig.SEGMENT_MS_CONFIG, "10000")
-    .build();
-  private final NewTopic logTopic = TopicBuilder.name("test-log")
-    .partitions(3)
-    .replicas(3)
-    .build();
-
   @BeforeAll
-  void setUp() {
-    producerProperties.putAll(Map.of(
-      ProducerConfig.COMPRESSION_TYPE_CONFIG, CompressionType.LZ4.name,
-      ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
-      ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
-      ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class
-    ));
+  void setup() {
+    createOffsetTopic(this.offsetTopic, 2);
+    createLogTopic(this.logTopic, 3);
 
-    Properties adminProps = new Properties();
-    adminProps.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093");
-
-    AdminClient adminClient = AdminClient.create(adminProps);
-    try {
-      adminClient.createTopics(List.of(this.logTopic, this.offsetTopic)).all().get();
-    } catch (InterruptedException | ExecutionException ignored) {
-    }
-
-    Properties consumerProps = new Properties();
-    consumerProps.putAll(Map.of(
-      CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
-      ConsumerConfig.GROUP_ID_CONFIG, "benchmark-offset-consumer",
-      ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
-      ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class
-    ));
-
-    this.offsetRecordService = new OffsetRecordServiceImpl(
-      new InternalOffsetRecordRepository(
-        new KafkaConsumer<>(consumerProps),
+    this.offsetRecordService = new OffsetRecordServiceImpl(new InternalOffsetRecordRepository(
+        createConsumer(),
         adminClient,
-        offsetTopic.name())
-    );
+        this.offsetTopic
+    ));
   }
 
   @DisplayName("Should throw IllegalArgumentException when worker count is 0")
@@ -105,7 +61,7 @@ class WorkerTest {
     assertThatThrownBy(() -> worker.createTasks(
       0, 1,
       pipelineSupplier, producerProperties,
-      "log-topic", "offset-topic"
+      this.logTopic, this.offsetTopic
     ))
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("Total worker count should be greater than zero");
@@ -122,7 +78,7 @@ class WorkerTest {
     assertThatThrownBy(() -> worker.createTasks(
       1, 0,
       pipelineSupplier, producerProperties,
-      "log-topic", "offset-topic"
+      this.logTopic, this.offsetTopic
     ))
       .isInstanceOf(IllegalArgumentException.class)
       .hasMessage("Total task count should be greater than zero");
@@ -143,7 +99,7 @@ class WorkerTest {
     Collection<Task<FileProcessingResult>> tasks = worker.createTasks(
       1, 2,
       pipelineSupplier, producerProperties,
-      "log-topic", "offset-topic"
+      this.logTopic, this.offsetTopic
     );
 
     // then
@@ -183,7 +139,7 @@ class WorkerTest {
     Collection<Task<FileProcessingResult>> tasks = worker.createTasks(
       1, 2,
       pipelineSupplier, producerProperties,
-      "log-topic", "offset-topic"
+      this.logTopic, this.offsetTopic
     );
 
     // when then

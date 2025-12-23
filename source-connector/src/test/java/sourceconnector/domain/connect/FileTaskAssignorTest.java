@@ -2,23 +2,7 @@ package sourceconnector.domain.connect;
 
 import lombok.RequiredArgsConstructor;
 import offsetmanager.domain.file.FileKey;
-import org.apache.kafka.clients.CommonClientConfigs;
-import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.NewTopic;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.config.TopicConfig;
-import org.apache.kafka.common.record.CompressionType;
-import org.apache.kafka.common.serialization.ByteArraySerializer;
-import org.apache.kafka.common.serialization.LongDeserializer;
-import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.common.serialization.StringSerializer;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.springframework.kafka.config.TopicBuilder;
+import org.junit.jupiter.api.*;
 import sourceconnector.domain.log.Log;
 import sourceconnector.domain.log.factory.JSONLogFactory;
 import sourceconnector.domain.pipeline.factory.FileBaseLogPipelineBuilder;
@@ -28,18 +12,16 @@ import sourceconnector.repository.file.LocalFileRepository;
 import sourceconnector.repository.offset.InternalOffsetRecordRepository;
 import sourceconnector.service.offset.OffsetRecordServiceImpl;
 import sourceconnector.service.producer.BatchProduceService;
+import sourceconnector.support.KafkaTestSupport;
 
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
-import static org.apache.kafka.clients.producer.ProducerConfig.COMPRESSION_TYPE_CONFIG;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class FileTaskAssignorTest {
-  private final Properties producerProperties = new Properties();
+class FileTaskAssignorTest extends KafkaTestSupport {
   private final PipelineSupplier<Log> pipelineSupplier = new FileLogPipelineSupplier(
     new FileBaseLogPipelineBuilder(),
     new LocalFileRepository(),
@@ -48,50 +30,18 @@ class FileTaskAssignorTest {
   );
   private OffsetRecordService offsetRecordService;
 
-  private final NewTopic offsetTopic = TopicBuilder.name("test-offset")
-    .compact()
-    .partitions(1)
-    .replicas(3)
-    .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
-    .config(TopicConfig.SEGMENT_MS_CONFIG, "10000")
-    .build();
-  private final NewTopic logTopic = TopicBuilder.name("test-log")
-    .partitions(3)
-    .replicas(3)
-    .build();
+  private final String offsetTopic = "test-offset";
+  private final String logTopic = "test-log";
 
   @BeforeAll
   void setUp() {
-    producerProperties.putAll(Map.of(
-      COMPRESSION_TYPE_CONFIG, CompressionType.LZ4.name,
-      ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
-      ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
-      ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class,
-      ProducerConfig.TRANSACTIONAL_ID_CONFIG, "test-task-"
-    ));
-
-    Properties adminProps = new Properties();
-    adminProps.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093");
-
-    AdminClient adminClient = AdminClient.create(adminProps);
-    try {
-      adminClient.createTopics(List.of(this.logTopic, this.offsetTopic)).all().get();
-    } catch (InterruptedException | ExecutionException ignored) {
-    }
-
-    Properties consumerProps = new Properties();
-    consumerProps.putAll(Map.of(
-      CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
-      ConsumerConfig.GROUP_ID_CONFIG, "benchmark-offset-consumer",
-      ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
-      ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class
-    ));
-
+    createOffsetTopic(this.offsetTopic, 3);
+    createLogTopic(this.logTopic, 3);
     this.offsetRecordService = new OffsetRecordServiceImpl(
       new InternalOffsetRecordRepository(
-        new KafkaConsumer<>(consumerProps),
-        adminClient,
-        offsetTopic.name())
+      createConsumer(),
+      adminClient,
+      this.offsetTopic)
     );
   }
 
@@ -116,7 +66,7 @@ class FileTaskAssignorTest {
     TaskAssignor taskAssignor = new FileTaskAssignor(fileKeys, 5, this.offsetRecordService);
     FileSourceTask task0 = new FileSourceTask(
       0, pipelineSupplier,
-      new BatchProduceService(producerProperties, this.offsetTopic.name(), this.logTopic.name()));
+      new BatchProduceService(producerProperties, this.offsetTopic, this.logTopic));
 
     // when
     taskAssignor.assign(List.of(task0));
@@ -135,10 +85,10 @@ class FileTaskAssignorTest {
       fileKeys.add(new FakeFileKey("file-" + i));
     }
     TaskAssignor taskAssignor = new FileTaskAssignor(fileKeys, 4, this.offsetRecordService);
-    FileSourceTask task0 = new FileSourceTask(0, pipelineSupplier, new BatchProduceService(producerProperties, this.logTopic.name(), this.offsetTopic.name()));
-    FileSourceTask task1 =  new FileSourceTask(1, pipelineSupplier, new BatchProduceService(producerProperties, this.logTopic.name(), this.offsetTopic.name()));
-    FileSourceTask task2 =  new FileSourceTask(2, pipelineSupplier, new BatchProduceService(producerProperties, this.logTopic.name(), this.offsetTopic.name()));
-    FileSourceTask task3 =   new FileSourceTask(3, pipelineSupplier, new BatchProduceService(producerProperties, this.logTopic.name(), this.offsetTopic.name()));
+    FileSourceTask task0 = new FileSourceTask(0, pipelineSupplier, new BatchProduceService(producerProperties, this.logTopic, this.offsetTopic));
+    FileSourceTask task1 =  new FileSourceTask(1, pipelineSupplier, new BatchProduceService(producerProperties, this.logTopic, this.offsetTopic));
+    FileSourceTask task2 =  new FileSourceTask(2, pipelineSupplier, new BatchProduceService(producerProperties, this.logTopic, this.offsetTopic));
+    FileSourceTask task3 =   new FileSourceTask(3, pipelineSupplier, new BatchProduceService(producerProperties, this.logTopic, this.offsetTopic));
 
     Collection<Task<FileProcessingResult>> tasks = List.of(task0, task1, task2, task3);
 
@@ -160,7 +110,7 @@ class FileTaskAssignorTest {
     // given
     TaskAssignor taskAssignor = new FileTaskAssignor(Collections.emptyList(), 1, this.offsetRecordService);
     Collection<Task<FileProcessingResult>> tasks = List.of(
-      new FileSourceTask( 0, pipelineSupplier, new BatchProduceService(producerProperties, this.logTopic.name(), this.offsetTopic.name()))
+      new FileSourceTask( 0, pipelineSupplier, new BatchProduceService(producerProperties, this.logTopic, this.offsetTopic))
     );
 
     // when then

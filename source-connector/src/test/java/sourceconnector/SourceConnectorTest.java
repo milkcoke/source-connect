@@ -3,10 +3,6 @@ package sourceconnector;
 import offsetmanager.domain.file.LocalFileKey;
 import offsetmanager.domain.offset.DefaultOffsetRecord;
 import offsetmanager.domain.offset.OffsetStatus;
-import org.apache.kafka.clients.CommonClientConfigs;
-import org.apache.kafka.common.record.CompressionType;
-import org.apache.kafka.common.serialization.ByteArraySerializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import sourceconnector.domain.log.Log;
@@ -22,6 +18,7 @@ import sourceconnector.service.batcher.Batchable;
 import sourceconnector.service.batcher.LogBatcher;
 import sourceconnector.service.producer.BatchProduceService;
 import sourceconnector.service.producer.BatchProducer;
+import sourceconnector.support.KafkaTestSupport;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -29,30 +26,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
-import static org.apache.kafka.clients.producer.ProducerConfig.*;
-
-class SourceConnectorTest {
+class SourceConnectorTest extends KafkaTestSupport {
 
   private final String logTopic = "temp-log-test";
   private final String offsetTopic = "temp-offset-test";
-  private final Properties properties = new Properties();
-  {
-    properties.putAll(Map.of(
-        CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
-        ACKS_CONFIG, "-1",
-        COMPRESSION_TYPE_CONFIG, CompressionType.LZ4.name,
-        KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
-        VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class,
-        LINGER_MS_CONFIG, 100,
-        BATCH_SIZE_CONFIG, 524288,
-        ENABLE_IDEMPOTENCE_CONFIG, true,
-        TRANSACTIONAL_ID_CONFIG, "test-s3"
-      )
-    );
-  }
 
   @DisplayName("Send batch")
   @Test
@@ -69,7 +47,7 @@ class SourceConnectorTest {
     );
     Batchable<Log> batcher = new LogBatcher(pipeline, 10_000);
 
-    try (BatchProducer<String> producer = new BatchProduceService(properties, logTopic, offsetTopic)){
+    try (BatchProducer<String> producer = new BatchProduceService(producerProperties, logTopic, offsetTopic)){
       // when
       LogMetadata lastMessageMetadata = LogMetadata.EMPTY;
       while(batcher.hasNextBatch()) {
@@ -107,7 +85,7 @@ class SourceConnectorTest {
 
     // when
     try (
-      BatchProducer<String> producer = new BatchProduceService(properties, logTopic, offsetTopic);
+      BatchProducer<String> producer = new BatchProduceService(producerProperties, logTopic, offsetTopic);
       var stream = Files.walk(Paths.get("src/test/resources/sample-data"))
     ) {
       List<File> files = stream
@@ -162,7 +140,7 @@ class SourceConnectorTest {
   void NothingToDoAfterProcessingAllFiles() throws Exception {
     // given
     try (
-      BatchProducer<String> producer = new BatchProduceService(properties, logTopic, offsetTopic);
+      BatchProducer<String> producer = new BatchProduceService(producerProperties, logTopic, offsetTopic);
       // when
       var stream = Files.walk(Paths.get("src/test/resources/sample-data"))
     ) {

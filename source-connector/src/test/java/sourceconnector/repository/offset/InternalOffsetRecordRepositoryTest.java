@@ -5,94 +5,38 @@ import offsetmanager.domain.file.LocalFileKey;
 import offsetmanager.domain.file.factory.FileKeyParser;
 import offsetmanager.domain.offset.DefaultOffsetRecord;
 import offsetmanager.domain.offset.OffsetRecord;
-import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.NewTopic;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.IsolationLevel;
-import org.apache.kafka.common.config.TopicConfig;
-import org.apache.kafka.common.record.CompressionType;
-import org.apache.kafka.common.serialization.LongDeserializer;
-import org.apache.kafka.common.serialization.LongSerializer;
-import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.springframework.kafka.config.TopicBuilder;
 import sourceconnector.service.offset.OffsetRecordRepository;
+import sourceconnector.support.KafkaTestSupport;
 
+import java.nio.ByteBuffer;
 import java.nio.file.Path;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
+import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@TestInstance(TestInstance.Lifecycle.PER_METHOD)
-class InternalOffsetRecordRepositoryTest {
-  private static final NewTopic testTopic = TopicBuilder.name("internal-offset-test")
-    .compact()
-    .partitions(1)
-    .replicas(3)
-    .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, "2")
-    .config(TopicConfig.SEGMENT_MS_CONFIG, "10000")
-    .build();
-  private static final KafkaProducer<String, Long> producer;
+class InternalOffsetRecordRepositoryTest extends KafkaTestSupport {
+  private final String offsetTopicName = "internal-offset-test";
+  private KafkaProducer<String, byte[]> producer;
 
-
-  static {
-    final Properties props = new Properties();
-    props.putAll(Map.of(
-        CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
-      ProducerConfig.COMPRESSION_TYPE_CONFIG, CompressionType.LZ4.name,
-        ProducerConfig.ACKS_CONFIG, "-1",
-        ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
-        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, LongSerializer.class,
-        ProducerConfig.LINGER_MS_CONFIG, 100,
-        ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true,
-        ProducerConfig.TRANSACTIONAL_ID_CONFIG, "offset-producer",
-        ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 5
-      )
-    );
-    producer = new KafkaProducer<>(props);
-    producer.initTransactions();
+  @BeforeAll
+  void setup() {
+    createOffsetTopic(offsetTopicName, 2);
+    this.producer = createProducer();
+    this.producer.initTransactions();
   }
-
-  private final Properties consumerProps = new Properties();
-  {
-    consumerProps.putAll(Map.of(
-      CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093",
-      ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
-      ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class,
-      ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, 57_671_680, // 55MB
-      ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 50_000,
-      ConsumerConfig.ISOLATION_LEVEL_CONFIG, IsolationLevel.READ_COMMITTED.toString()
-    ));
-  }
-
-  private final Properties adminProps = new Properties();
-  {
-   adminProps.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093");
-    try(AdminClient adminClient = AdminClient.create(adminProps)) {
-      adminClient.createTopics(Collections.singletonList(testTopic)).all().get();
-    } catch (InterruptedException | ExecutionException ignored){
-    }
-  }
-
 
   @AfterAll
-  static void teardown() throws ExecutionException, InterruptedException {
+  void teardown() {
     producer.close();
-    Properties adminProps = new Properties();
-    adminProps.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093");
-    AdminClient adminClient = AdminClient.create(adminProps);
-    adminClient.deleteTopics(Collections.singleton(testTopic.name())).all().get();
-    adminClient.close();
   }
 
 
@@ -101,9 +45,12 @@ class InternalOffsetRecordRepositoryTest {
   void notFoundOffsetTest() throws Exception {
     // given
     FileKey notExistFileKey = LocalFileKey.from(Path.of("NotExistFile.ndjson"));
-    KafkaConsumer<String, Long> consumer = new KafkaConsumer<>(consumerProps);
-    AdminClient adminClient = AdminClient.create(adminProps);
-    try (OffsetRecordRepository repository = new InternalOffsetRecordRepository(consumer, adminClient, testTopic.name())) {
+    KafkaConsumer<String, Long> consumer = createConsumer();
+    try (OffsetRecordRepository repository = new InternalOffsetRecordRepository(
+      consumer,
+      adminClient,
+      this.offsetTopicName)
+    ) {
       // when
       Optional<OffsetRecord> offsetRecord = repository.findLastOffsetRecord(notExistFileKey);
       // then
@@ -122,16 +69,20 @@ class InternalOffsetRecordRepositoryTest {
       OffsetRecord record = new DefaultOffsetRecord(fileKey, offset);
 
       producer.send(new ProducerRecord<>(
-        testTopic.name(),
+        this.offsetTopicName,
         record.key().get(),
-        record.offset()
+        ByteBuffer.allocate(Long.BYTES).putLong(record.offset()).array()
       ));
     }
     producer.commitTransaction();
-    KafkaConsumer<String, Long> consumer = new KafkaConsumer<>(consumerProps);
-    AdminClient adminClient = AdminClient.create(adminProps);
+    KafkaConsumer<String, Long> consumer = createConsumer();
+    AdminClient adminClient = createAdminClient();
 
-    try (OffsetRecordRepository repository = new InternalOffsetRecordRepository(consumer, adminClient, testTopic.name())) {
+    try (OffsetRecordRepository repository = new InternalOffsetRecordRepository(
+      consumer,
+      adminClient,
+      this.offsetTopicName
+    )) {
       // when
       Optional<OffsetRecord> offsetRecord = repository.findLastOffsetRecord(fileKey);
       // then
@@ -154,19 +105,24 @@ class InternalOffsetRecordRepositoryTest {
       OffsetRecord record = new DefaultOffsetRecord(fileKey, offset);
 
       producer.send(new ProducerRecord<>(
-        testTopic.name(),
+        this.offsetTopicName,
         record.key().get(),
-        record.offset()
+        ByteBuffer.allocate(Long.BYTES).putLong(record.offset()).array()
       ));
     }
     producer.commitTransaction();
 
-    KafkaConsumer<String, Long> consumer = new KafkaConsumer<>(consumerProps);
-    AdminClient adminClient = AdminClient.create(adminProps);
+    KafkaConsumer<String, Long> consumer = createConsumer();
+    AdminClient adminClient = createAdminClient();
 
-    try (OffsetRecordRepository repository = new InternalOffsetRecordRepository(consumer, adminClient, testTopic.name())) {
+    try (OffsetRecordRepository repository = new InternalOffsetRecordRepository(
+      consumer,
+      adminClient,
+      this.offsetTopicName
+      )) {
       // when
       Optional<OffsetRecord> offsetRecord = repository.findLastOffsetRecord(fileKey);
+
       // then
       assertThat(offsetRecord)
         .hasValueSatisfying(record -> {
@@ -185,10 +141,14 @@ class InternalOffsetRecordRepositoryTest {
       LocalFileKey.from(Path.of("NotExistFile2.ndjson")),
       LocalFileKey.from(Path.of("NotExistFile3.ndjson"))
     );
-    KafkaConsumer<String, Long> consumer = new KafkaConsumer<>(consumerProps);
-    AdminClient adminClient = AdminClient.create(adminProps);
+    KafkaConsumer<String, Long> consumer = createConsumer();
+    AdminClient adminClient = createAdminClient();
 
-    try (OffsetRecordRepository repository = new InternalOffsetRecordRepository(consumer, adminClient, testTopic.name())) {
+    try (OffsetRecordRepository repository = new InternalOffsetRecordRepository(
+      consumer,
+      adminClient,
+      this.offsetTopicName)
+    ) {
       // when
       List<OffsetRecord> offsetRecords = repository.findLastOffsetRecords(notExistFileKeys);
       // then
@@ -212,18 +172,22 @@ class InternalOffsetRecordRepositoryTest {
         OffsetRecord record = new DefaultOffsetRecord(fileKey, offset);
 
         producer.send(new ProducerRecord<>(
-          testTopic.name(),
+          this.offsetTopicName,
           record.key().get(),
-          record.offset()
+          ByteBuffer.allocate(Long.BYTES).putLong(record.offset()).array()
         ));
       }
     }
     producer.commitTransaction();
 
-    KafkaConsumer<String, Long> consumer = new KafkaConsumer<>(consumerProps);
-    AdminClient adminClient = AdminClient.create(adminProps);
+    KafkaConsumer<String, Long> consumer = createConsumer();
+    AdminClient adminClient = createAdminClient();
 
-    try (OffsetRecordRepository repository = new InternalOffsetRecordRepository(consumer, adminClient, testTopic.name())) {
+    try (OffsetRecordRepository repository = new InternalOffsetRecordRepository(
+      consumer,
+      adminClient,
+      this.offsetTopicName
+    )) {
       // when
       List<OffsetRecord> offsetRecords = repository.findLastOffsetRecords(fileKeys);
       // then
@@ -252,18 +216,22 @@ class InternalOffsetRecordRepositoryTest {
         OffsetRecord record = new DefaultOffsetRecord(fileKey, offset);
 
         producer.send(new ProducerRecord<>(
-          testTopic.name(),
+          this.offsetTopicName,
           record.key().get(),
-          record.offset()
+          ByteBuffer.allocate(Long.BYTES).putLong(record.offset()).array()
         ));
       }
     }
     producer.commitTransaction();
 
-    KafkaConsumer<String, Long> consumer = new KafkaConsumer<>(consumerProps);
-    AdminClient adminClient = AdminClient.create(adminProps);
+    KafkaConsumer<String, Long> consumer = createConsumer();
+    AdminClient adminClient = createAdminClient();
 
-    try (OffsetRecordRepository repository = new InternalOffsetRecordRepository(consumer, adminClient, testTopic.name())) {
+    try (OffsetRecordRepository repository = new InternalOffsetRecordRepository(
+      consumer,
+      adminClient,
+      this.offsetTopicName
+    )) {
       // when
       List<OffsetRecord> offsetRecords = repository.findLastOffsetRecords(fileKeys);
       // then
