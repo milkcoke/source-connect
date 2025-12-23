@@ -43,8 +43,18 @@ public class FileSourceTask implements Task<FileProcessingResult> {
   @Override
   public FileProcessingResult call() throws Exception {
     try {
-      for (var fileKey: this.fileKeyOffsetMap.keySet()) {
+      for (Map.Entry<FileKey, Long> entry: this.fileKeyOffsetMap.entrySet()) {
+
+        long offset = entry.getValue();
+        if (offset == OffsetStatus.COMPLETED.getValue()) {
+          result.addSkippedCount();
+          continue;
+        }
+        FileKey fileKey = entry.getKey();
         Pipeline<Log> pipeline = pipelineSupplier.get(fileKey);
+
+        // Progress offset to the next position in the file
+        pipeline.toPosition(offset);
 
         LogBatcher batcher = new LogBatcher(pipeline, 10_000);
 
@@ -81,6 +91,7 @@ public class FileSourceTask implements Task<FileProcessingResult> {
 
         this.result.addSuccessCount();
       }
+
       return this.result;
     } finally {
       this.producer.close();

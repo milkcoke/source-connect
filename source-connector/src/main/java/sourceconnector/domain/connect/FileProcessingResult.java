@@ -9,6 +9,7 @@ public class FileProcessingResult {
   private int totalCount = 0;
   private int successCount = 0;
   private int failureCount = 0;
+  private int skippedCount = 0;
 
   public void addSuccessCount() {
     successCount++;
@@ -18,4 +19,7 @@ public class FileProcessingResult {
     failureCount++;
   }
 
+  public void addSkippedCount() {
+    skippedCount++;
+  }
 }
