@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: source-connect
+  namespace: app
+spec:
+  completionMode: Indexed
+  completions: 1
+  parallelism: 1
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: source-connect
+          image: ghcr.io/milkcoke/sourceconnect/source-connector:latest
+          env:
+            - name: JOB_INDEX
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.annotations['batch.kubernetes.io/job-completion-index']
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: 1Gi
+              cpu: 1000m
+            limits:
+              memory: 1Gi
+              cpu: 1000m
+          volumeMounts:
+            - name: config
+              mountPath: /config # default path for application.yaml
+      volumes:
+        - name: config
+          configMap:
+            name: source-connect-config
