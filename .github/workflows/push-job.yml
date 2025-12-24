@@ -39,7 +39,7 @@ jobs:
         run: |
           ./gradlew :${{ inputs.module }}:jib \
           -Djib.from.image=eclipse-temurin:25-jre-alpine \
-          -Djib.to.tags=${{ inputs.image_tag }},latest \
+          -Djib.to.tags=${{ inputs.image_tag }} \
           -Djib.to.image=ghcr.io/${{ github.repository_owner }}/sourceconnect/${{ inputs.module }}
       - name: Delete old untagged image versions
         uses: actions/delete-package-versions@v5
