@@ -41,3 +41,10 @@ jobs:
           -Djib.from.image=eclipse-temurin:25-jre-alpine \
           -Djib.to.tags=${{ inputs.image_tag }},latest \
           -Djib.to.image=ghcr.io/${{ github.repository_owner }}/sourceconnect/${{ inputs.module }}
+      - name: Delete old untagged image versions
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: sourceconnect/${{ inputs.module }}
+          package-type: container
+          ignore-versions: 'v*'
+          num-old-versions-to-delete: 2
