@@ -1,0 +1,27 @@
+name: Reusable Test Job
+on:
+  workflow_call:
+    inputs:
+      module:
+        description: The Gradle module to test (e.g. source-connector)
+        required: true
+        type: string
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup JDK 25
+        uses: actions/setup-java@v5.1.0
+        with:
+          distribution: temurin
+          java-version: '25'
+          architecture: x64
+          cache: 'gradle'
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+      - name: Run tests for ${{ inputs.module }}
+        run: ./gradlew :${{ inputs.module }}:test

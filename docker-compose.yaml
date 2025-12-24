@@ -22,7 +22,7 @@ services:
   ##Kafka 00
   Kafka00Service:
     user: root
-    image: apache/kafka:4.1.0
+    image: apache/kafka:4.1.1
     restart: unless-stopped
     container_name: Kafka00Broker
     ports:
@@ -68,7 +68,7 @@ services:
       - "Kafka00Log:/opt/kafka/logs"
   ##Kafka 01
   Kafka01Service:
-    image: apache/kafka:4.1.0
+    image: apache/kafka:4.1.1
     user: root
     restart: unless-stopped
     container_name: Kafka01Broker
@@ -109,7 +109,7 @@ services:
       - "Kafka01Log:/opt/kafka/logs"
   ##Kafka 02
   Kafka02Service:
-    image: apache/kafka:4.1.0
+    image: apache/kafka:4.1.1
     user: root
     restart: unless-stopped
     container_name: Kafka02Broker
@@ -163,6 +163,7 @@ services:
       DYNAMIC_CONFIG_ENABLED: true
       KAFKA_CLUSTERS_0_AUDIT_TOPICAUDITENABLED: true
       KAFKA_CLUSTERS_0_AUDIT_CONSOLEAUDITENABLED: true
+      KAFKA_ADMIN_CLIENT_TIMEOUT: 60000 # default: 30_000
     #      - KAFKA_CLUSTERS_0_METRICS_PORT=9999
     networks:
       - kafka_network
