@@ -4,7 +4,7 @@ metadata:
   name: source-connect-config
   namespace: app
 data:
-  application.yaml: |-
+  application.yaml: >-
     source:
       storage:
         type: local
@@ -15,7 +15,7 @@ data:
           - file:///app/resources/logs/mixed.ndjson
           # Record 10,000
           - file:///app/resources/logs/normal.ndjson
-          # Total 10,005 Records!
+          # Total 10,503 Records!
         configs:
           recursive: true
           filters:
@@ -44,8 +44,8 @@ data:
         sinkTopic: sink-topic
 
     connect:
-      workerCount: 1
-      taskCount: 1
+      workerCount: 2
+      taskCount: 2
 
     offsetManager:
     #  baseUrl: http://localhost:8080

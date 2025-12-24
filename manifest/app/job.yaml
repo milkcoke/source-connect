@@ -5,8 +5,8 @@ metadata:
   namespace: app
 spec:
   completionMode: Indexed
-  completions: 1
-  parallelism: 1
+  completions: 2
+  parallelism: 2
   template:
     spec:
       restartPolicy: Never
@@ -18,6 +18,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.annotations['batch.kubernetes.io/job-completion-index']
+            - name: SPRING_CONFIG_LOCATION
+              value: "file:/config/application.yaml" # Overwrite only application.yaml path
           imagePullPolicy: Always
           resources:
             requests:
