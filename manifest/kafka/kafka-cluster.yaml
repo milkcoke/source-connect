@@ -1,0 +1,61 @@
+# 1. Define the resource as a Strimzi Kafka cluster
+apiVersion: kafka.strimzi.io/v1
+kind: Kafka
+metadata:
+  # The name for your Kafka cluster resources
+  name: kafka-local-cluster
+  # The namespace where you installed the Strimzi operator
+  namespace: kafka
+spec:
+  # 2. Configure the Kafka brokers
+  kafka:
+    # --- THIS IS WHERE YOU SET THE VERSION ---
+    # Strimzi will pull the correct official Apache Kafka images for this version.
+    version: 4.1.1
+    metadataVersion: '4.1'
+
+    config:
+      auto.create.topics.enable: 'true'
+      offsets.topic.replication.factor: 3
+      default.replication.factor: 3
+      min.insync.replicas: 2
+      num.partitions: 2
+
+
+    # 4. Define how clients connect to Kafka (the listeners)
+    listeners:
+      # Listener for internal traffic within the Kubernetes cluster on port 9092
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
+
+      # Listener to expose Kafka outside the Kubernetes cluster on port 9094
+      # Use 'loadbalancer' for cloud or compatible local setups (like Docker Desktop)
+      # Use 'nodeport' for Minikube or other environments if LoadBalancer is not available
+      - name: external
+        port: 9094
+        type: nodeport
+        tls: false
+        configuration:
+          preferredNodePortAddressType: InternalDNS
+
+---
+
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaNodePool
+metadata:
+  name: broker
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: kafka-local-cluster
+spec:
+  replicas: 3
+  roles:
+    - broker
+    - controller
+  storage:
+    type: persistent-claim
+    size: 10Gi
+    kraftMetadata: shared
+    deleteClaim: false
