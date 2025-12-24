@@ -26,7 +26,7 @@ jobs:
       offset_manager: ${{ steps.filter.outputs.offset_manager }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.3.1
+        uses: actions/checkout@v6
       - uses: dorny/paths-filter@v3
         id: filter
         with:
@@ -37,7 +37,6 @@ jobs:
 
             source_connector:
               - 'offset-manager-api/**'
-              - 'offset-manager/**'
               - 'source-connector/**'
   # =================================================================
   # JOB 2: Call the reusable 'test-job.yml' for each changed module.
