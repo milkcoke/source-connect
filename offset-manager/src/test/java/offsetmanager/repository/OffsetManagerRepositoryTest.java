@@ -1,12 +1,10 @@
 package offsetmanager.repository;
 
-import offsetmanager.support.KafkaTestSupport;
 import offsetmanager.domain.file.FileKey;
 import offsetmanager.domain.file.factory.FileKeyParser;
 import offsetmanager.domain.offset.DefaultOffsetRecord;
 import offsetmanager.domain.offset.OffsetRecord;
-import offsetmanager.manager.OffsetManager;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
+import offsetmanager.support.KafkaTestSupport;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.AfterAll;
@@ -40,20 +38,21 @@ class OffsetManagerRepositoryTest extends KafkaTestSupport {
   @Test
   void emptyOffsetTopicTest() {
     // given
-    KafkaConsumer<String, Long> consumer = createConsumer();
-    OffsetManager offsetManager = new OffsetManagerRepository(consumer, this.offsetTopic);
+    OffsetManagerRepository offsetManager = new OffsetManagerRepository(testConsumerProperties, this.offsetTopic);
     // when
     Optional<OffsetRecord> foundOffset = offsetManager.findLatestOffsetRecord(FileKeyParser.parse("file:///test/path.txt"));
     // then
     assertThat(foundOffset).isEmpty();
+
+    // cleans
+    offsetManager.shutdown();
   }
 
   @DisplayName("Should find all offset records by keys")
   @Test
   void findAllOffsetRecordsTest() throws InterruptedException {
     // given
-    KafkaConsumer<String, Long> consumer = createConsumer();
-    OffsetManager offsetManager = new OffsetManagerRepository(consumer, this.offsetTopic);
+    OffsetManagerRepository offsetManager = new OffsetManagerRepository(testConsumerProperties, this.offsetTopic);
     FileKey keyA = FileKeyParser.parse("file:///many-a.txt");
     FileKey keyB = FileKeyParser.parse("file:///many-b.txt");
     FileKey keyC = FileKeyParser.parse("file:///many-c.txt");
@@ -81,14 +80,15 @@ class OffsetManagerRepositoryTest extends KafkaTestSupport {
         new DefaultOffsetRecord(keyC, 1000L)
       );
 
+    // cleans
+    offsetManager.shutdown();
   }
 
   @DisplayName("Update continuously receives new offsets and updates the store")
   @Test
   void upsertContinuously() throws InterruptedException {
     // given
-    KafkaConsumer<String, Long> consumer = createConsumer();
-    OffsetManager offsetManager = new OffsetManagerRepository(consumer, this.offsetTopic);
+    OffsetManagerRepository offsetManager = new OffsetManagerRepository(testConsumerProperties, this.offsetTopic);
     FileKey keyA = FileKeyParser.parse("file:///key-a.txt");
     FileKey keyB = FileKeyParser.parse("file:///key-b.txt");
     FileKey keyC = FileKeyParser.parse("file:///key-c.txt");
@@ -115,5 +115,8 @@ class OffsetManagerRepositoryTest extends KafkaTestSupport {
       .isEqualTo(new DefaultOffsetRecord(keyB, 1000L));
     assertThat(offsetManager.findLatestOffsetRecord(keyC).get())
       .isEqualTo(new DefaultOffsetRecord(keyC, 1000L));
+
+    // cleans
+    offsetManager.shutdown();
   }
 }
