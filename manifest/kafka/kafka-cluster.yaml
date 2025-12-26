@@ -9,8 +9,6 @@ metadata:
 spec:
   # 2. Configure the Kafka brokers
   kafka:
-    # --- THIS IS WHERE YOU SET THE VERSION ---
-    # Strimzi will pull the correct official Apache Kafka images for this version.
     version: 4.1.1
     metadataVersion: '4.1'
 
@@ -22,9 +20,7 @@ spec:
       num.partitions: 2
 
 
-    # 4. Define how clients connect to Kafka (the listeners)
     listeners:
-      # Listener for internal traffic within the Kubernetes cluster on port 9092
       - name: plain
         port: 9092
         type: internal

@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: offset-manager-config
+  namespace: app
+data:
+  application.yaml: >-
+    server:
+      port: 8080 # default: 8080
+
+    app:
+      offset-topic: offset-topic
+    spring:
+      kafka:
+        bootstrap-servers:
+          - kafka-local-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092
+    
+        consumer:
+          max-poll-records: 50_000 # default: 1000
+          isolation-level: read_committed
+          auto-offset-reset: earliest
+          properties:
+            poll.ms: 100 # default: 100
+            session.timeout.ms: 45_000 # default: 45_000
+            fetch.max.bytes: 57671680  # default: 57671680 (55MB)
+            max.partition.fetch.bytes: 57671680 # default: 1MB
+            key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+            value.deserializer: org.apache.kafka.common.serialization.LongDeserializer
+            security.protocol: PLAINTEXT
+            sasl.mechanism: PLAIN
+        admin:
+          security:
+            protocol: PLAINTEXT
+      
+      
+      mvc:
+        apiversion:
+          default: v1
+          supported:
+            - v1
+          use:
+            header: X-API-Version
+    
+
