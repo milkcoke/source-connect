@@ -2,6 +2,7 @@ package offsetmanager.repository;
 
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
+import offsetmanager.domain.OffsetStorage;
 import offsetmanager.domain.file.FileKey;
 import offsetmanager.domain.file.factory.FileKeyParser;
 import offsetmanager.domain.offset.DefaultOffsetRecord;
@@ -20,7 +21,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -36,10 +36,10 @@ import static org.apache.kafka.common.utils.Utils.sleep;
 @Slf4j
 @Repository
 public class OffsetManagerRepository implements OffsetManager {
+  private final OffsetStorage offsetStorage;
   private final String offsetTopicName;
-  private final Map<FileKey, OffsetRecord> offsetStore = new ConcurrentHashMap<>();
-  private final ExecutorService executorService = Executors.newSingleThreadExecutor();
   private final Properties consumerProperties;
+  private final ExecutorService executorService = Executors.newSingleThreadExecutor();
   private final AtomicReference<Consumer<String, Long>> activeConsumer = new AtomicReference<>();
   /**
    * indicates whether the background consumer loop is running
@@ -48,7 +48,12 @@ public class OffsetManagerRepository implements OffsetManager {
   private final AtomicBoolean isRunning = new AtomicBoolean(true);
   private final AtomicBoolean isReady = new AtomicBoolean(false);
 
-  public OffsetManagerRepository(Properties consumerProperties, String offsetTopicName) {
+  public OffsetManagerRepository(
+    OffsetStorage offsetStorage,
+    Properties consumerProperties,
+    String offsetTopicName
+  ) {
+    this.offsetStorage = offsetStorage;
     this.consumerProperties = consumerProperties;
     this.offsetTopicName = offsetTopicName;
     this.executorService.submit(this::run);
@@ -62,7 +67,7 @@ public class OffsetManagerRepository implements OffsetManager {
       isReady.set(false);
       isRunning.set(false);
       this.activeConsumer.set(null);
-      this.offsetStore.clear();
+      this.offsetStorage.clear();
 
       try (Consumer<String, Long> consumer = new KafkaConsumer<>(consumerProperties)) {
 
@@ -90,7 +95,7 @@ public class OffsetManagerRepository implements OffsetManager {
 
       } catch (Exception e) {
         // RECOVERABLE failure
-        log.warn("Consumer failed, will recreate (broker/topic issue)", e);
+        log.warn("Consumer failed", e);
 
         // readiness already reset at loop top
         sleep(3000); // backoff before retry
@@ -173,10 +178,7 @@ public class OffsetManagerRepository implements OffsetManager {
   public Optional<OffsetRecord> findLatestOffsetRecord(FileKey key) {
     try {
       awaitReady();
-      if (this.offsetStore.containsKey(key)) {
-        return Optional.of(this.offsetStore.get(key));
-      }
-      return Optional.empty();
+      return this.offsetStorage.find(key);
     } catch (ConditionTimeoutException e) {
       throw new IllegalStateException("OffsetManager initialization timed out");
     }
@@ -187,8 +189,8 @@ public class OffsetManagerRepository implements OffsetManager {
     try {
       awaitReady();
       return keys.stream()
-        .map(this.offsetStore::get)
-        .filter(Objects::nonNull)
+        .map(offsetStorage::find)
+        .flatMap(Optional::stream)
         .toList();
     } catch (ConditionTimeoutException e) {
       throw new IllegalStateException("OffsetManager initialization timed out");
@@ -209,12 +211,12 @@ public class OffsetManagerRepository implements OffsetManager {
 
   @Override
   public void upsert(FileKey key, OffsetRecord offsetRecord) {
-    this.offsetStore.put(key, offsetRecord);
+    this.offsetStorage.upsert(key, offsetRecord);
   }
 
   @Override
   public void removeKey(FileKey key) {
-    this.offsetStore.remove(key);
+    this.offsetStorage.remove(key);
   }
 
   @PreDestroy

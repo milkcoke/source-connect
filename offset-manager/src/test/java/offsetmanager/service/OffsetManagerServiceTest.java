@@ -1,14 +1,16 @@
 package offsetmanager.service;
 
-import offsetmanager.support.KafkaTestSupport;
+import offsetmanager.api.v1.dto.LastOffsetRecordBatchResponse;
+import offsetmanager.api.v1.dto.LastOffsetRecordResponse;
+import offsetmanager.domain.InMemoryOffsetStorage;
+import offsetmanager.domain.OffsetStorage;
 import offsetmanager.domain.file.FileKey;
 import offsetmanager.domain.file.factory.FileKeyParser;
 import offsetmanager.domain.offset.DefaultOffsetRecord;
 import offsetmanager.exception.OffsetNotFoundException;
 import offsetmanager.manager.OffsetManager;
 import offsetmanager.repository.OffsetManagerRepository;
-import offsetmanager.api.v1.dto.LastOffsetRecordBatchResponse;
-import offsetmanager.api.v1.dto.LastOffsetRecordResponse;
+import offsetmanager.support.KafkaTestSupport;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.*;
@@ -22,6 +24,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 class OffsetManagerServiceTest {
+
+  private final OffsetStorage offsetStorage = new InMemoryOffsetStorage();
 
   @Nested
   class IntegrationTest extends KafkaTestSupport {
@@ -43,7 +47,7 @@ class OffsetManagerServiceTest {
       String offsetTopic = "temp-offset-manager-test";
       createTestTopic(offsetTopic, 1);
       // FIXME: Dependency on the interface instead of concrete class
-      OffsetManagerRepository offsetManager = new OffsetManagerRepository(testConsumerProperties, offsetTopic);
+      OffsetManagerRepository offsetManager = new OffsetManagerRepository(offsetStorage, testConsumerProperties, offsetTopic);
       produceFileKeyOffset(offsetTopic, FileKeyParser.parse("file:///test-file.txt"), 100L);
       Thread.sleep(500L);
       OffsetManagerService offsetManagerService = new OffsetManagerService(offsetManager);
@@ -63,7 +67,7 @@ class OffsetManagerServiceTest {
     void lastFileKeysOffsetTest() throws InterruptedException {
       String offsetTopic = "temp-offset-manager-test";
       createTestTopic(offsetTopic, 1);
-      OffsetManagerRepository offsetManager = new OffsetManagerRepository(testConsumerProperties, offsetTopic);
+      OffsetManagerRepository offsetManager = new OffsetManagerRepository(offsetStorage, testConsumerProperties, offsetTopic);
       produceFileKeyOffset(offsetTopic, FileKeyParser.parse("s3://test-bucket/file-key-1.txt"), 100L);
       produceFileKeyOffset(offsetTopic, FileKeyParser.parse("s3://test-bucket/file-key-2.txt"), 100L);
       produceFileKeyOffset(offsetTopic, FileKeyParser.parse("s3://test-bucket/file-key-3.txt"), 100L);
@@ -93,7 +97,7 @@ class OffsetManagerServiceTest {
       // given
       String offsetTopic = "temp-offset-manager-test";
       createTestTopic(offsetTopic, 1);
-      OffsetManagerRepository offsetManager = new OffsetManagerRepository(testConsumerProperties, offsetTopic);
+      OffsetManagerRepository offsetManager = new OffsetManagerRepository(offsetStorage, testConsumerProperties, offsetTopic);
       OffsetManagerService offsetManagerService = new OffsetManagerService(offsetManager);
       // when then
       assertThatThrownBy(() -> offsetManagerService.readLastOffset("file:///notExistKey.txt"))
@@ -109,7 +113,7 @@ class OffsetManagerServiceTest {
       // given
       String offsetTopic = "temp-offset-manager-test";
       createTestTopic(offsetTopic, 1);
-      OffsetManagerRepository offsetManager = new OffsetManagerRepository(testConsumerProperties, offsetTopic);
+      OffsetManagerRepository offsetManager = new OffsetManagerRepository(offsetStorage, testConsumerProperties, offsetTopic);
       OffsetManagerService offsetManagerService = new OffsetManagerService(offsetManager);
 
       // when

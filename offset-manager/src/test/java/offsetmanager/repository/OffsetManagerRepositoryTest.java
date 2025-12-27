@@ -1,5 +1,7 @@
 package offsetmanager.repository;
 
+import offsetmanager.domain.InMemoryOffsetStorage;
+import offsetmanager.domain.OffsetStorage;
 import offsetmanager.domain.file.FileKey;
 import offsetmanager.domain.file.factory.FileKeyParser;
 import offsetmanager.domain.offset.DefaultOffsetRecord;
@@ -19,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class OffsetManagerRepositoryTest extends KafkaTestSupport {
 
+  private final OffsetStorage offsetStorage = new InMemoryOffsetStorage();
   private final String offsetTopic = "remote-offset-topic";
   private Producer<String, Long> producer;
 
@@ -38,7 +41,7 @@ class OffsetManagerRepositoryTest extends KafkaTestSupport {
   @Test
   void emptyOffsetTopicTest() {
     // given
-    OffsetManagerRepository offsetManager = new OffsetManagerRepository(testConsumerProperties, this.offsetTopic);
+    OffsetManagerRepository offsetManager = new OffsetManagerRepository(offsetStorage, testConsumerProperties, this.offsetTopic);
     // when
     Optional<OffsetRecord> foundOffset = offsetManager.findLatestOffsetRecord(FileKeyParser.parse("file:///test/path.txt"));
     // then
@@ -52,7 +55,7 @@ class OffsetManagerRepositoryTest extends KafkaTestSupport {
   @Test
   void findAllOffsetRecordsTest() throws InterruptedException {
     // given
-    OffsetManagerRepository offsetManager = new OffsetManagerRepository(testConsumerProperties, this.offsetTopic);
+    OffsetManagerRepository offsetManager = new OffsetManagerRepository(offsetStorage, testConsumerProperties, this.offsetTopic);
     FileKey keyA = FileKeyParser.parse("file:///many-a.txt");
     FileKey keyB = FileKeyParser.parse("file:///many-b.txt");
     FileKey keyC = FileKeyParser.parse("file:///many-c.txt");
@@ -88,7 +91,7 @@ class OffsetManagerRepositoryTest extends KafkaTestSupport {
   @Test
   void upsertContinuously() throws InterruptedException {
     // given
-    OffsetManagerRepository offsetManager = new OffsetManagerRepository(testConsumerProperties, this.offsetTopic);
+    OffsetManagerRepository offsetManager = new OffsetManagerRepository(offsetStorage, testConsumerProperties, this.offsetTopic);
     FileKey keyA = FileKeyParser.parse("file:///key-a.txt");
     FileKey keyB = FileKeyParser.parse("file:///key-b.txt");
     FileKey keyC = FileKeyParser.parse("file:///key-c.txt");
