@@ -1,6 +1,7 @@
 package offsetmanager.controller;
 
 import offsetmanager.domain.file.factory.FileKeyParser;
+import offsetmanager.exception.OffsetManagerNotReadyException;
 import offsetmanager.exception.OffsetNotFoundException;
 import offsetmanager.api.v1.dto.LastOffsetRecordBatchResponse;
 import offsetmanager.api.v1.dto.LastOffsetRecordResponse;
@@ -208,6 +209,39 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
       """
         {
           "lastOffsetRecords": []
+        }
+        """,
+      responsePayload,
+      JSONCompareMode.STRICT
+    );
+  }
+
+
+  @DisplayName("Return status 503 when OffsetManager is not available")
+  @Test
+  void offsetManagerUnAvailableTest() throws JSONException {
+    // given
+    when(offsetManagerService.readLastOffset("s3://my-bucket/file1.txt"))
+      .thenThrow(new OffsetManagerNotReadyException());
+
+    // when
+    String responsePayload = client.get()
+      .uri(uriBuilder ->
+        uriBuilder.path("/api/offset-records")
+          .queryParam("key", "s3://my-bucket/file1.txt")
+          .build())
+      .exchange()
+      .expectBody(String.class)
+      .returnResult()
+      .getResponseBody();
+
+    // then
+    JSONAssert.assertEquals(
+      """
+        {
+          "statusCode": 503,
+          "type": "OFFSET_MANAGER_NOT_READY",
+          "message": "Offset storage is still initializing. Please retry later."
         }
         """,
       responsePayload,
