@@ -20,6 +20,16 @@ spec:
                   fieldPath: metadata.annotations['batch.kubernetes.io/job-completion-index']
             - name: SPRING_CONFIG_LOCATION
               value: "file:/config/application.yaml" # Overwrite only application.yaml path
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: access_key_id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: secret_access_key
           imagePullPolicy: Always
           resources:
             requests:
