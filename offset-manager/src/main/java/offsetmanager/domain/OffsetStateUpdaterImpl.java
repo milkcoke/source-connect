@@ -46,6 +46,7 @@ public class OffsetStateUpdaterImpl implements OffsetStateUpdater {
    */
   private final AtomicBoolean isReady = new AtomicBoolean(false);
 
+  private Set<PartitionInfo> assignedPartitionInfos = Collections.emptySet();
 
   @PostConstruct
   @Override
@@ -67,6 +68,7 @@ public class OffsetStateUpdaterImpl implements OffsetStateUpdater {
         log.info("Starting OffsetManager consumer");
 
         List<TopicPartition> partitions = discoverPartitions(consumer, offsetTopicName);
+        this.assignedPartitionInfos = getAssignedPartitionInfos(consumer, offsetTopicName);
         this.activeConsumer.set(consumer);
 
         initializeSnapshot(consumer, partitions);
@@ -79,6 +81,9 @@ public class OffsetStateUpdaterImpl implements OffsetStateUpdater {
         // blocks until exception or shutdown
         streamUpdates(consumer);
 
+      } catch (IllegalStateException e) {
+        log.error("IllegalStateException: {}", e.getMessage());
+        sleep(3000); // backoff before retry
       } catch (WakeupException e) {
         if (!isRunning.get()) {
           log.info("OffsetManager shutting down");
@@ -148,6 +153,28 @@ public class OffsetStateUpdaterImpl implements OffsetStateUpdater {
       .toList();
   }
 
+  private Set<PartitionInfo> getAssignedPartitionInfos(Consumer<?, ?> consumer, String topic) {
+    List<PartitionInfo> infos = consumer.partitionsFor(topic);
+
+    if (infos == null || infos.isEmpty()) {
+      throw new IllegalStateException("Topic not available: " + topic);
+    }
+
+    return new HashSet<>(infos);
+  }
+
+  private boolean needsUpdateConsumer(Consumer<?, ?> consumer) {
+    List<PartitionInfo> currentPartitionInfos = consumer.partitionsFor(offsetTopicName);
+
+    if (currentPartitionInfos == null || currentPartitionInfos.isEmpty()) {
+      return true;
+    }
+
+    Set<PartitionInfo> currentPartitionInfoSet = new HashSet<>(currentPartitionInfos);
+
+    return !this.assignedPartitionInfos.equals(currentPartitionInfoSet);
+  }
+
   private void streamUpdates(Consumer<String, Long> consumer) {
     while (isRunning.get()) {
       ConsumerRecords<String, Long> records =
@@ -161,6 +188,10 @@ public class OffsetStateUpdaterImpl implements OffsetStateUpdater {
           this.offsetStorage.upsert(key, new DefaultOffsetRecord(key, record.value()));
         }
       }
+
+      if (needsUpdateConsumer(consumer)) {
+        throw new IllegalStateException("Offset Topic metadata is invalid, Consumer should be recreated.");
+      };
     }
   }
 
