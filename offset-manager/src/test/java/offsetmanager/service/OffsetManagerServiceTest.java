@@ -3,6 +3,8 @@ package offsetmanager.service;
 import offsetmanager.api.v1.dto.LastOffsetRecordBatchResponse;
 import offsetmanager.api.v1.dto.LastOffsetRecordResponse;
 import offsetmanager.domain.InMemoryOffsetStorage;
+import offsetmanager.domain.OffsetStateUpdater;
+import offsetmanager.domain.OffsetStateUpdaterImpl;
 import offsetmanager.domain.OffsetStorage;
 import offsetmanager.domain.file.FileKey;
 import offsetmanager.domain.file.factory.FileKeyParser;
@@ -47,7 +49,9 @@ class OffsetManagerServiceTest {
       String offsetTopic = "temp-offset-manager-test";
       createTestTopic(offsetTopic, 1);
       // FIXME: Dependency on the interface instead of concrete class
-      OffsetManagerRepository offsetManager = new OffsetManagerRepository(offsetStorage, testConsumerProperties, offsetTopic);
+      OffsetStateUpdater offsetStateUpdater = new OffsetStateUpdaterImpl(offsetTopic, testConsumerProperties, offsetStorage);
+      offsetStateUpdater.start();
+      OffsetManagerRepository offsetManager = new OffsetManagerRepository(offsetStorage, offsetStateUpdater);
       produceFileKeyOffset(offsetTopic, FileKeyParser.parse("file:///test-file.txt"), 100L);
       Thread.sleep(500L);
       OffsetManagerService offsetManagerService = new OffsetManagerService(offsetManager);
@@ -59,7 +63,7 @@ class OffsetManagerServiceTest {
       assertThat(response.offset()).isEqualTo(100L);
 
       // cleans
-      offsetManager.shutdown();
+      offsetStateUpdater.stop();
     }
 
     @DisplayName("Should return last offset list of FileKeys")
@@ -67,7 +71,9 @@ class OffsetManagerServiceTest {
     void lastFileKeysOffsetTest() throws InterruptedException {
       String offsetTopic = "temp-offset-manager-test";
       createTestTopic(offsetTopic, 1);
-      OffsetManagerRepository offsetManager = new OffsetManagerRepository(offsetStorage, testConsumerProperties, offsetTopic);
+      OffsetStateUpdater offsetStateUpdater = new OffsetStateUpdaterImpl(offsetTopic, testConsumerProperties, offsetStorage);
+      offsetStateUpdater.start();
+      OffsetManagerRepository offsetManager = new OffsetManagerRepository(offsetStorage, offsetStateUpdater);
       produceFileKeyOffset(offsetTopic, FileKeyParser.parse("s3://test-bucket/file-key-1.txt"), 100L);
       produceFileKeyOffset(offsetTopic, FileKeyParser.parse("s3://test-bucket/file-key-2.txt"), 100L);
       produceFileKeyOffset(offsetTopic, FileKeyParser.parse("s3://test-bucket/file-key-3.txt"), 100L);
@@ -88,7 +94,7 @@ class OffsetManagerServiceTest {
           new LastOffsetRecordResponse("s3://test-bucket/file-key-3.txt", 100L)
         );
       // cleans
-      offsetManager.shutdown();
+      offsetStateUpdater.stop();
     }
 
     @DisplayName("Should throw OffsetNotFoundException when the key does not exist")
@@ -97,14 +103,16 @@ class OffsetManagerServiceTest {
       // given
       String offsetTopic = "temp-offset-manager-test";
       createTestTopic(offsetTopic, 1);
-      OffsetManagerRepository offsetManager = new OffsetManagerRepository(offsetStorage, testConsumerProperties, offsetTopic);
+      OffsetStateUpdater offsetStateUpdater = new OffsetStateUpdaterImpl(offsetTopic, testConsumerProperties, offsetStorage);
+      offsetStateUpdater.start();
+      OffsetManagerRepository offsetManager = new OffsetManagerRepository(offsetStorage, offsetStateUpdater);
       OffsetManagerService offsetManagerService = new OffsetManagerService(offsetManager);
       // when then
       assertThatThrownBy(() -> offsetManagerService.readLastOffset("file:///notExistKey.txt"))
         .isInstanceOf(OffsetNotFoundException.class)
         .hasMessage("Offset not found for key: file:///notExistKey.txt");
       // cleans
-      offsetManager.shutdown();
+      offsetStateUpdater.stop();
     }
 
     @DisplayName("Should return empty batch when none of the keys exist")
@@ -113,7 +121,9 @@ class OffsetManagerServiceTest {
       // given
       String offsetTopic = "temp-offset-manager-test";
       createTestTopic(offsetTopic, 1);
-      OffsetManagerRepository offsetManager = new OffsetManagerRepository(offsetStorage, testConsumerProperties, offsetTopic);
+      OffsetStateUpdater offsetStateUpdater = new OffsetStateUpdaterImpl(offsetTopic, testConsumerProperties, offsetStorage);
+      offsetStateUpdater.start();
+      OffsetManagerRepository offsetManager = new OffsetManagerRepository(offsetStorage, offsetStateUpdater);
       OffsetManagerService offsetManagerService = new OffsetManagerService(offsetManager);
 
       // when
@@ -124,7 +134,7 @@ class OffsetManagerServiceTest {
       // then
       assertThat(response.lastOffsetRecords()).isEmpty();
       // cleans
-      offsetManager.shutdown();
+      offsetStateUpdater.stop();
     }
 
     void produceFileKeyOffset(String offsetTopic, FileKey fileKey, long offset) {
