@@ -1,5 +1,6 @@
 package offsetmanager.domain;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +17,6 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionTimeoutException;
-import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.util.*;
@@ -30,7 +30,6 @@ import static org.apache.kafka.common.utils.Utils.sleep;
 
 @RequiredArgsConstructor
 @Slf4j
-@Component
 public class OffsetStateUpdaterImpl implements OffsetStateUpdater {
   private final String offsetTopicName;
   private final Properties consumerProperties;
@@ -42,9 +41,13 @@ public class OffsetStateUpdaterImpl implements OffsetStateUpdater {
    * This is used for shutdown and restart logic
    */
   private final AtomicBoolean isRunning = new AtomicBoolean(true);
+  /**
+   * indicates whether the OffsetStateUpdater is ready to serve requests
+   */
   private final AtomicBoolean isReady = new AtomicBoolean(false);
 
 
+  @PostConstruct
   @Override
   public void start() {
     this.executorService.submit(this::runLoop);
@@ -86,8 +89,6 @@ public class OffsetStateUpdaterImpl implements OffsetStateUpdater {
       } catch (Exception e) {
         // RECOVERABLE failure
         log.warn("Consumer failed", e);
-
-        // readiness already reset at loop top
         sleep(3000); // backoff before retry
 
       }
@@ -167,6 +168,7 @@ public class OffsetStateUpdaterImpl implements OffsetStateUpdater {
   @PreDestroy
   public void stop() {
     isRunning.set(false);
+    isReady.set(false);
     log.info("Shutting down OffsetManager...");
     Consumer<String, Long> consumer = this.activeConsumer.getAndSet(null);
     if (consumer != null) {
