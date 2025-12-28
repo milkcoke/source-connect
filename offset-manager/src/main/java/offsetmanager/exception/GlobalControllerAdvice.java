@@ -66,7 +66,7 @@ public class GlobalControllerAdvice {
   public ErrorResponse handleOffsetManagerNotReadyState(OffsetManagerNotReadyException ex) {
    return ErrorResponse.of(
      ErrorType.OFFSET_MANAGER_NOT_READY,
-     "Offset storage is still initializing. Please retry later. "
+     "Offset storage is still initializing. Please retry later."
    );
   }
 
