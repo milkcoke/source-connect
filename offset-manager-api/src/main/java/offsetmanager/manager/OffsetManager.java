@@ -9,6 +9,4 @@ import java.util.Optional;
 public interface OffsetManager {
   Optional<OffsetRecord> findLatestOffsetRecord(FileKey key);
   List<OffsetRecord> findLatestOffsetRecords(List<FileKey> keys);
-  void upsert(FileKey fileKey, OffsetRecord offsetRecord);
-  void removeKey(FileKey key);
 }
