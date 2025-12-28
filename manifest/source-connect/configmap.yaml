@@ -44,14 +44,14 @@ data:
         sinkTopic: sink-topic
 
     connect:
-      workerCount: 2
-      taskCount: 2
+      workerCount: 1
+      taskCount: 1
 
     offsetManager:
-    #  baseUrl: http://localhost:8080
+      baseUrl: http://offset-manager:8080
   
     server:
-      port: 8081
+      port: 8080
   
     spring:
       kafka:

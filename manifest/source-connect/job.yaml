@@ -5,8 +5,8 @@ metadata:
   namespace: app
 spec:
   completionMode: Indexed
-  completions: 2
-  parallelism: 2
+  completions: 1
+  parallelism: 1
   template:
     spec:
       restartPolicy: Never
