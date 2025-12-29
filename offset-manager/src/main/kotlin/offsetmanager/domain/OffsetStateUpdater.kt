@@ -1,9 +1,9 @@
-package offsetmanager.domain;
+package offsetmanager.domain
 
 /**
- * Synchronizes {@link offsetmanager.domain.offset.OffsetRecord} state from external systems (e.g. Kafka)
+ * Synchronizes [offsetmanager.domain.offset.OffsetRecord] state from external systems (e.g. Kafka)
  */
-public interface OffsetStateUpdater extends OffsetStateReadiness {
-  void start();
-  void stop();
+interface OffsetStateUpdater : OffsetStateReadiness {
+  fun start()
+  fun stop()
 }

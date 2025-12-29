@@ -1,35 +1,30 @@
-package offsetmanager.domain;
+package offsetmanager.domain
 
-import offsetmanager.domain.file.FileKey;
-import offsetmanager.domain.offset.OffsetRecord;
+import offsetmanager.domain.file.FileKey
+import offsetmanager.domain.offset.OffsetRecord
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
+class InMemoryOffsetStorage(
+  private val offsetMap: MutableMap<FileKey, OffsetRecord> = ConcurrentHashMap()
+) : OffsetStorage {
 
-public class InMemoryOffsetStorage implements OffsetStorage {
-  private final Map<FileKey, OffsetRecord> offsetMap = new ConcurrentHashMap<>();
-
-  @Override
-  public Optional<OffsetRecord> find(FileKey key) {
+  override fun find(key: FileKey): Optional<OffsetRecord> {
     if (this.offsetMap.containsKey(key)) {
-      return Optional.of(this.offsetMap.get(key));
+      return Optional.of(this.offsetMap[key] as OffsetRecord)
     }
-    return Optional.empty();
+    return Optional.empty()
   }
 
-  @Override
-  public void upsert(FileKey key, OffsetRecord offsetRecord) {
-    this.offsetMap.put(key, offsetRecord);
+  override fun upsert(key: FileKey, record: OffsetRecord) {
+    this.offsetMap[key] = record
   }
 
-  @Override
-  public void remove(FileKey fileKey) {
-    this.offsetMap.remove(fileKey);
+  override fun remove(key: FileKey) {
+    this.offsetMap.remove(key)
   }
 
-  @Override
-  public void clear() {
-    this.offsetMap.clear();
+  override fun clear() {
+    this.offsetMap.clear()
   }
 }

@@ -6,5 +6,5 @@ import java.util.*
 
 interface OffsetManager {
   fun findLatestOffsetRecord(key: FileKey): Optional<OffsetRecord>
-  fun findLatestOffsetRecords(keys: List<FileKey?>?): List<OffsetRecord>
+  fun findLatestOffsetRecords(keys: List<FileKey>): List<OffsetRecord>
 }

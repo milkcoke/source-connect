@@ -58,7 +58,6 @@ services:
       KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
       # This option delegates the option `inter.broker.listener.name`
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN # Default: GSSA
-      KAFKA_OPTS: '-Djava.security.auth.login.config=/opt/kafka/config/kafka_server_jaas.conf'
       # Monitoring
       #  - JMX_PORT=9999
     networks:
@@ -99,7 +98,6 @@ services:
       #Security
       KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN # Default: GSSAPI
-      KAFKA_OPTS: '-Djava.security.auth.login.config=/opt/kafka/config/kafka_server_jaas.conf'
       # Monitoring
     #      - JMX_PORT=9999
     networks:
@@ -140,7 +138,6 @@ services:
       # Security
       KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN # default: GSSAPI
-      KAFKA_OPTS: '-Djava.security.auth.login.config=/opt/kafka/config/kafka_server_jaas.conf'
       # Monitoring
     #      - JMX_PORT=9999
       # SSL Settings

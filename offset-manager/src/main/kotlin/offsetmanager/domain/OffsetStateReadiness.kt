@@ -1,9 +1,9 @@
-package offsetmanager.domain;
+package offsetmanager.domain
 
 /**
- * Indicates readiness of the OffsetStateUpdater <br>
- * External clients should call {@link #awaitReady()} before querying offset state
+ * Indicates readiness of the OffsetStateUpdater <br></br>
+ * External clients should call [.awaitReady] before querying offset state
  */
-public interface OffsetStateReadiness {
-  void awaitReady();
+interface OffsetStateReadiness {
+  fun awaitReady()
 }

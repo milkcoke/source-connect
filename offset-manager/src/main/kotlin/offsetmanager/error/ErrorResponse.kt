@@ -1,36 +1,37 @@
-package offsetmanager.error;
+package offsetmanager.error
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude
 
-import java.util.Collections;
-import java.util.Map;
-
-public record ErrorResponse(
-  int statusCode,
-  String type,
-  String message,
+data class ErrorResponse(
+  val statusCode: Int,
+  val type: String,
+  val message: String,
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
-  Map<String, String> properties
+  val properties: Map<String, String?>?
 ) {
-  public static ErrorResponse of(ErrorType errorType, String message) {
-    return new ErrorResponse(
-      errorType.getHttpStatusCode(),
-      errorType.name(),
-      message,
-      Collections.emptyMap()
-    );
-  }
+  companion object {
+    @JvmStatic
+    fun of(errorType: ErrorType, message: String): ErrorResponse {
+      return ErrorResponse(
+        errorType.httpStatusCode,
+        errorType.name,
+        message,
+        mapOf()
+      )
+    }
 
-  public static ErrorResponse of(
-    ErrorType errorType,
-    String message,
-    Map<String, String> properties
-  ) {
-    return new ErrorResponse(
-      errorType.getHttpStatusCode(),
-      errorType.name(),
-      message,
-      properties
-    );
+    @JvmStatic
+    fun of(
+      errorType: ErrorType,
+      message: String,
+      properties: MutableMap<String, String?>?
+    ): ErrorResponse {
+      return ErrorResponse(
+        errorType.httpStatusCode,
+        errorType.name,
+        message,
+        properties
+      )
+    }
   }
 }

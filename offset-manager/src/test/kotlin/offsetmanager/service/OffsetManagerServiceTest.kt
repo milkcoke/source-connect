@@ -1,184 +1,192 @@
-package offsetmanager.service;
+package offsetmanager.service
 
-import offsetmanager.api.v1.dto.LastOffsetRecordBatchResponse;
-import offsetmanager.api.v1.dto.LastOffsetRecordResponse;
-import offsetmanager.domain.InMemoryOffsetStorage;
-import offsetmanager.domain.OffsetStateUpdater;
-import offsetmanager.domain.OffsetStateUpdaterImpl;
-import offsetmanager.domain.OffsetStorage;
-import offsetmanager.domain.file.FileKey;
-import offsetmanager.domain.file.factory.FileKeyParser;
-import offsetmanager.domain.offset.DefaultOffsetRecord;
-import offsetmanager.exception.OffsetNotFoundException;
-import offsetmanager.manager.OffsetManager;
-import offsetmanager.repository.OffsetManagerRepository;
-import offsetmanager.support.KafkaTestSupport;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.junit.jupiter.api.*;
-import org.mockito.Mockito;
+import offsetmanager.api.v1.dto.LastOffsetRecordResponse
+import offsetmanager.domain.InMemoryOffsetStorage
+import offsetmanager.domain.OffsetStateUpdater
+import offsetmanager.domain.OffsetStateUpdaterImpl
+import offsetmanager.domain.OffsetStorage
+import offsetmanager.domain.file.FileKey
+import offsetmanager.domain.file.factory.FileKeyParser.Companion.parse
+import offsetmanager.domain.offset.DefaultOffsetRecord
+import offsetmanager.domain.offset.OffsetRecord
+import offsetmanager.exception.OffsetNotFoundException
+import offsetmanager.manager.OffsetManager
+import offsetmanager.repository.OffsetManagerRepository
+import offsetmanager.support.KafkaTestSupport
+import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.ProducerRecord
+import org.assertj.core.api.Assertions
+import org.assertj.core.api.ThrowableAssert
+import org.junit.jupiter.api.*
+import org.mockito.Mockito
+import java.util.*
 
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
-
-class OffsetManagerServiceTest {
-
-  private final OffsetStorage offsetStorage = new InMemoryOffsetStorage();
+internal class OffsetManagerServiceTest {
+  private val offsetStorage: OffsetStorage = InMemoryOffsetStorage()
 
   @Nested
-  class IntegrationTest extends KafkaTestSupport {
-    private KafkaProducer<String, Long> producer;
+  internal inner class IntegrationTest : KafkaTestSupport() {
+    private lateinit var producer: KafkaProducer<String?, Long?>
+
     @BeforeAll
-    void setup() {
-      producer = createProducer();
-      this.producer.initTransactions();
+    fun setup() {
+      producer = createProducer()
+      this.producer.initTransactions()
     }
+
     @AfterAll
-    void teardown() {
-      producer.close();
+    fun teardown() {
+      producer.close()
     }
 
     @DisplayName("Should return last offset of FileKey")
     @Test
-    void lastFileKeyOffsetTest() throws InterruptedException {
+    @Throws(InterruptedException::class)
+    fun lastFileKeyOffsetTest() {
       // given
-      String offsetTopic = "temp-offset-manager-test";
-      createTestTopic(offsetTopic, 1);
+      val offsetTopic = "temp-offset-manager-test"
+      createTestTopic(offsetTopic, 1)
       // FIXME: Dependency on the interface instead of concrete class
-      OffsetStateUpdater offsetStateUpdater = new OffsetStateUpdaterImpl(offsetTopic, testConsumerProperties, offsetStorage);
-      offsetStateUpdater.start();
-      OffsetManagerRepository offsetManager = new OffsetManagerRepository(offsetStorage, offsetStateUpdater);
-      produceFileKeyOffset(offsetTopic, FileKeyParser.parse("file:///test-file.txt"), 100L);
-      Thread.sleep(500L);
-      OffsetManagerService offsetManagerService = new OffsetManagerService(offsetManager);
+      val offsetStateUpdater: OffsetStateUpdater =
+        OffsetStateUpdaterImpl(offsetTopic, testConsumerProperties, offsetStorage)
+      offsetStateUpdater.start()
+      val offsetManager = OffsetManagerRepository(offsetStorage, offsetStateUpdater)
+      produceFileKeyOffset(offsetTopic, parse("file:///test-file.txt"), 100L)
+      Thread.sleep(500L)
+      val offsetManagerService = OffsetManagerService(offsetManager)
       // when
-      LastOffsetRecordResponse response = offsetManagerService.readLastOffset("file:///test-file.txt");
+      val response = offsetManagerService.readLastOffset("file:///test-file.txt")
 
       // then
-      assertThat(response.key).isEqualTo("file:///test-file.txt");
-      assertThat(response.offset).isEqualTo(100L);
+      Assertions.assertThat(response.key).isEqualTo("file:///test-file.txt")
+      Assertions.assertThat(response.offset).isEqualTo(100L)
 
       // cleans
-      offsetStateUpdater.stop();
+      offsetStateUpdater.stop()
     }
 
     @DisplayName("Should return last offset list of FileKeys")
     @Test
-    void lastFileKeysOffsetTest() throws InterruptedException {
-      String offsetTopic = "temp-offset-manager-test";
-      createTestTopic(offsetTopic, 1);
-      OffsetStateUpdater offsetStateUpdater = new OffsetStateUpdaterImpl(offsetTopic, testConsumerProperties, offsetStorage);
-      offsetStateUpdater.start();
-      OffsetManagerRepository offsetManager = new OffsetManagerRepository(offsetStorage, offsetStateUpdater);
-      produceFileKeyOffset(offsetTopic, FileKeyParser.parse("s3://test-bucket/file-key-1.txt"), 100L);
-      produceFileKeyOffset(offsetTopic, FileKeyParser.parse("s3://test-bucket/file-key-2.txt"), 100L);
-      produceFileKeyOffset(offsetTopic, FileKeyParser.parse("s3://test-bucket/file-key-3.txt"), 100L);
+    @Throws(InterruptedException::class)
+    fun lastFileKeysOffsetTest() {
+      val offsetTopic = "temp-offset-manager-test"
+      createTestTopic(offsetTopic, 1)
+      val offsetStateUpdater: OffsetStateUpdater =
+        OffsetStateUpdaterImpl(offsetTopic, testConsumerProperties, offsetStorage)
+      offsetStateUpdater.start()
+      val offsetManager = OffsetManagerRepository(offsetStorage, offsetStateUpdater)
+      produceFileKeyOffset(offsetTopic, parse("s3://test-bucket/file-key-1.txt"), 100L)
+      produceFileKeyOffset(offsetTopic, parse("s3://test-bucket/file-key-2.txt"), 100L)
+      produceFileKeyOffset(offsetTopic, parse("s3://test-bucket/file-key-3.txt"), 100L)
 
-      Thread.sleep(500L);
-      OffsetManagerService offsetManagerService = new OffsetManagerService(offsetManager);
+      Thread.sleep(500L)
+      val offsetManagerService = OffsetManagerService(offsetManager)
       // when
-      LastOffsetRecordBatchResponse response = offsetManagerService.readLastOffsets(List.of(
-        "s3://test-bucket/file-key-1.txt",
-        "s3://test-bucket/file-key-2.txt",
-        "s3://test-bucket/file-key-3.txt"
-      ));
+      val response = offsetManagerService.readLastOffsets(
+        listOf(
+          "s3://test-bucket/file-key-1.txt",
+          "s3://test-bucket/file-key-2.txt",
+          "s3://test-bucket/file-key-3.txt"
+        )
+      )
       // then
-      assertThat(response.lastOffsetRecords).hasSize(3)
+      Assertions.assertThat<LastOffsetRecordResponse>(response.lastOffsetRecords).hasSize(3)
         .containsExactlyInAnyOrder(
-          new LastOffsetRecordResponse("s3://test-bucket/file-key-1.txt", 100L),
-          new LastOffsetRecordResponse("s3://test-bucket/file-key-2.txt", 100L),
-          new LastOffsetRecordResponse("s3://test-bucket/file-key-3.txt", 100L)
-        );
+          LastOffsetRecordResponse("s3://test-bucket/file-key-1.txt", 100L),
+          LastOffsetRecordResponse("s3://test-bucket/file-key-2.txt", 100L),
+          LastOffsetRecordResponse("s3://test-bucket/file-key-3.txt", 100L)
+        )
       // cleans
-      offsetStateUpdater.stop();
+      offsetStateUpdater.stop()
     }
 
     @DisplayName("Should throw OffsetNotFoundException when the key does not exist")
     @Test
-    void returnEmptyWhenNotExistKey() {
+    fun returnEmptyWhenNotExistKey() {
       // given
-      String offsetTopic = "temp-offset-manager-test";
-      createTestTopic(offsetTopic, 1);
-      OffsetStateUpdater offsetStateUpdater = new OffsetStateUpdaterImpl(offsetTopic, testConsumerProperties, offsetStorage);
-      offsetStateUpdater.start();
-      OffsetManagerRepository offsetManager = new OffsetManagerRepository(offsetStorage, offsetStateUpdater);
-      OffsetManagerService offsetManagerService = new OffsetManagerService(offsetManager);
+      val offsetTopic = "temp-offset-manager-test"
+      createTestTopic(offsetTopic, 1)
+      val offsetStateUpdater: OffsetStateUpdater =
+        OffsetStateUpdaterImpl(offsetTopic, testConsumerProperties, offsetStorage)
+      offsetStateUpdater.start()
+      val offsetManager = OffsetManagerRepository(offsetStorage, offsetStateUpdater)
+      val offsetManagerService = OffsetManagerService(offsetManager)
       // when then
-      assertThatThrownBy(() -> offsetManagerService.readLastOffset("file:///notExistKey.txt"))
-        .isInstanceOf(OffsetNotFoundException.class)
-        .hasMessage("Offset not found for key: file:///notExistKey.txt");
+      Assertions.assertThatThrownBy( { offsetManagerService.readLastOffset("file:///notExistKey.txt") })
+        .isInstanceOf(OffsetNotFoundException::class.java)
+        .hasMessage("Offset not found for key: file:///notExistKey.txt")
       // cleans
-      offsetStateUpdater.stop();
+      offsetStateUpdater.stop()
     }
 
     @DisplayName("Should return empty batch when none of the keys exist")
     @Test
-    void returnEmptyBatchWhenNotExistsKey() {
+    fun returnEmptyBatchWhenNotExistsKey() {
       // given
-      String offsetTopic = "temp-offset-manager-test";
-      createTestTopic(offsetTopic, 1);
-      OffsetStateUpdater offsetStateUpdater = new OffsetStateUpdaterImpl(offsetTopic, testConsumerProperties, offsetStorage);
-      offsetStateUpdater.start();
-      OffsetManagerRepository offsetManager = new OffsetManagerRepository(offsetStorage, offsetStateUpdater);
-      OffsetManagerService offsetManagerService = new OffsetManagerService(offsetManager);
+      val offsetTopic = "temp-offset-manager-test"
+      createTestTopic(offsetTopic, 1)
+      val offsetStateUpdater: OffsetStateUpdater =
+        OffsetStateUpdaterImpl(offsetTopic, testConsumerProperties, offsetStorage)
+      offsetStateUpdater.start()
+      val offsetManager = OffsetManagerRepository(offsetStorage, offsetStateUpdater)
+      val offsetManagerService = OffsetManagerService(offsetManager)
 
       // when
-      LastOffsetRecordBatchResponse response = offsetManagerService.readLastOffsets(List.of(
-        "s3://test-bucket/non-exist-key-1.txt",
-        "s3://test-bucket/non-exist-key-2.txt"
-      ));
+      val response = offsetManagerService.readLastOffsets(
+        listOf(
+          "s3://test-bucket/non-exist-key-1.txt",
+          "s3://test-bucket/non-exist-key-2.txt"
+        )
+      )
       // then
-      assertThat(response.lastOffsetRecords).isEmpty();
+      Assertions.assertThat<LastOffsetRecordResponse>(response.lastOffsetRecords).isEmpty()
       // cleans
-      offsetStateUpdater.stop();
+      offsetStateUpdater.stop()
     }
 
-    void produceFileKeyOffset(String offsetTopic, FileKey fileKey, long offset) {
-      producer.beginTransaction();
-      String fileKeyStr = fileKey.get();
-      producer.send(new ProducerRecord<>(offsetTopic, fileKeyStr, offset));
-      producer.commitTransaction();
+    fun produceFileKeyOffset(offsetTopic: String, fileKey: FileKey, offset: Long) {
+      producer.beginTransaction()
+      val fileKeyStr = fileKey.get()
+      producer.send(ProducerRecord(offsetTopic, fileKeyStr, offset))
+      producer.commitTransaction()
     }
   }
 
   @Nested
-  class UnitTest {
+  internal inner class UnitTest {
     @DisplayName("Should return offset when the key exists")
     @Test
-    void readLastOffset() {
+    fun readLastOffset() {
       // given
-      OffsetManager mockManager = Mockito.mock(OffsetManager.class);
-      FileKey fileKey = FileKeyParser.parse("file:///existKey.txt");
+      val mockManager = Mockito.mock<OffsetManager>(OffsetManager::class.java)
+      val fileKey = parse("file:///existKey.txt")
 
-      when(mockManager.findLatestOffsetRecord(fileKey))
-        .thenReturn(Optional.of(new DefaultOffsetRecord(fileKey, 10L)));
+      Mockito.`when`<Optional<OffsetRecord>>(mockManager.findLatestOffsetRecord(fileKey))
+        .thenReturn(Optional.of(DefaultOffsetRecord(fileKey, 10L)))
 
-      OffsetManagerService remoteOffsetService = new OffsetManagerService(mockManager);
+      val remoteOffsetService = OffsetManagerService(mockManager)
       // when
-      LastOffsetRecordResponse lastOffsetRecordResponse = remoteOffsetService.readLastOffset("file:///existKey.txt");
+      val lastOffsetRecordResponse = remoteOffsetService.readLastOffset("file:///existKey.txt")
       // then
-      assertThat(lastOffsetRecordResponse.key).isEqualTo("file:///existKey.txt");
-      assertThat(lastOffsetRecordResponse.offset).isEqualTo(10L);
+      Assertions.assertThat(lastOffsetRecordResponse.key).isEqualTo("file:///existKey.txt")
+      Assertions.assertThat(lastOffsetRecordResponse.offset).isEqualTo(10L)
     }
 
     @DisplayName("Should throw OffsetNotFoundException when the key does not exist")
     @Test
-    void returnEmptyWhenNotExistKey() {
+    fun returnEmptyWhenNotExistKey() {
       // given
-      OffsetManager mockManager = Mockito.mock(OffsetManager.class);
-      FileKey nonExistFileKey = FileKeyParser.parse("file:///nonExistKey.txt");
-      when(mockManager.findLatestOffsetRecord(nonExistFileKey)).thenReturn(Optional.empty());
+      val mockManager = Mockito.mock<OffsetManager>(OffsetManager::class.java)
+      val nonExistFileKey = parse("file:///nonExistKey.txt")
+      Mockito.`when`<Optional<OffsetRecord>>(mockManager.findLatestOffsetRecord(nonExistFileKey)).thenReturn(
+        Optional.empty()
+      )
 
-      OffsetManagerService remoteOffsetService = new OffsetManagerService(mockManager);
+      val remoteOffsetService = OffsetManagerService(mockManager)
       // when then
-      assertThatThrownBy(()-> remoteOffsetService.readLastOffset("file:///notExistKey.txt"))
-        .isInstanceOf(OffsetNotFoundException.class)
-        .hasMessage("Offset not found for key: file:///notExistKey.txt");
-
+      Assertions.assertThatThrownBy { remoteOffsetService.readLastOffset("file:///notExistKey.txt") }
+        .isInstanceOf(OffsetNotFoundException::class.java)
+        .hasMessage("Offset not found for key: file:///notExistKey.txt")
     }
   }
 }

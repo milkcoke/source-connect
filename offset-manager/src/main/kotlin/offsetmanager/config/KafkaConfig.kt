@@ -1,29 +1,27 @@
-package offsetmanager.config;
+package offsetmanager.config
 
-import org.apache.kafka.clients.CommonClientConfigs;
-import org.apache.kafka.clients.admin.AdminClient;
-import org.springframework.boot.kafka.autoconfigure.KafkaProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-import java.util.Properties;
+import org.apache.kafka.clients.CommonClientConfigs
+import org.apache.kafka.clients.admin.AdminClient
+import org.springframework.boot.kafka.autoconfigure.KafkaProperties
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import java.util.*
 
 @Configuration
-public class KafkaConfig {
-
+class KafkaConfig {
   @Bean
-  public Properties consumerProperties(KafkaProperties kafkaProperties) {
-    Properties properties = new Properties();
-    properties.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, String.join(",", kafkaProperties.getBootstrapServers()));
-    properties.putAll(kafkaProperties.getConsumer().buildProperties());
-    return properties;
+  fun consumerProperties(kafkaProperties: KafkaProperties): Properties {
+    val properties = Properties()
+    properties[CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG] = kafkaProperties.bootstrapServers.joinToString(separator = ",")
+    properties.putAll(kafkaProperties.consumer.buildProperties())
+    return properties
   }
 
   @Bean
-  public AdminClient adminClient(KafkaProperties kafkaProperties) {
-    Properties properties = new Properties();
-    properties.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, String.join(",", kafkaProperties.getBootstrapServers()));
-    properties.putAll(kafkaProperties.getAdmin().buildProperties());
-    return AdminClient.create(properties);
+  fun adminClient(kafkaProperties: KafkaProperties): AdminClient {
+    val properties = Properties()
+    properties[CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG] = kafkaProperties.bootstrapServers.joinToString(separator = ",")
+    properties.putAll(kafkaProperties.admin.buildProperties())
+    return AdminClient.create(properties)
   }
 }

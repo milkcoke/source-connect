@@ -1,80 +1,78 @@
-package offsetmanager.controller;
+package offsetmanager.controller
 
-import offsetmanager.domain.file.factory.FileKeyParser;
-import offsetmanager.exception.OffsetManagerNotReadyException;
-import offsetmanager.exception.OffsetNotFoundException;
-import offsetmanager.api.v1.dto.LastOffsetRecordBatchResponse;
-import offsetmanager.api.v1.dto.LastOffsetRecordResponse;
-import offsetmanager.domain.offset.DefaultOffsetRecord;
-import org.json.JSONException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.skyscreamer.jsonassert.JSONCompareMode;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.client.RestTestClient;
-import org.springframework.web.client.ApiVersionInserter;
+import offsetmanager.api.v1.dto.LastOffsetRecordBatchResponse
+import offsetmanager.api.v1.dto.LastOffsetRecordResponse
+import offsetmanager.domain.file.factory.FileKeyParser.Companion.parse
+import offsetmanager.domain.offset.DefaultOffsetRecord
+import offsetmanager.exception.OffsetManagerNotReadyException
+import offsetmanager.exception.OffsetNotFoundException
+import org.json.JSONException
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import org.mockito.Mockito
+import org.skyscreamer.jsonassert.JSONAssert
+import org.skyscreamer.jsonassert.JSONCompareMode
+import org.springframework.http.MediaType
+import org.springframework.test.web.servlet.client.RestTestClient
+import org.springframework.test.web.servlet.client.expectBody
+import org.springframework.web.client.ApiVersionInserter
+import org.springframework.web.util.UriBuilder
 
-import java.util.Collections;
-import java.util.List;
-
-import static org.mockito.Mockito.when;
-
-class OffsetManagerControllerTest extends ControllerTestSupport {
-
-  private RestTestClient client;
+internal class OffsetManagerControllerTest : ControllerTestSupport() {
+  private lateinit var client: RestTestClient
 
   @BeforeEach
-  void setUp() {
+  fun setUp() {
     client = RestTestClient.bindTo(mockMvc)
       .apiVersionInserter(ApiVersionInserter.useHeader("X-API-Version"))
       .defaultApiVersion("v1")
-      .build();
+      .build()
   }
 
   @DisplayName("Should throw 404 Not Found when the offset record does not exist")
   @Test
-  void OffsetNotFoundTest() throws JSONException {
+  @Throws(JSONException::class)
+  fun offsetNotFoundTest() {
     // given
-    when(offsetManagerService.readLastOffset("notExistKey"))
-      .thenThrow(new OffsetNotFoundException("notExistKey"));
+    Mockito.`when`<LastOffsetRecordResponse>(offsetManagerService.readLastOffset("notExistKey"))
+      .thenThrow(OffsetNotFoundException("notExistKey"))
 
-    String responseBody = client.get()
+    val responseBody = client.get()
       .uri("/api/offset-records?key=notExistKey")
       .exchange()
       .expectStatus().isNotFound()
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(String.class)
+      .expectBody<String>()
       .returnResult()
-      .getResponseBody();
+      .getResponseBody()
 
     // then
     JSONAssert.assertEquals(
-"""
+      """
         {
           "statusCode": 404,
           "type": "OFFSET_NOT_FOUND",
           "message": "Offset not found for key: notExistKey"
         }
-        """,
+        """.trimIndent(),
       responseBody,
       JSONCompareMode.STRICT
-    );
-
+    )
   }
 
   @DisplayName("Should return 400 Bad Request when the key parameter is invalid")
   @Test
-  void invalidKeyRequestTest() throws  JSONException{
+  @Throws(JSONException::class)
+  fun invalidKeyRequestTest() {
     // given
-    String responsePayload = client.get()
+    val responsePayload = client.get()
       .uri("/api/offset-records?key=a")
       .exchange()
       .expectStatus().isBadRequest()
-      .expectBody(String.class)
+      .expectBody<String>()
       .returnResult()
-      .getResponseBody();
+      .getResponseBody()
 
     JSONAssert.assertEquals(
       """
@@ -86,32 +84,36 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
             "key": "Key must be at least 5 length"
           }
         }
-        """,
+        """.trimIndent(),
       responsePayload,
       JSONCompareMode.STRICT
-    );
+    )
   }
 
   @DisplayName("Should get last offset record successfully")
   @Test
-  void lastOffsetReturnTest() throws JSONException {
+  @Throws(JSONException::class)
+  fun lastOffsetReturnTest() {
     // given
-    when(offsetManagerService.readLastOffset("s3://my-bucket/test.ndjson"))
-      .thenReturn(LastOffsetRecordResponse.from(
-        new DefaultOffsetRecord(FileKeyParser.parse("s3://my-bucket/test.ndjson"), 5L))
-      );
+    Mockito.`when`<LastOffsetRecordResponse>(offsetManagerService.readLastOffset("s3://my-bucket/test.ndjson"))
+      .thenReturn(
+        LastOffsetRecordResponse.from(
+          DefaultOffsetRecord(parse("s3://my-bucket/test.ndjson"), 5L)
+        )
+      )
 
     // when
-    String responsePayload = client.get()
-      .uri(uriBuilder ->
+    val responsePayload = client.get()
+      .uri { uriBuilder: UriBuilder ->
         uriBuilder.path("/api/offset-records")
           .queryParam("key", "s3://my-bucket/test.ndjson")
-          .build())
+          .build()
+      }
       .exchange()
       .expectStatus().isOk()
-      .expectBody(String.class)
+      .expectBody<String>()
       .returnResult()
-      .getResponseBody();
+      .getResponseBody()
     // then
     JSONAssert.assertEquals(
       """
@@ -119,39 +121,52 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
           "key": "s3://my-bucket/test.ndjson",
           "offset": 5
         }
-        """,
+        """.trimIndent(),
       responsePayload,
       JSONCompareMode.STRICT
-    );
+    )
   }
 
   @DisplayName("Should get each last offset record successfully in batch")
   @Test
-  void BatchLastOffsetReturnTest() throws JSONException {
+  @Throws(JSONException::class)
+  fun batchLastOffsetReturnTest() {
     // given
-    when(offsetManagerService.readLastOffsets(List.of("s3://my-bucket/key1.txt", "s3://my-bucket/key2.txt", "s3://my-bucket/key3.txt")))
+    Mockito.`when`<LastOffsetRecordBatchResponse>(
+      offsetManagerService.readLastOffsets(
+        listOf(
+          "s3://my-bucket/key1.txt",
+          "s3://my-bucket/key2.txt",
+          "s3://my-bucket/key3.txt"
+        )
+      )
+    )
       .thenReturn(
-        LastOffsetRecordBatchResponse.from(List.of(
-          new DefaultOffsetRecord(FileKeyParser.parse("s3://my-bucket/key1.txt"), 5L),
-          new DefaultOffsetRecord(FileKeyParser.parse("s3://my-bucket/key2.txt"), 3L),
-          new DefaultOffsetRecord(FileKeyParser.parse("s3://my-bucket/key3.txt"), -1L)
-        ))
-      );
+        LastOffsetRecordBatchResponse.from(
+          listOf(
+            DefaultOffsetRecord(parse("s3://my-bucket/key1.txt"), 5L),
+            DefaultOffsetRecord(parse("s3://my-bucket/key2.txt"), 3L),
+            DefaultOffsetRecord(parse("s3://my-bucket/key3.txt"), -1L)
+          )
+        )
+      )
 
     // when
-    String responsePayload = client.post()
+    val responsePayload = client.post()
       .uri("/api/offset-records")
       .contentType(MediaType.APPLICATION_JSON)
-          .body("""
+      .body(
+        """
           {
             "keys": ["s3://my-bucket/key1.txt", "s3://my-bucket/key2.txt", "s3://my-bucket/key3.txt"]
           }
-          """)
+          """.trimIndent()
+      )
       .exchange()
       .expectStatus().isOk()
-      .expectBody(String.class)
+      .expectBody<String>()
       .returnResult()
-      .getResponseBody();
+      .getResponseBody()
 
     JSONAssert.assertEquals(
       """
@@ -171,38 +186,44 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
             }
           ]
         }
-        """,
+        """.trimIndent(),
       responsePayload,
       JSONCompareMode.STRICT
-    );
+    )
   }
 
   @DisplayName("Return status 200 when request is valid even though retrieved list is empty")
   @Test
-  void batchResponseEmptyTest() throws JSONException {
+  @Throws(JSONException::class)
+  fun batchResponseEmptyTest() {
     // given
-    when(offsetManagerService.readLastOffsets(List.of(
-      "s3://my-bucket/file1.txt",
-      "s3://my-bucket/file2.txt",
-      "s3://my-bucket/file3.txt"))
+    Mockito.`when`<LastOffsetRecordBatchResponse>(
+      offsetManagerService.readLastOffsets(
+        listOf(
+          "s3://my-bucket/file1.txt",
+          "s3://my-bucket/file2.txt",
+          "s3://my-bucket/file3.txt"
+        )
+      )
     )
       .thenReturn(
-        LastOffsetRecordBatchResponse.from(Collections.emptyList())
-      );
+        LastOffsetRecordBatchResponse.from(listOf())
+      )
 
     // when
-    String responsePayload = client.post()
-        .uri("/api/offset-records")
-        .contentType(MediaType.APPLICATION_JSON)
-        .body("""
+    val responsePayload = client.post()
+      .uri("/api/offset-records")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body("""
           {
             "keys": ["s3://my-bucket/file1.txt", "s3://my-bucket/file2.txt", "s3://my-bucket/file3.txt"]
           }
-        """)
-          .exchange()
-          .expectBody(String.class)
-          .returnResult()
-          .getResponseBody();
+        """.trimIndent()
+      )
+      .exchange()
+      .expectBody<String>()
+      .returnResult()
+      .getResponseBody()
 
     // then
     JSONAssert.assertEquals(
@@ -210,30 +231,32 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
         {
           "lastOffsetRecords": []
         }
-        """,
+        """.trimIndent(),
       responsePayload,
       JSONCompareMode.STRICT
-    );
+    )
   }
 
 
   @DisplayName("Return status 503 when OffsetManager is not available")
   @Test
-  void offsetManagerUnAvailableTest() throws JSONException {
+  @Throws(JSONException::class)
+  fun offsetManagerUnAvailableTest() {
     // given
-    when(offsetManagerService.readLastOffset("s3://my-bucket/file1.txt"))
-      .thenThrow(new OffsetManagerNotReadyException());
+    Mockito.`when`<LastOffsetRecordResponse>(offsetManagerService.readLastOffset("s3://my-bucket/file1.txt"))
+      .thenThrow(OffsetManagerNotReadyException())
 
     // when
-    String responsePayload = client.get()
-      .uri(uriBuilder ->
+    val responsePayload = client.get()
+      .uri { uriBuilder: UriBuilder ->
         uriBuilder.path("/api/offset-records")
           .queryParam("key", "s3://my-bucket/file1.txt")
-          .build())
+          .build()
+      }
       .exchange()
-      .expectBody(String.class)
+      .expectBody<String>()
       .returnResult()
-      .getResponseBody();
+      .getResponseBody()
 
     // then
     JSONAssert.assertEquals(
@@ -243,10 +266,9 @@ class OffsetManagerControllerTest extends ControllerTestSupport {
           "type": "OFFSET_MANAGER_NOT_READY",
           "message": "Offset storage is still initializing. Please retry later."
         }
-        """,
+        """.trimIndent(),
       responsePayload,
       JSONCompareMode.STRICT
-    );
+    )
   }
-
 }

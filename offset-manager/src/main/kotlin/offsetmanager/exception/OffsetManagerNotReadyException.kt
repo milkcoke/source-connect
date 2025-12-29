@@ -1,7 +1,6 @@
-package offsetmanager.exception;
+package offsetmanager.exception
 
-public class OffsetManagerNotReadyException extends RuntimeException {
-  public OffsetManagerNotReadyException() {
-    super("Offset manager is not ready", null, false, false);
-  }
-}
+class OffsetManagerNotReadyException : RuntimeException(
+  "Offset manager is not ready", null,
+  false, false
+)

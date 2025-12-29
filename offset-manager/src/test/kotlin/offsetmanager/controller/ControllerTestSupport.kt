@@ -1,16 +1,18 @@
-package offsetmanager.controller;
+package offsetmanager.controller
 
-import org.springframework.beans.factory.annotation.Autowired;
-import offsetmanager.service.OffsetManagerService;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import offsetmanager.service.OffsetManagerService
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest
+import org.springframework.test.context.bean.override.mockito.MockitoBean
+import org.springframework.test.web.servlet.MockMvc
 
-@WebMvcTest(OffsetManagerController.class)
-public abstract class ControllerTestSupport {
+@WebMvcTest(OffsetManagerController::class)
+abstract class ControllerTestSupport(
+
+) {
   @Autowired
-  protected MockMvc mockMvc;
+  protected open lateinit var mockMvc: MockMvc
 
   @MockitoBean
-  protected OffsetManagerService offsetManagerService;
+  protected open lateinit var offsetManagerService: OffsetManagerService
 }

@@ -1,39 +1,36 @@
-package offsetmanager.service;
+package offsetmanager.service
 
-import offsetmanager.domain.file.FileKey;
-import offsetmanager.domain.file.factory.FileKeyParser;
-import offsetmanager.exception.OffsetNotFoundException;
-import lombok.RequiredArgsConstructor;
-import offsetmanager.domain.offset.OffsetRecord;
-import offsetmanager.manager.OffsetManager;
-import org.springframework.stereotype.Service;
-import offsetmanager.api.v1.dto.LastOffsetRecordBatchResponse;
-import offsetmanager.api.v1.dto.LastOffsetRecordResponse;
-
-import java.util.List;
-import java.util.Optional;
+import offsetmanager.api.v1.dto.LastOffsetRecordBatchResponse
+import offsetmanager.api.v1.dto.LastOffsetRecordResponse
+import offsetmanager.domain.file.FileKey
+import offsetmanager.domain.file.factory.FileKeyParser
+import offsetmanager.domain.file.factory.FileKeyParser.Companion.parse
+import offsetmanager.domain.offset.OffsetRecord
+import offsetmanager.exception.OffsetNotFoundException
+import offsetmanager.manager.OffsetManager
+import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
-@RequiredArgsConstructor
-public class OffsetManagerService {
-  private final OffsetManager offsetManager;
+class OffsetManagerService(
+  private val offsetManager: OffsetManager
+) {
+  fun readLastOffset(key: String): LastOffsetRecordResponse {
+    val fileKey = parse(key)
 
-  public LastOffsetRecordResponse readLastOffset(String key) {
-    FileKey fileKey = FileKeyParser.parse(key);
-
-    Optional<OffsetRecord> lastOffsetRecord = offsetManager.findLatestOffsetRecord(fileKey);
-    if (lastOffsetRecord.isEmpty()) {
-      throw new OffsetNotFoundException(key);
+    val lastOffsetRecord: Optional<OffsetRecord> = offsetManager.findLatestOffsetRecord(fileKey)
+    if (lastOffsetRecord.isEmpty) {
+      throw OffsetNotFoundException(key)
     }
-    return LastOffsetRecordResponse.from(lastOffsetRecord.get());
+    return LastOffsetRecordResponse.from(lastOffsetRecord.get())
   }
 
-  public LastOffsetRecordBatchResponse readLastOffsets(List<String> keys) {
-    List<FileKey> fileKeys = keys.stream()
-      .map(FileKeyParser::parse)
-      .toList();
+  fun readLastOffsets(keys: List<String>): LastOffsetRecordBatchResponse {
+    val fileKeys = keys.stream()
+      .map<FileKey> { key -> FileKeyParser.parse(key) }
+      .toList()
 
-    List<OffsetRecord> offsetRecordList = this.offsetManager.findLatestOffsetRecords(fileKeys);
-    return LastOffsetRecordBatchResponse.from(offsetRecordList);
+    val offsetRecordList: List<OffsetRecord> = this.offsetManager.findLatestOffsetRecords(fileKeys)
+    return LastOffsetRecordBatchResponse.from(offsetRecordList)
   }
 }
