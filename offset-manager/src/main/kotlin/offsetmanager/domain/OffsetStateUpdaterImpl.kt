@@ -56,7 +56,7 @@ private val offsetTopicName: String,
       isReady.set(false)
       isRunning.set(false)
       this.activeConsumer.set(null)
-      this.offsetStorage!!.clear()
+      this.offsetStorage.clear()
 
       try {
         KafkaConsumer<String, Long>(consumerProperties).use { consumer ->
@@ -123,7 +123,7 @@ private val offsetTopicName: String,
       while (it.hasNext()) {
         val tp = it.next()
         val currentOffset = consumer.position(tp)
-        val endOffset: Long = endOffsets.get(tp)!!
+        val endOffset: Long = endOffsets[tp]!!
 
         if (currentOffset >= endOffset) {
           it.remove()
@@ -137,7 +137,7 @@ private val offsetTopicName: String,
   private fun discoverPartitions(consumer: Consumer<*, *>, topic: String): List<TopicPartition> {
     val infos = consumer.partitionsFor(topic)
 
-    check(!(infos == null || infos.isEmpty())) { "Topic not available: " + topic }
+    check(!(infos == null || infos.isEmpty())) { "Topic not available: $topic" }
 
     return infos.stream()
       .map<TopicPartition> { p: PartitionInfo -> TopicPartition(p.topic(), p.partition()) }
@@ -147,7 +147,7 @@ private val offsetTopicName: String,
   private fun getAssignedPartitionInfos(consumer: Consumer<*, *>, topic: String): Set<PartitionInfo> {
     val infos = consumer.partitionsFor(topic)
 
-    check(!(infos == null || infos.isEmpty())) { "Topic not available: " + topic }
+    check(!(infos == null || infos.isEmpty())) { "Topic not available: $topic" }
 
     return HashSet<PartitionInfo>(infos)
   }
