@@ -27,7 +27,6 @@ services:
     container_name: Kafka00Broker
     ports:
       - '9092:9094'
-#      - '9095:9096'
     environment:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
       # KRaft settings
@@ -58,6 +57,7 @@ services:
       KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
       # This option delegates the option `inter.broker.listener.name`
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN # Default: GSSA
+      KAFKA_OPTS: '-Djava.security.auth.login.config=/opt/kafka/config/kafka_server_jaas.conf'
       # Monitoring
       #  - JMX_PORT=9999
     networks:
@@ -73,7 +73,6 @@ services:
     container_name: Kafka01Broker
     ports:
       - '9093:9094'
-#      - '9096:9096'
     environment:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
       # KRaft settings
@@ -98,6 +97,7 @@ services:
       #Security
       KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN # Default: GSSAPI
+      KAFKA_OPTS: '-Djava.security.auth.login.config=/opt/kafka/config/kafka_server_jaas.conf'
       # Monitoring
     #      - JMX_PORT=9999
     networks:
@@ -113,7 +113,6 @@ services:
     container_name: Kafka02Broker
     ports:
       - '9094:9094'
-#      - '9097:9096'
     environment:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
       # KRaft settings
@@ -138,6 +137,7 @@ services:
       # Security
       KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN # default: GSSAPI
+      KAFKA_OPTS: '-Djava.security.auth.login.config=/opt/kafka/config/kafka_server_jaas.conf'
       # Monitoring
     #      - JMX_PORT=9999
       # SSL Settings
@@ -146,7 +146,6 @@ services:
     volumes:
       - "Kafka02Data:/tmp/kafka-logs"
       - "Kafka02Log:/opt/kafka/logs"
-      - ./kafka_server_jaas.conf:/opt/kafka/config/kafka_server_jaas.conf
 
   KafkaWebUiService:
     image: provectuslabs/kafka-ui:v0.7.2

@@ -7,7 +7,7 @@ data class ErrorResponse(
   val type: String,
   val message: String,
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
-  val properties: Map<String, String?>?
+  val properties: Map<String, String?>
 ) {
   companion object {
     @JvmStatic
@@ -24,7 +24,7 @@ data class ErrorResponse(
     fun of(
       errorType: ErrorType,
       message: String,
-      properties: MutableMap<String, String?>?
+      properties: MutableMap<String, String?>
     ): ErrorResponse {
       return ErrorResponse(
         errorType.httpStatusCode,
