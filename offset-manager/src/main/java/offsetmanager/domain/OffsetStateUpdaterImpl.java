@@ -37,12 +37,12 @@ public class OffsetStateUpdaterImpl implements OffsetStateUpdater {
   private final ExecutorService executorService = Executors.newSingleThreadExecutor();
   private final AtomicReference<Consumer<String, Long>> activeConsumer = new AtomicReference<>();
   /**
-   * indicates whether the background consumer loop is running
+   * Indicates whether the background consumer loop is running
    * This is used for shutdown and restart logic
    */
   private final AtomicBoolean isRunning = new AtomicBoolean(true);
   /**
-   * indicates whether the OffsetStateUpdater is ready to serve requests
+   * Indicates whether the OffsetStateUpdater is ready to serve requests
    */
   private final AtomicBoolean isReady = new AtomicBoolean(false);
 
@@ -95,7 +95,6 @@ public class OffsetStateUpdaterImpl implements OffsetStateUpdater {
         // RECOVERABLE failure
         log.warn("Consumer failed", e);
         sleep(3000); // backoff before retry
-
       }
     }
   }
