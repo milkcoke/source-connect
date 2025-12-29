@@ -1,17 +1,21 @@
-package offsetmanager.api.v1.dto;
+package offsetmanager.api.v1.dto
 
-import offsetmanager.domain.offset.OffsetRecord;
+import offsetmanager.domain.offset.OffsetRecord
 
-import java.util.List;
-
-public record LastOffsetRecordBatchResponse(
-  List<LastOffsetRecordResponse> lastOffsetRecords
+data class LastOffsetRecordBatchResponse(
+  val lastOffsetRecords: List<LastOffsetRecordResponse>
 ) {
-  public static LastOffsetRecordBatchResponse from(List<OffsetRecord> offsetRecords) {
-    return new LastOffsetRecordBatchResponse(
-      offsetRecords.stream()
-        .map(LastOffsetRecordResponse::from)
-        .toList()
-    );
+  companion object {
+    fun from(offsetRecords: List<OffsetRecord>): LastOffsetRecordBatchResponse {
+      return LastOffsetRecordBatchResponse(
+        offsetRecords.stream()
+          .map<LastOffsetRecordResponse> { offsetRecord: OffsetRecord ->
+            LastOffsetRecordResponse.from(
+              offsetRecord
+            )
+          }
+          .toList()
+      )
+    }
   }
 }

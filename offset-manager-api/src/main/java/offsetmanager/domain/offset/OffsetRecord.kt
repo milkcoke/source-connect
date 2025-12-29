@@ -1,23 +1,21 @@
-package offsetmanager.domain.offset;
+package offsetmanager.domain.offset
 
-
-import offsetmanager.domain.file.FileKey;
-
+import offsetmanager.domain.file.FileKey
 /**
- * Domain interface used by OffsetManager and SourceConnector Producer. <br>
- * Consists of object unique identifier and offset. <br>
+ * Domain interface used by OffsetManager and SourceConnector Producer. <br></br>
+ * Consists of object unique identifier and offset. <br></br>
  * Stored in the Offset topic partition.
  */
-public interface OffsetRecord {
+interface OffsetRecord {
   /**
-   * The unique key representing the source object <br>
+   * The unique key representing the source object <br></br>
    * e.g., S3 bucket and object key, local file path
    */
-  FileKey key();
+  fun key(): FileKey
 
   /**
-   * The offset value <br>
-   * Refer to the {@link OffsetStatus} defines special offset
+   * The offset value <br></br>
+   * Refer to the [OffsetStatus] defines special offset
    */
-  long offset();
+  fun offset(): Long
 }

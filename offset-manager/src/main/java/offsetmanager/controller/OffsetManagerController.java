@@ -33,6 +33,6 @@ public class OffsetManagerController {
     @RequestBody
     LastOffsetRecordBatchRequest request
   ) {
-    return this.offsetManagerService.readLastOffsets(request.keys());
+    return this.offsetManagerService.readLastOffsets(request.keys);
   }
 }

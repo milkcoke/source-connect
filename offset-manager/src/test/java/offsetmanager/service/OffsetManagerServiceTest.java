@@ -59,8 +59,8 @@ class OffsetManagerServiceTest {
       LastOffsetRecordResponse response = offsetManagerService.readLastOffset("file:///test-file.txt");
 
       // then
-      assertThat(response.key()).isEqualTo("file:///test-file.txt");
-      assertThat(response.offset()).isEqualTo(100L);
+      assertThat(response.key).isEqualTo("file:///test-file.txt");
+      assertThat(response.offset).isEqualTo(100L);
 
       // cleans
       offsetStateUpdater.stop();
@@ -87,7 +87,7 @@ class OffsetManagerServiceTest {
         "s3://test-bucket/file-key-3.txt"
       ));
       // then
-      assertThat(response.lastOffsetRecords()).hasSize(3)
+      assertThat(response.lastOffsetRecords).hasSize(3)
         .containsExactlyInAnyOrder(
           new LastOffsetRecordResponse("s3://test-bucket/file-key-1.txt", 100L),
           new LastOffsetRecordResponse("s3://test-bucket/file-key-2.txt", 100L),
@@ -132,7 +132,7 @@ class OffsetManagerServiceTest {
         "s3://test-bucket/non-exist-key-2.txt"
       ));
       // then
-      assertThat(response.lastOffsetRecords()).isEmpty();
+      assertThat(response.lastOffsetRecords).isEmpty();
       // cleans
       offsetStateUpdater.stop();
     }
@@ -161,8 +161,8 @@ class OffsetManagerServiceTest {
       // when
       LastOffsetRecordResponse lastOffsetRecordResponse = remoteOffsetService.readLastOffset("file:///existKey.txt");
       // then
-      assertThat(lastOffsetRecordResponse.key()).isEqualTo("file:///existKey.txt");
-      assertThat(lastOffsetRecordResponse.offset()).isEqualTo(10L);
+      assertThat(lastOffsetRecordResponse.key).isEqualTo("file:///existKey.txt");
+      assertThat(lastOffsetRecordResponse.offset).isEqualTo(10L);
     }
 
     @DisplayName("Should throw OffsetNotFoundException when the key does not exist")

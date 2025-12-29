@@ -52,8 +52,8 @@ public class HttpOffsetRecordRepository implements OffsetRecordRepository {
                     LastOffsetRecordResponse.class
                 );
                 return Optional.of(new DefaultOffsetRecord(
-                  FileKeyParser.parse(offsetRecord.key()),
-                  offsetRecord.offset())
+                  FileKeyParser.parse(offsetRecord.key),
+                  offsetRecord.offset)
                 );
             } else if (responseStatus == NOT_FOUND.getStatusCode()) {
                 return Optional.empty();
@@ -85,11 +85,11 @@ public class HttpOffsetRecordRepository implements OffsetRecordRepository {
                   response.body(),
                   LastOffsetRecordBatchResponse.class
                 );
-                return batchResponse.lastOffsetRecords()
+                return batchResponse.lastOffsetRecords
                         .stream()
                         .map(lastOffsetRecord -> new DefaultOffsetRecord(
-                          FileKeyParser.parse(lastOffsetRecord.key()),
-                          lastOffsetRecord.offset())
+                          FileKeyParser.parse(lastOffsetRecord.key),
+                          lastOffsetRecord.offset)
                         )
                         .collect(Collectors.toList());
             }

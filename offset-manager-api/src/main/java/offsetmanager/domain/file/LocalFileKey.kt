@@ -1,34 +1,31 @@
-package offsetmanager.domain.file;
+package offsetmanager.domain.file
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
+import java.net.URI
+import java.nio.file.Path
 
-import java.net.URI;
-import java.nio.file.Path;
+ class LocalFileKey(
+  private val uri: URI
+) : FileKey {
 
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class LocalFileKey implements FileKey {
-  private final URI fileUri;
-
-  public static LocalFileKey from(Path path) {
-    return new LocalFileKey(path.toUri());
+  override fun get(): String {
+    return uri.toString()
   }
 
-  @Override
-  public String get() {
-    return this.fileUri.toString();
+  override fun equals(o: Any?): Boolean {
+    if (this === o) return true
+    if (o !is LocalFileKey) return false
+
+    return this.get() == o.get()
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof LocalFileKey)) return false;
-
-    return this.get().equals(((LocalFileKey) o).get());
+  override fun hashCode(): Int {
+    return this.get().hashCode()
   }
 
-  @Override
-  public int hashCode() {
-    return this.get().hashCode();
+  companion object {
+    @JvmStatic
+    fun from(path: Path): LocalFileKey {
+      return LocalFileKey(path.toUri())
+    }
   }
 }

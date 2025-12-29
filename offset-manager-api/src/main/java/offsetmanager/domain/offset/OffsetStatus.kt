@@ -1,13 +1,6 @@
-package offsetmanager.domain.offset;
+package offsetmanager.domain.offset
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
-@RequiredArgsConstructor
-@Getter
-public enum OffsetStatus {
+enum class OffsetStatus(val offset: Long) {
   INITIAL(0L),
   COMPLETED(-1L);
-
-  private final long value;
 }

@@ -1,15 +1,17 @@
-package offsetmanager.api.v1.dto;
+package offsetmanager.api.v1.dto
 
-import offsetmanager.domain.offset.OffsetRecord;
+import offsetmanager.domain.offset.OffsetRecord
 
-public record LastOffsetRecordResponse(
-  String key,
-  long offset
+data class LastOffsetRecordResponse(
+  val key: String,
+  val offset: Long
 ) {
-  public static LastOffsetRecordResponse from(OffsetRecord offsetRecord) {
-    return new LastOffsetRecordResponse(
-      offsetRecord.key().get(),
-      offsetRecord.offset()
-    );
+  companion object {
+    fun from(offsetRecord: OffsetRecord): LastOffsetRecordResponse {
+      return LastOffsetRecordResponse(
+        offsetRecord.key().get(),
+        offsetRecord.offset()
+      )
+    }
   }
 }

@@ -1,27 +1,21 @@
-package offsetmanager.domain.file;
+package offsetmanager.domain.file
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
+class S3FileKey(
+  private val s3Uri: S3Uri
+) : FileKey {
 
-@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
-public class S3FileKey implements FileKey {
-  private final S3Uri s3Uri;
-
-  @Override
-  public String get() {
-    return this.s3Uri.toString();
+  override fun get(): String {
+    return this.s3Uri.toString()
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof S3FileKey)) return false;
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is S3FileKey) return false
 
-    return this.get().equals(((S3FileKey) o).get());
+    return this.get() == other.get()
   }
 
-  @Override
-  public int hashCode() {
-    return this.get().hashCode();
+  override fun hashCode(): Int {
+    return this.get().hashCode()
   }
 }
