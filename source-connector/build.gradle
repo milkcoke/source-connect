@@ -3,6 +3,7 @@ plugins {
   id("org.springframework.boot") version "4.0.1"
   id("io.spring.dependency-management") version "1.1.7"
   id("com.google.cloud.tools.jib") version "3.5.2"
+  id 'org.jetbrains.kotlin.jvm'
 }
 
 group = 'sourceconnect'
@@ -22,6 +23,7 @@ dependencies {
   implementation('jakarta.ws.rs:jakarta.ws.rs-api:4.0.0')
   implementation("software.amazon.awssdk:s3:2.40.16")
   implementation("com.github.luben:zstd-jni:1.5.7-6")
+  implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
   compileOnly("org.projectlombok:lombok:1.18.42")
   annotationProcessor("org.projectlombok:lombok:1.18.42")
@@ -40,4 +42,7 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+kotlin {
+  jvmToolchain(21)
 }

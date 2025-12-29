@@ -1,50 +1,50 @@
-package sourceconnector.config;
+package sourceconnector.config
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.context.properties.bind.Binder;
-import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
-import sourceconnector.config.util.YamlTestUtils;
+import org.assertj.core.api.Assertions
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import org.springframework.boot.context.properties.bind.Binder
+import org.springframework.boot.context.properties.source.MapConfigurationPropertySource
+import sourceconnector.config.util.YamlTestUtils.getStringObjectMap
+import java.io.IOException
 
-import java.io.IOException;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.*;
-
-class OffsetManagerConfigTest {
-
-
-  @DisplayName("baseUrl omission is allowed")
+internal class OffsetManagerConfigTest {
+  // TODO: Add type is missing test
+  //   baseUrl omission when type is http test
+  @DisplayName("baseUrl omission is not allowed")
   @Test
-  void yamlConfigurationTest() throws IOException {
-    // FIXME: How to allow baseUrl omission?
+  @Throws(IOException::class)
+  fun yamlConfigurationTest() {
     // given
-    Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
+    val map: Map<String, Any> = getStringObjectMap(
+      """
       offsetManager:
-      """);
-    Binder binder = new Binder(new MapConfigurationPropertySource(map));
+      """.trimIndent()
+    )
+    val binder = Binder(MapConfigurationPropertySource(map))
 
     // when
-    OffsetManagerConfig offsetManagerConfig = binder.bind("offset-manager", OffsetManagerConfig.class).get();
+    val offsetManagerConfig = binder.bind<OffsetManagerConfig>("offset-manager", OffsetManagerConfig::class.java).get()
     // then
-    assertThat(offsetManagerConfig.baseUrl()).isNullOrEmpty();
+    Assertions.assertThat(offsetManagerConfig.baseUrl).isNullOrEmpty()
   }
 
   @DisplayName("offsetManagerBaseUrl should be parsed as URL")
   @Test
-  void urlParseTest() throws IOException {
+  @Throws(IOException::class)
+  fun urlParseTest() {
     // given
-    Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
+    val map: Map<String, Any> = getStringObjectMap(
+      """
       offsetManager:
         baseUrl: http://localhost:8080
-      """);
-    Binder binder = new Binder(new MapConfigurationPropertySource(map));
+      """.trimIndent()
+    )
+    val binder = Binder(MapConfigurationPropertySource(map))
     // when
-    OffsetManagerConfig offsetManagerConfig = binder.bind("offset-manager", OffsetManagerConfig.class).get();
+    val offsetManagerConfig = binder.bind<OffsetManagerConfig>("offset-manager", OffsetManagerConfig::class.java).get()
 
     // then
-    assertThat(offsetManagerConfig.baseUrl()).isEqualTo("http://localhost:8080");
+    Assertions.assertThat(offsetManagerConfig.baseUrl).isEqualTo("http://localhost:8080")
   }
-
-
 }

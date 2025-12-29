@@ -1,9 +1,5 @@
-package sourceconnector.config;
+package sourceconnector.config
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
-@ConfigurationProperties("source.storage.blob")
-public record BlobConfig(
-  String container
-) {
-}
+data class BlobConfig(
+  val container: String
+)

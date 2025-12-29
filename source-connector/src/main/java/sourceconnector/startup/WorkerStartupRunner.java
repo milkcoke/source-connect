@@ -34,10 +34,10 @@ public class WorkerStartupRunner implements ApplicationRunner {
     int exitCode = 0;
     try {
       Collection<Task<FileProcessingResult>> tasks = worker.createTasks(
-        appConfig.workerCount(), appConfig.taskCount(),
+        appConfig.workerCount, appConfig.taskCount,
         pipelineSupplier,
         producerProperties,
-        topicConfig.sinkTopic(), topicConfig.offsetTopic()
+        topicConfig.sinkTopic, topicConfig.offsetTopic
       );
       worker.start();
     } catch (Exception e) {

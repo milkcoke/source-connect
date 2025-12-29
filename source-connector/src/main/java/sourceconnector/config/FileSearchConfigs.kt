@@ -1,56 +1,48 @@
-package sourceconnector.config;
+package sourceconnector.config
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import sourceconnector.repository.file.filter.FileExcludeFilter;
-import sourceconnector.repository.file.filter.FileExtensionFilter;
-import sourceconnector.repository.file.filter.FileFilter;
-import sourceconnector.repository.file.filter.FileIncludeFilter;
-import sourceconnector.repository.file.validator.CompositeFileValidator;
-import sourceconnector.repository.file.validator.FileValidator;
-import sourceconnector.repository.file.validator.NoConditionFileValidator;
+import org.springframework.boot.context.properties.ConfigurationProperties
+import sourceconnector.repository.file.filter.FileExcludeFilter
+import sourceconnector.repository.file.filter.FileExtensionFilter
+import sourceconnector.repository.file.filter.FileFilter
+import sourceconnector.repository.file.filter.FileIncludeFilter
+import sourceconnector.repository.file.validator.CompositeFileValidator
+import sourceconnector.repository.file.validator.FileValidator
+import sourceconnector.repository.file.validator.NoConditionFileValidator
+import java.util.*
 
-import java.util.List;
-
-@RequiredArgsConstructor
 @ConfigurationProperties("source.storage.configs")
-public class FileSearchConfigs {
+class FileSearchConfigs(
+  val isRecursive: Boolean = false,
+  private val filters: List<FilterConfig>?
+) {
 
-  private final boolean recursive;
-  private final List<FilterConfig> filters;
-
-  public boolean isRecursive() {
-    return this.recursive;
-  }
-
-  public record FilterConfig(
-    String type,
-    List<String> expressions
-  ){
-    FileFilter toFileFilter() {
-      return switch (type.toLowerCase().trim()) {
-        case "exclude"-> new FileExcludeFilter(expressions);
-        case "include"-> new FileIncludeFilter(expressions);
-        case "extension"-> new FileExtensionFilter(expressions);
-        default -> throw new IllegalStateException("Invalid filter type: " + type);
-      };
-
+  data class FilterConfig(
+    val type: String,
+    val expressions: List<String>?
+  ) {
+    fun toFileFilter(): FileFilter {
+      return when (type.lowercase(Locale.getDefault()).trim { it <= ' ' }) {
+        "exclude" -> FileExcludeFilter(expressions)
+        "include" -> FileIncludeFilter(expressions)
+        "extension" -> FileExtensionFilter(expressions)
+        else -> throw IllegalStateException("Invalid filter type: $type")
+      }
     }
   }
 
   /**
-   * Create {@link sourceconnector.repository.file.validator.FileValidator} according `filters` config in order
+   * Create [FileValidator] according `filters` config in order
    */
-  public FileValidator toValidator() {
-    if (filters == null || filters.isEmpty()) {
-      return new NoConditionFileValidator();
+  fun toValidator(): FileValidator {
+    if (filters.isNullOrEmpty()) {
+      return NoConditionFileValidator()
     }
 
-    List<FileFilter> fileFilters = filters.stream()
-      .map(FilterConfig::toFileFilter)
-      .toList();
+    val fileFilters = filters.stream()
+      .map<FileFilter?> { obj: FilterConfig? -> obj!!.toFileFilter() }
+      .toList()
 
-    return new CompositeFileValidator(fileFilters);
+    return CompositeFileValidator(fileFilters)
   }
 }
 

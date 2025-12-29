@@ -1,96 +1,109 @@
-package sourceconnector.config;
+package sourceconnector.config
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.context.properties.bind.Binder;
-import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
-import sourceconnector.config.util.YamlTestUtils;
-import sourceconnector.domain.log.Log;
-import sourceconnector.domain.processor.BaseProcessor;
-import sourceconnector.domain.processor.impl.EmptyFilterProcessor;
-import sourceconnector.domain.processor.impl.TrimMapperProcessor;
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import org.springframework.boot.context.properties.bind.Binder
+import org.springframework.boot.context.properties.source.MapConfigurationPropertySource
+import sourceconnector.config.util.YamlTestUtils.getStringObjectMap
+import sourceconnector.domain.log.Log
+import sourceconnector.domain.processor.BaseProcessor
+import sourceconnector.domain.processor.impl.EmptyFilterProcessor
+import sourceconnector.domain.processor.impl.TrimMapperProcessor
+import java.io.IOException
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-class PipelineConfigTest {
-
+internal class PipelineConfigTest {
   @DisplayName("Should get empty list when no processor")
   @Test
-  void ByPassProcessorTest() throws IOException {
+  @Throws(IOException::class)
+  fun byPassProcessorTest() {
     // given
-    Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
+    val map: Map<String, Any> = getStringObjectMap(
+      """
       processing:
         pipelines:
-      """);
-    Binder binder = new Binder(new MapConfigurationPropertySource(map));
-    PipelineConfig pipelineConfig = binder.bind("processing", PipelineConfig.class).get();
+      """.trimIndent()
+    )
+    val binder = Binder(MapConfigurationPropertySource(map))
+    val pipelineConfig = binder.bind<PipelineConfig>("processing", PipelineConfig::class.java).get()
 
     // when
-    List<BaseProcessor<Log>> processorList = pipelineConfig.toProcessors();
+    val processorList: List<BaseProcessor<Log>> = pipelineConfig.toProcessors()
     // then
-    assertThat(processorList).isEmpty();
+    assertThat<BaseProcessor<Log>>(processorList).isEmpty()
   }
 
   @DisplayName("Should get two processors when pipeline consists of two processors")
   @Test
-  void twoProcessorsTest() throws IOException {
+  @Throws(IOException::class)
+  fun twoProcessorsTest() {
     // given
-    Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
+    val map: Map<String, Any> = getStringObjectMap(
+      """
       processing:
         pipelines:
           - type: Trim
           - type: SkipBlank
-      """);
-    Binder binder = new Binder(new MapConfigurationPropertySource(map));
-    PipelineConfig pipelineConfig = binder.bind("processing", PipelineConfig.class).get();
+      """.trimIndent()
+    )
+    val binder = Binder(MapConfigurationPropertySource(map))
+    val pipelineConfig = binder.bind<PipelineConfig>("processing", PipelineConfig::class.java).get()
 
     // when
-    List<BaseProcessor<Log>> processorList = pipelineConfig.toProcessors();
+    val processorList: List<BaseProcessor<Log>> = pipelineConfig.toProcessors()
     // then
-    assertThat(processorList)
-      .hasExactlyElementsOfTypes(TrimMapperProcessor.class, EmptyFilterProcessor.class);
+    assertThat<BaseProcessor<Log>>(processorList)
+      .hasExactlyElementsOfTypes(
+        TrimMapperProcessor::class.java,
+        EmptyFilterProcessor::class.java
+      )
   }
 
   @DisplayName("Should get processor irrelevant to case")
   @Test
-  void ignoreTypeCaseTest() throws IOException {
+  @Throws(IOException::class)
+  fun ignoreTypeCaseTest() {
     // given
-    Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
+    val map: Map<String, Any> = getStringObjectMap(
+      """
       processing:
         pipelines:
           - type: tRIM
           - type: skipBlank
-      """);
-    Binder binder = new Binder(new MapConfigurationPropertySource(map));
-    PipelineConfig pipelineConfig = binder.bind("processing", PipelineConfig.class).get();
+      """.trimIndent()
+    )
+    val binder = Binder(MapConfigurationPropertySource(map))
+    val pipelineConfig = binder.bind<PipelineConfig>("processing", PipelineConfig::class.java).get()
 
     // when
-    List<BaseProcessor<Log>> processorList = pipelineConfig.toProcessors();
+    val processorList: List<BaseProcessor<Log>> = pipelineConfig.toProcessors()
     // then
-    assertThat(processorList)
-      .hasExactlyElementsOfTypes(TrimMapperProcessor.class, EmptyFilterProcessor.class);
+    assertThat<BaseProcessor<Log>>(processorList)
+      .hasExactlyElementsOfTypes(
+        TrimMapperProcessor::class.java,
+        EmptyFilterProcessor::class.java
+      )
   }
 
   @DisplayName("Should throw IllegalArgumentException when incorrect case")
   @Test
-  void caseSensitiveTypeTest() throws IOException {
+  @Throws(IOException::class)
+  fun caseSensitiveTypeTest() {
     // given
-    Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
+    val map: Map<String, Any> = getStringObjectMap(
+      """
       processing:
         pipelines:
           - type: NotExist
-      """);
-    Binder binder = new Binder(new MapConfigurationPropertySource(map));
-    PipelineConfig pipelineConfig = binder.bind("processing", PipelineConfig.class).get();
+      """.trimIndent()
+    )
+    val binder = Binder(MapConfigurationPropertySource(map))
+    val pipelineConfig = binder.bind<PipelineConfig>("processing", PipelineConfig::class.java).get()
 
     // when then
-    assertThatThrownBy(pipelineConfig::toProcessors)
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("Invalid processor type: NotExist");
+    assertThatThrownBy { pipelineConfig.toProcessors() }
+      .isInstanceOf(IllegalArgumentException::class.java)
+      .hasMessage("Invalid processor type: NotExist")
   }
 }

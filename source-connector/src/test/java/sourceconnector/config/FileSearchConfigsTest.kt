@@ -1,46 +1,54 @@
-package sourceconnector.config;
+package sourceconnector.config
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.context.properties.bind.BindException;
-import org.springframework.boot.context.properties.bind.Binder;
-import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
-import sourceconnector.config.util.YamlTestUtils;
-import sourceconnector.repository.file.validator.CompositeFileValidator;
-import sourceconnector.repository.file.validator.FileValidator;
-import sourceconnector.repository.file.validator.NoConditionFileValidator;
+import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.ThrowableAssert
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import org.springframework.boot.context.properties.bind.BindException
+import org.springframework.boot.context.properties.bind.Binder
+import org.springframework.boot.context.properties.source.MapConfigurationPropertySource
+import sourceconnector.config.util.YamlTestUtils.getStringObjectMap
+import sourceconnector.repository.file.validator.CompositeFileValidator
+import sourceconnector.repository.file.validator.FileValidator
+import sourceconnector.repository.file.validator.NoConditionFileValidator
+import java.io.IOException
 
-import java.io.IOException;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-class FileSearchConfigsTest {
-
+internal class FileSearchConfigsTest {
   @DisplayName("Should throw BindException when missing recursive option")
   @Test
-  void recursiveOptionMissingTest() throws IOException {
+  @Throws(IOException::class)
+  fun recursiveOptionMissingTest() {
     // given
-    Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
+    val map: Map<String, Any> = getStringObjectMap(
+      """
       source:
         storage:
           type: local
           paths: ['test']
           configs:
             recursive:
-      """);
-    Binder binder = new Binder(new MapConfigurationPropertySource(map));
+      """.trimIndent()
+    )
+    val binder = Binder(MapConfigurationPropertySource(map))
     // when then
-    assertThatThrownBy(()-> binder.bind("source.storage.configs", FileSearchConfigs.class).get())
-      .isInstanceOf(BindException.class);
+    assertThatThrownBy {
+      binder.bind<FileSearchConfigs?>(
+        "source.storage.configs",
+        FileSearchConfigs::class.java
+      ).get()
+    }
+      .isInstanceOf(BindException::class.java)
   }
 
   @DisplayName("Should get recursive option correctly")
   @Test
-  void recursiveParseTest() throws IOException {
+  @Throws(IOException::class)
+  fun recursiveParseTest() {
     // given
-    Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
+    val map: Map<String, Any> = getStringObjectMap(
+      """
       source:
         storage:
           type: local
@@ -48,20 +56,23 @@ class FileSearchConfigsTest {
           configs:
             recursive: true
             filters:
-      """);
-    Binder binder = new Binder(new MapConfigurationPropertySource(map));
+      """.trimIndent()
+    )
+    val binder = Binder(MapConfigurationPropertySource(map))
 
     // when
-    FileSearchConfigs configs = binder.bind("source.storage.configs", FileSearchConfigs.class).get();
+    val configs = binder.bind<FileSearchConfigs>("source.storage.configs", FileSearchConfigs::class.java).get()
     // then
-    assertThat(configs.isRecursive()).isTrue();
+    assertThat(configs.isRecursive).isTrue()
   }
 
   @DisplayName("Should get NoConditionFileValidator when filter are not provided")
   @Test
-  void noFileValidatorTest() throws IOException {
+  @Throws(IOException::class)
+  fun noFileValidatorTest() {
     // given
-    Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
+    val map: Map<String, Any> = getStringObjectMap(
+      """
       source:
         storage:
           type: local
@@ -69,21 +80,24 @@ class FileSearchConfigsTest {
           configs:
             recursive: true
             filters:
-      """);
-    Binder binder = new Binder(new MapConfigurationPropertySource(map));
-    FileSearchConfigs configs = binder.bind("source.storage.configs", FileSearchConfigs.class).get();
+      """.trimIndent()
+    )
+    val binder = Binder(MapConfigurationPropertySource(map))
+    val configs = binder.bind<FileSearchConfigs>("source.storage.configs", FileSearchConfigs::class.java).get()
 
     // when
-    FileValidator fileValidator = configs.toValidator();
+    val fileValidator = configs.toValidator()
     // then
-    assertThat(fileValidator).isInstanceOf(NoConditionFileValidator.class);
+    assertThat<FileValidator>(fileValidator).isInstanceOf(NoConditionFileValidator::class.java)
   }
 
   @DisplayName("Should get CompositeFileValidator when filter are provided")
   @Test
-  void compositeFileValidatorCreationTest() throws IOException {
+  @Throws(IOException::class)
+  fun compositeFileValidatorCreationTest() {
     // given
-    Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
+    val map: Map<String, Any> = getStringObjectMap(
+      """
       source:
         storage:
           type: local
@@ -98,22 +112,25 @@ class FileSearchConfigsTest {
               - type: exclude
                 expressions:
                   - ".*tmp.*"
-      """);
-    Binder binder = new Binder(new MapConfigurationPropertySource(map));
-    FileSearchConfigs configs = binder.bind("source.storage.configs", FileSearchConfigs.class).get();
+      """.trimIndent()
+    )
+    val binder = Binder(MapConfigurationPropertySource(map))
+    val configs = binder.bind<FileSearchConfigs>("source.storage.configs", FileSearchConfigs::class.java).get()
 
     // when
-    FileValidator fileValidator = configs.toValidator();
+    val fileValidator = configs.toValidator()
     // then
-    assertThat(fileValidator).isInstanceOf(CompositeFileValidator.class);
+    assertThat<FileValidator>(fileValidator).isInstanceOf(CompositeFileValidator::class.java)
   }
 
 
   @DisplayName("Get recursive and filters both")
   @Test
-  void FileSearchConfigMappingTest() throws IOException {
+  @Throws(IOException::class)
+  fun fileSearchConfigMappingTest() {
     // given
-    Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
+    val map: Map<String, Any> = getStringObjectMap(
+      """
       source:
         storage:
           type: local
@@ -124,14 +141,15 @@ class FileSearchConfigsTest {
               - type: exclude
                 expressions:
                   - ".*tmp.*"
-      """);
-    Binder binder = new Binder(new MapConfigurationPropertySource(map));
+      
+      """.trimIndent()
+    )
+    val binder = Binder(MapConfigurationPropertySource(map))
 
     // when
-    FileSearchConfigs configs = binder.bind("source.storage.configs", FileSearchConfigs.class).get();
+    val configs = binder.bind<FileSearchConfigs>("source.storage.configs", FileSearchConfigs::class.java).get()
     // then
-    assertThat(configs.isRecursive()).isTrue();
-    assertThat(configs.toValidator()).isInstanceOf(CompositeFileValidator.class);
-
+    assertThat(configs.isRecursive).isTrue()
+    assertThat<FileValidator>(configs.toValidator()).isInstanceOf(CompositeFileValidator::class.java)
   }
 }

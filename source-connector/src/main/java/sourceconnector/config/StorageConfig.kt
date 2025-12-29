@@ -1,34 +1,25 @@
-package sourceconnector.config;
+package sourceconnector.config
 
-import lombok.RequiredArgsConstructor;
-import offsetmanager.domain.file.factory.FileKeyParser;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import offsetmanager.domain.file.FileKey;
-
-import java.util.List;
-import java.util.Objects;
+import offsetmanager.domain.file.FileKey
+import offsetmanager.domain.file.factory.FileKeyParser
+import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "source.storage")
-public record StorageConfig(
-  StorageType type,
-  List<String> paths
+data class StorageConfig(
+  val type: StorageType,
+  val paths: List<String>
 ) {
-  @RequiredArgsConstructor
-  public enum StorageType {
+  enum class StorageType {
     LOCAL,
-    S3;
+    S3
   }
 
-  public StorageConfig {
-    Objects.requireNonNull(type, "storage type is required");
-    if (paths == null || paths.isEmpty()) {
-      throw new IllegalArgumentException("paths must not be null or empty");
-    }
-  }
+  val allFileKeys: List<FileKey>
+    get() = paths.stream()
+      .map<FileKey> { str: String -> FileKeyParser.parse(str) }
+      .toList()
 
-  public List<FileKey> getAllFileKeys() {
-    return paths.stream()
-      .map(FileKeyParser::parse)
-      .toList();
+  init {
+    require(paths.isNotEmpty()) { "paths must not be null or empty" }
   }
 }

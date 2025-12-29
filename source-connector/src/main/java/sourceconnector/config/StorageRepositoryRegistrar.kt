@@ -1,61 +1,68 @@
-package sourceconnector.config;
+package sourceconnector.config
 
-import org.jspecify.annotations.NonNull;
-import org.springframework.beans.factory.BeanRegistrar;
-import org.springframework.beans.factory.BeanRegistry;
-import org.springframework.core.env.Environment;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.S3Client;
-import sourceconnector.repository.file.*;
+import org.springframework.beans.factory.BeanRegistrar
+import org.springframework.beans.factory.BeanRegistry
+import org.springframework.core.env.Environment
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.s3.S3Client
+import sourceconnector.repository.file.*
+import java.util.*
 
-public class StorageRepositoryRegistrar implements BeanRegistrar {
-  @Override
-  public void register(@NonNull BeanRegistry registry, Environment env) {
-    String storageType = env.getProperty("source.storage.type");
-    if (storageType == null) {
-      throw new IllegalArgumentException("source.storage.type should be set");
-    }
+class StorageRepositoryRegistrar: BeanRegistrar {
+  override fun register(registry: BeanRegistry, env: Environment) {
+    val storageType = env.getProperty("source.storage.type")
+    requireNotNull(storageType) { "source.storage.type should be set" }
 
-    switch (storageType.toLowerCase()) {
-
-      case "local"-> {
-        registry.registerBean(
+    when (storageType.lowercase(Locale.getDefault())) {
+      "local" -> {
+        registry.registerBean<LocalFileRepository?>(
           "delegateFileRepository",
-          LocalFileRepository.class
-        );
-        registry.registerBean(
+          LocalFileRepository::class.java
+        )
+        registry.registerBean<LocalFileLister?>(
           "fileLister",
-          LocalFileLister.class
-        );
+          LocalFileLister::class.java
+        )
       }
 
-      case "s3" -> {
-        registry.registerBean(
+      "s3" -> {
+        registry.registerBean<S3Client?>(
           "s3Client",
-          S3Client.class,
-          spec -> spec.supplier(context -> S3Client.builder()
-            .region(Region.of(context.bean(S3Config.class).region()))
-            .build())
-        );
-        registry.registerBean(
+          S3Client::class.java
+        ) { spec: BeanRegistry.Spec<S3Client?> ->
+          spec.supplier { context: BeanRegistry.SupplierContext ->
+            S3Client.builder()
+              .region(Region.of(context.bean<S3Config?>(S3Config::class.java)!!.region))
+              .build()
+          }
+        }
+        registry.registerBean<S3FileRepository?>(
           "delegateFileRepository",
-          S3FileRepository.class
-        );
-        registry.registerBean(
+          S3FileRepository::class.java
+        )
+        registry.registerBean<S3FileLister?>(
           "fileLister",
-          S3FileLister.class
-        );
+          S3FileLister::class.java
+        )
       }
 
-      default -> throw new IllegalArgumentException("Unknown storage type " + storageType);
+      else -> throw IllegalArgumentException("Unknown storage type $storageType")
     }
 
-    registry.registerBean(
+    registry.registerBean<DecompressingFileRepository>(
       "fileRepository",
-      DecompressingFileRepository.class,
-  spec -> spec
+      DecompressingFileRepository::class.java
+    ) { spec: BeanRegistry.Spec<DecompressingFileRepository> ->
+      spec
         .primary()
-        .supplier(context -> new DecompressingFileRepository(context.bean("delegateFileRepository", FileRepository.class)))
-    );
+        .supplier { context: BeanRegistry.SupplierContext ->
+          DecompressingFileRepository(
+            context.bean<FileRepository?>(
+              "delegateFileRepository",
+              FileRepository::class.java
+            )
+          )
+        }
+    }
   }
 }

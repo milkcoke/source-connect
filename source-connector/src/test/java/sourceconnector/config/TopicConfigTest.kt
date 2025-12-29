@@ -1,84 +1,100 @@
-package sourceconnector.config;
+package sourceconnector.config
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.context.properties.bind.Binder;
-import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
-import sourceconnector.config.util.YamlTestUtils;
+import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.ThrowableAssert
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import org.springframework.boot.context.properties.bind.Binder
+import org.springframework.boot.context.properties.source.MapConfigurationPropertySource
+import sourceconnector.config.util.YamlTestUtils.getStringObjectMap
+import java.io.IOException
 
-import java.io.IOException;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-class TopicConfigTest {
-
+internal class TopicConfigTest {
   @DisplayName("Should throw IllegalArgumentException when offset topic is null or empty")
   @Test
-  void offsetTopicPropertyMissingTest() {
-    assertThatThrownBy(()-> new TopicConfig(" ", "sink-topic"))
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("offsetTopic must not be null or blank");
+  fun offsetTopicPropertyMissingTest() {
+    assertThatThrownBy { TopicConfig(" ", "sink-topic") }
+      .isInstanceOf(IllegalArgumentException::class.java)
+      .hasMessage("offsetTopic must not be null or blank")
   }
 
   @DisplayName("Should throw IllegalArgumentException when sink topic is null or empty")
   @Test
-  void sinkTopicPropertyMissingTest() {
-    assertThatThrownBy(()-> new TopicConfig("offset-topic", ""))
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("sinkTopic must not be null or blank");
+  fun sinkTopicPropertyMissingTest() {
+    assertThatThrownBy(ThrowableAssert.ThrowingCallable { TopicConfig("offset-topic", "") })
+      .isInstanceOf(IllegalArgumentException::class.java)
+      .hasMessage("sinkTopic must not be null or blank")
   }
 
   @DisplayName("Should create CompositeFileValidator according to type, expressions")
   @Test
-  void offsetMissingConfigMissingTest() throws IOException {
+  @Throws(IOException::class)
+  fun offsetMissingConfigMissingTest() {
     // given
-    Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
+    val map: Map<String, Any> = getStringObjectMap(
+      """
         target:
           kafka:
             offsetTopic:
             sinkTopic: sink-topic
-      """);
-    Binder binder = new Binder(new MapConfigurationPropertySource(map));
+      """.trimIndent()
+    )
+    val binder = Binder(MapConfigurationPropertySource(map))
     // when then
-    assertThatThrownBy(() -> binder.bind("target.kafka", TopicConfig.class).get())
-      .hasRootCauseInstanceOf(IllegalArgumentException.class)
-      .hasStackTraceContaining("offsetTopic must not be null or blank");
+    assertThatThrownBy {
+      binder.bind<TopicConfig?>(
+        "target.kafka",
+        TopicConfig::class.java
+      ).get()
+    }
+      .hasRootCauseInstanceOf(IllegalArgumentException::class.java)
+      .hasStackTraceContaining("offsetTopic must not be null or blank")
   }
 
   @DisplayName("Should create CompositeFileValidator according to type, expressions")
   @Test
-  void topicConfigMissingTest() throws IOException {
+  @Throws(IOException::class)
+  fun topicConfigMissingTest() {
     // given
-    Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
+    val map: Map<String, Any> = getStringObjectMap(
+      """
         target:
           kafka:
             offsetTopic: offset-topic
             sinkTopic: 
-      """);
-    Binder binder = new Binder(new MapConfigurationPropertySource(map));
+      """.trimIndent()
+    )
+    val binder = Binder(MapConfigurationPropertySource(map))
     // when then
-    assertThatThrownBy(() -> binder.bind("target.kafka", TopicConfig.class).get())
-      .hasRootCauseInstanceOf(IllegalArgumentException.class)
-      .hasStackTraceContaining("sinkTopic must not be null or blank");
+    assertThatThrownBy {
+      binder.bind<TopicConfig?>(
+        "target.kafka",
+        TopicConfig::class.java
+      ).get()
+    }
+      .hasRootCauseInstanceOf(IllegalArgumentException::class.java)
+      .hasStackTraceContaining("sinkTopic must not be null or blank")
   }
 
   @DisplayName("Should succeed creating TopicConfig when all properties are provided")
   @Test
-  void topicConfigTest() throws IOException {
+  @Throws(IOException::class)
+  fun topicConfigTest() {
     // given
-    Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
+    val map: Map<String, Any> = getStringObjectMap(
+      """
         target:
           kafka:
             offsetTopic: offset-topic
             sinkTopic: sink-topic
-      """);
-    Binder binder = new Binder(new MapConfigurationPropertySource(map));
+      """.trimIndent()
+    )
+    val binder = Binder(MapConfigurationPropertySource(map))
     // when
-    TopicConfig topicConfig =  binder.bind("target.kafka", TopicConfig.class).get();
+    val topicConfig = binder.bind<TopicConfig>("target.kafka", TopicConfig::class.java).get()
     // then
-    assertThat(topicConfig.offsetTopic()).isEqualTo("offset-topic");
-    assertThat(topicConfig.sinkTopic()).isEqualTo("sink-topic");
+    Assertions.assertThat(topicConfig.offsetTopic).isEqualTo("offset-topic")
+    Assertions.assertThat(topicConfig.sinkTopic).isEqualTo("sink-topic")
   }
 }

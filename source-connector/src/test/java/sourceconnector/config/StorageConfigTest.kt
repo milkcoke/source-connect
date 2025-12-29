@@ -1,127 +1,125 @@
-package sourceconnector.config;
+package sourceconnector.config
 
-import offsetmanager.domain.file.S3FileKey;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.context.properties.bind.Binder;
-import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
-import sourceconnector.config.StorageConfig.StorageType;
-import sourceconnector.config.util.YamlTestUtils;
-import offsetmanager.domain.file.FileKey;
-import offsetmanager.domain.file.LocalFileKey;
+import offsetmanager.domain.file.FileKey
+import offsetmanager.domain.file.LocalFileKey
+import offsetmanager.domain.file.S3FileKey
+import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.ThrowableAssert
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import org.springframework.boot.context.properties.bind.Binder
+import org.springframework.boot.context.properties.source.MapConfigurationPropertySource
+import sourceconnector.config.util.YamlTestUtils.getStringObjectMap
+import java.io.IOException
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-class StorageConfigTest {
-
+internal class StorageConfigTest {
   @DisplayName("Should get storage mapping according to yaml string")
   @Test
-  void storageConfigMappingTest() throws IOException {
+  @Throws(IOException::class)
+  fun storageConfigMappingTest() {
     // given
-    Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
+    val map: Map<String, Any> = getStringObjectMap(
+      """
     source:
       storage:
         type: s3
         paths:
           - s3://my-bucket/foo
           - s3://my-bucket/bar
-    """);
+    """.trimIndent()
+    )
 
-    Binder binder = new Binder(new MapConfigurationPropertySource(map));
+    val binder = Binder(MapConfigurationPropertySource(map))
     // when
-    StorageConfig config = binder.bind("source.storage", StorageConfig.class).get();
+    val config = binder.bind<StorageConfig>("source.storage", StorageConfig::class.java).get()
 
     // then
-    assertThat(config.type()).isEqualTo(StorageType.S3);
-    assertThat(config.paths()).containsExactlyInAnyOrder(
+    assertThat<StorageConfig.StorageType>(config.type).isEqualTo(StorageConfig.StorageType.S3)
+    assertThat<String>(config.paths).containsExactlyInAnyOrder(
       "s3://my-bucket/foo",
       "s3://my-bucket/bar"
-    );
+    )
   }
 
-  @DisplayName("Failed to construct StorageConfig when type is missing")
-  @Test
-  void storageTypeMissingTest() {
-    assertThatThrownBy(()-> new StorageConfig(null, Collections.emptyList()))
-      .isInstanceOf(NullPointerException.class)
-      .hasMessage("storage type is required");
-  }
 
   @DisplayName("Should throw NPE when type is missing in the yaml")
   @Test
-  void storageTypeConfigMissingTest() throws IOException {
+  @Throws(IOException::class)
+  fun storageTypeConfigMissingTest() {
     // given
-    Map<String, Object> map = YamlTestUtils.getStringObjectMap("""
+    val map: Map<String, Any> = getStringObjectMap(
+      """
     source:
       storage:
         paths:
           - s3://my-bucket/foo
           - s3://my-bucket/bar
-    """);
+    """.trimIndent()
+    )
 
-    Binder binder = new Binder(new MapConfigurationPropertySource(map));
+    val binder = Binder(MapConfigurationPropertySource(map))
     // when then
-    assertThatThrownBy(()-> binder.bind("source.storage", StorageConfig.class).get())
-      .hasRootCauseInstanceOf(NullPointerException.class)
-      .hasStackTraceContaining("storage type is required");
+    assertThatThrownBy {
+      binder.bind<StorageConfig?>(
+        "source.storage",
+        StorageConfig::class.java
+      ).get()
+    }
+      .hasRootCauseInstanceOf(NullPointerException::class.java)
+      .hasStackTraceContaining("storage type is required")
   }
 
 
   @DisplayName("Should get LocalFileKey list according to type config")
   @Test
-  void getLocalFileKeysFromPathsTest() {
+  fun getLocalFileKeysFromPathsTest() {
     // given
-    StorageConfig storageConfig = new StorageConfig(
-      StorageType.LOCAL,
-      List.of("file:///Users/downloads", "file:///Users/downloads/sample.csv")
-    );
+    val storageConfig = StorageConfig(
+      StorageConfig.StorageType.LOCAL,
+      listOf("file:///Users/downloads", "file:///Users/downloads/sample.csv")
+    )
     // when
-    List<FileKey> fileKeys = storageConfig.getAllFileKeys();
+    val fileKeys: List<FileKey> = storageConfig.allFileKeys
 
     // then
-    assertThat(fileKeys).hasExactlyElementsOfTypes(
-      LocalFileKey.class,
-      LocalFileKey.class
-    );
+    assertThat<FileKey>(fileKeys).hasExactlyElementsOfTypes(
+      LocalFileKey::class.java,
+      LocalFileKey::class.java
+    )
   }
 
   @DisplayName("Should get FileKey List according to type config")
   @Test
-  void getS3FileKeysFromPathsTest() {
+  fun getS3FileKeysFromPathsTest() {
     // given
-    StorageConfig storageConfig = new StorageConfig(
-      StorageType.S3,
-      List.of("s3://my-bucket/foo/", "s3://my-bucket/bar/sample.csv")
-    );
+    val storageConfig = StorageConfig(
+      StorageConfig.StorageType.S3,
+      listOf("s3://my-bucket/foo/", "s3://my-bucket/bar/sample.csv")
+    )
     // when
-    List<FileKey> fileKeys = storageConfig.getAllFileKeys();
+    val fileKeys: List<FileKey> = storageConfig.allFileKeys
 
     // then
-    assertThat(fileKeys).hasExactlyElementsOfTypes(
-      S3FileKey.class,
-      S3FileKey.class
-    );
+    assertThat<FileKey>(fileKeys).hasExactlyElementsOfTypes(
+      S3FileKey::class.java,
+      S3FileKey::class.java
+    )
   }
 
   @DisplayName("Should throw IllegalArgumentException when different type path is provided")
   @Test
-  void failS3FileKeyWhenLocalPathsTest() {
+  fun failS3FileKeyWhenLocalPathsTest() {
     // given
-    StorageConfig storageConfig = new StorageConfig(
-      StorageType.S3,
-      List.of("s3://my-bucket/foo/", "Users/Downloads/sample.csv")
-    );
+    val storageConfig = StorageConfig(
+      StorageConfig.StorageType.S3,
+      listOf("s3://my-bucket/foo/", "Users/Downloads/sample.csv")
+    )
 
     // when then
-    assertThatThrownBy(storageConfig::getAllFileKeys)
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("Unsupported file key schema: " + "Users/Downloads/sample.csv");
+    assertThatThrownBy{storageConfig.allFileKeys}
+      .isInstanceOf(IllegalArgumentException::class.java)
+      .hasMessage("Unsupported file key schema: " + "Users/Downloads/sample.csv")
   }
-
 }

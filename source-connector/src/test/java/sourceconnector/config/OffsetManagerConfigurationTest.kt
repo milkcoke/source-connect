@@ -1,62 +1,65 @@
-package sourceconnector.config;
+package sourceconnector.config
 
-import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import sourceconnector.repository.offset.HttpOffsetRecordRepository;
-import sourceconnector.repository.offset.InternalOffsetRecordRepository;
-import sourceconnector.service.offset.OffsetRecordRepository;
+import org.apache.kafka.clients.admin.AdminClient
+import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.ThrowableAssert
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
+import org.mockito.Mockito
+import sourceconnector.repository.offset.HttpOffsetRecordRepository
+import sourceconnector.repository.offset.InternalOffsetRecordRepository
+import sourceconnector.service.offset.OffsetRecordRepository
+import java.util.stream.Stream
 
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
-import static org.mockito.Mockito.mock;
-
-class OffsetManagerConfigurationTest {
-  static Stream<Arguments> baseUrls() {
-    return Stream.of(
-      arguments(null, InternalOffsetRecordRepository.class),
-      arguments("", InternalOffsetRecordRepository.class),
-      arguments("http://localhost:8080", HttpOffsetRecordRepository.class),
-      arguments("https://localhost:8080", HttpOffsetRecordRepository.class)
-    );
-  }
-
+internal class OffsetManagerConfigurationTest {
   @ParameterizedTest
   @MethodSource("baseUrls")
-  void offsetRepositorySelectTest(String baseUrl, Class<? extends OffsetRecordRepository> expectedType) {
-    OffsetManagerConfig config = new OffsetManagerConfig(baseUrl);
-    OffsetManagerConfiguration configuration = new OffsetManagerConfiguration();
-    OffsetRecordRepository repository = configuration.offsetRecordRepository(
+  fun offsetRepositorySelectTest(baseUrl: String, expectedType: Class<out OffsetRecordRepository>) {
+    val config = OffsetManagerConfig(baseUrl)
+    val configuration = OffsetManagerConfiguration()
+    val repository = configuration.offsetRecordRepository(
       config,
-      mock(KafkaConsumer.class),
-      mock(AdminClient.class),
-      mock(TopicConfig.class)
-    );
+      Mockito.mock<KafkaConsumer<*, *>>(KafkaConsumer::class.java),
+      Mockito.mock<AdminClient>(AdminClient::class.java),
+      Mockito.mock<TopicConfig>(TopicConfig::class.java)!!
+    )
 
-    assertThat(repository).isInstanceOf(expectedType);
+    Assertions.assertThat<OffsetRecordRepository?>(repository).isInstanceOf(expectedType)
   }
 
   @DisplayName("Should throw IllegalArgumentException when invalid url format baseUrl is provided")
   @Test
-  void invalidUrlTest() {
+  fun invalidUrlTest() {
     // given
-    OffsetManagerConfiguration offsetManagerConfiguration = new OffsetManagerConfiguration();
-    OffsetManagerConfig config = new OffsetManagerConfig("localhost:8080");
+    val offsetManagerConfiguration = OffsetManagerConfiguration()
+    val config = OffsetManagerConfig(OffsetManagerConfig.RepositoryType.HTTP, null)
     // when then
-    assertThatThrownBy(()-> offsetManagerConfiguration.offsetRecordRepository(
-      config,
-      mock(KafkaConsumer.class),
-      mock(AdminClient.class),
-      mock(TopicConfig.class)
-    ))
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("Invalid baseUrl: localhost:8080");
+    assertThatThrownBy {
+      offsetManagerConfiguration.offsetRecordRepository(
+        config,
+        Mockito.mock<KafkaConsumer<*, *>>(KafkaConsumer::class.java),
+        Mockito.mock<AdminClient>(AdminClient::class.java),
+        Mockito.mock<TopicConfig>(TopicConfig::class.java)!!
+      )
+    }
+      .isInstanceOf(IllegalArgumentException::class.java)
+      .hasMessage("Invalid baseUrl: localhost:8080")
+  }
+
+  companion object {
+    @JvmStatic
+    fun baseUrls(): Stream<Arguments?> {
+      return Stream.of<Arguments?>(
+        Arguments.arguments(null, InternalOffsetRecordRepository::class.java),
+        Arguments.arguments("", InternalOffsetRecordRepository::class.java),
+        Arguments.arguments("http://localhost:8080", HttpOffsetRecordRepository::class.java),
+        Arguments.arguments("https://localhost:8080", HttpOffsetRecordRepository::class.java)
+      )
+    }
   }
 }
