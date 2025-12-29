@@ -44,3 +44,6 @@ jdks
 kotlin-profile
 native
 wrapper
+
+### k8s manifest
+manifest/**/secrets.yaml

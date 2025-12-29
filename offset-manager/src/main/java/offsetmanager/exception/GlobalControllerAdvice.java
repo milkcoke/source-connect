@@ -61,6 +61,15 @@ public class GlobalControllerAdvice {
     );
   }
 
+  @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+  @ExceptionHandler(OffsetManagerNotReadyException.class)
+  public ErrorResponse handleOffsetManagerNotReadyState(OffsetManagerNotReadyException ex) {
+   return ErrorResponse.of(
+     ErrorType.OFFSET_MANAGER_NOT_READY,
+     "Offset storage is still initializing. Please retry later."
+   );
+  }
+
   private String getPropertyName(Path path) {
     Node last = null;
     for (Node node : path) last = node;

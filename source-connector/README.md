@@ -2,6 +2,9 @@
 
 The Source Connector provides File object connect to the Kafka topic supporting the Exactly-Once Semantic.
 
+## Prerequisites
+![Open-JDK](https://img.shields.io/badge/jdk->=v21-23ED8B00?style=for-the-badge&logo=openjdk&logoColor=%23ED8B00)
+
 
 ## Configuration
 ```yaml

@@ -60,8 +60,8 @@ public class HttpOffsetRecordRepository implements OffsetRecordRepository {
             } else {
                 throw new RuntimeException("Failed to fetch offset record, status code: " + responseStatus);
             }
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to fetch offset record", e);
+        } catch (IOException | InterruptedException e) {
+          throw new IllegalStateException("Failed to fetch offset records from OffsetManager", e);
         }
     }
 
@@ -95,7 +95,7 @@ public class HttpOffsetRecordRepository implements OffsetRecordRepository {
             }
 
         } catch (IOException | InterruptedException ex) {
-            log.error("Exception occurred while fetching offset records", ex);
+            throw new IllegalStateException("Failed to fetch offset records from OffsetManager", ex);
         }
 
         return Collections.emptyList();

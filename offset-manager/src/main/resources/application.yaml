@@ -16,8 +16,6 @@ spring:
         session.timeout.ms: 45_000 # default: 45_000
         fetch.max.bytes: 57671680  # default: 57671680 (55MB)
         max.partition.fetch.bytes: 57671680 # default: 1MB
-        # static membership
-        #        group.instance.id: stateless-group
         key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
         value.deserializer: org.apache.kafka.common.serialization.LongDeserializer
         security.protocol: PLAINTEXT
