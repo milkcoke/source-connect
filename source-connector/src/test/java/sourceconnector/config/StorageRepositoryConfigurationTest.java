@@ -39,7 +39,7 @@ class StorageRepositoryConfigurationTest {
     //then
     assertThat(validator).isInstanceOf(NoConditionFileValidator.class);
     assertThat(lister).isInstanceOf(LocalFileLister.class);
-    assertThat(repo).isInstanceOf(LocalFileRepository.class);
+    assertThat(repo).isInstanceOf(DecompressingFileRepository.class);
 
     context.close();
   }
@@ -70,7 +70,7 @@ class StorageRepositoryConfigurationTest {
     //then
     assertThat(validator).isInstanceOf(NoConditionFileValidator.class);
     assertThat(fileLister).isInstanceOf(S3FileLister.class);
-    assertThat(repository).isInstanceOf(S3FileRepository.class);
+    assertThat(repository).isInstanceOf(DecompressingFileRepository.class);
 
     context.close();
   }
