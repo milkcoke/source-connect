@@ -1,25 +1,15 @@
-package sourceconnector.service.offset;
+package sourceconnector.service.offset
 
-import lombok.RequiredArgsConstructor;
-import offsetmanager.domain.file.FileKey;
-import offsetmanager.domain.offset.OffsetRecord;
-import sourceconnector.domain.connect.OffsetRecordService;
+import offsetmanager.domain.file.FileKey
+import offsetmanager.domain.offset.OffsetRecord
+import sourceconnector.domain.connect.OffsetRecordService
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+class OffsetRecordServiceImpl(
+  private val offsetRecordRepository: OffsetRecordRepository
+) : OffsetRecordService {
 
-@RequiredArgsConstructor
-public class OffsetRecordServiceImpl implements OffsetRecordService {
-  private final OffsetRecordRepository offsetRecordRepository;
-
-  @Override
-  public Map<FileKey, Long> offsetMap(List<FileKey> fileKeys) {
-    List<OffsetRecord> offsetRecords = this.offsetRecordRepository.findLastOffsetRecords(fileKeys);
-    return offsetRecords.stream()
-      .collect(Collectors.toMap(
-        OffsetRecord::key,
-        OffsetRecord::offset
-      ));
+  override fun offsetMap(fileKeys: List<FileKey>): Map<FileKey, Long> {
+    val offsetRecords: List<OffsetRecord> = this.offsetRecordRepository.findLastOffsetRecords(fileKeys)
+    return offsetRecords.associate { it.key() to it.offset() }
   }
 }

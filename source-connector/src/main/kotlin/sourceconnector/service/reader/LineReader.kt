@@ -1,5 +1,5 @@
-package sourceconnector.service.reader;
+package sourceconnector.service.reader
 
-public interface LineReader<T> extends Reader<T> {
-  int getLineNumber();
+interface LineReader<T> : Reader<T> {
+  val lineNumber: Int
 }

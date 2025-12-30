@@ -1,44 +1,45 @@
-package sourceconnector.repository.file.options;
+package sourceconnector.repository.file.options
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import offsetmanager.domain.file.LocalFileKey;
-import sourceconnector.repository.file.filter.FileIncludeFilter;
+import offsetmanager.domain.file.LocalFileKey.Companion.from
+import org.assertj.core.api.ThrowableAssert
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import sourceconnector.repository.file.filter.FileIncludeFilter
+import java.nio.file.Path
 
-import java.nio.file.Path;
-import java.util.Collections;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
-
-class FileIncludeFilterTest {
-
+internal class FileIncludeFilterTest {
   @DisplayName("Should return true when the file extension is included in the filter")
   @Test
-  void whiteListRegexTest() {
+  fun whiteListRegexTest() {
     // given
-    var filter = new FileIncludeFilter(List.of(
-      ".*\\.ndjson",
-      ".*\\.md$"
-    ));
+    val filter = FileIncludeFilter(
+      listOf(
+        ".*\\.ndjson",
+        ".*\\.md$"
+      )
+    )
 
     // when
-    var result1 = filter.accept(LocalFileKey.from(Path.of("/Users/Falcon/Downloads/Test.ndjson")));
-    var result2 = filter.accept(LocalFileKey.from(Path.of("README.md")));
-    var result3 = filter.accept(LocalFileKey.from(Path.of("document.txt")));
+    val result1 = filter.accept(from(Path.of("/Users/Falcon/Downloads/Test.ndjson")))
+    val result2 = filter.accept(from(Path.of("README.md")))
+    val result3 = filter.accept(from(Path.of("document.txt")))
 
     // then
-    assertTrue(result1);
-    assertTrue(result2);
-    assertFalse(result3);
+    Assertions.assertTrue(result1)
+    Assertions.assertTrue(result2)
+    Assertions.assertFalse(result3)
   }
 
   @DisplayName("Should throw IllegalArgumentException when regex list is null or empty")
   @Test
-  void regexExpressionEmptyTest() {
-    assertThatThrownBy(()-> new FileIncludeFilter(Collections.emptyList()))
-      .isInstanceOf(IllegalArgumentException.class)
-      .hasMessage("regexExpressions cannot be null or empty");
+  fun regexExpressionEmptyTest() {
+    org.assertj.core.api.Assertions.assertThatThrownBy {
+      FileIncludeFilter(
+        listOf()
+      )
+    }
+      .isInstanceOf(IllegalArgumentException::class.java)
+      .hasMessage("regexExpressions cannot be null or empty")
   }
 }

@@ -1,57 +1,55 @@
-package sourceconnector.service.offset;
+package sourceconnector.service.offset
 
-import offsetmanager.domain.file.FileKey;
-import offsetmanager.domain.file.factory.FileKeyParser;
-import offsetmanager.domain.offset.DefaultOffsetRecord;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import sourceconnector.domain.connect.OffsetRecordService;
+import offsetmanager.domain.file.FileKey
+import offsetmanager.domain.file.factory.FileKeyParser.Companion.parse
+import offsetmanager.domain.offset.DefaultOffsetRecord
+import offsetmanager.domain.offset.OffsetRecord
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import org.mockito.Mockito
+import sourceconnector.domain.connect.OffsetRecordService
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-class OffsetRecordServiceImplTest {
-
+internal class OffsetRecordServiceImplTest {
   @DisplayName("Should return empty map when given file key list is empty")
   @Test
-  void emptyOffsetMapTest(){
+  fun emptyOffsetMapTest() {
     // given
-    OffsetRecordRepository mockedRepository = Mockito.mock(OffsetRecordRepository.class);
-    Mockito.when(mockedRepository.findLastOffsetRecords(Mockito.anyList()))
-      .thenReturn(Collections.emptyList());
+    val mockedRepository = Mockito.mock<OffsetRecordRepository>(OffsetRecordRepository::class.java)
+    Mockito.`when`<List<OffsetRecord>>(mockedRepository.findLastOffsetRecords(Mockito.anyList<FileKey>()))
+      .thenReturn(listOf())
 
-    OffsetRecordService offsetRecordService = new OffsetRecordServiceImpl(mockedRepository);
+    val offsetRecordService: OffsetRecordService = OffsetRecordServiceImpl(mockedRepository)
     // when
-    Map<FileKey, Long> offsetMap = offsetRecordService.offsetMap(Collections.emptyList());
+    val offsetMap: Map<FileKey, Long> = offsetRecordService.offsetMap(mutableListOf<FileKey>())
     // then
-    assertThat(offsetMap).isEmpty();
+    assertThat(offsetMap).isEmpty()
   }
+
   @DisplayName("Should return offset map for given file keys")
   @Test
-  void offsetMap() {
+  fun offsetMap() {
     // given
-    OffsetRecordRepository mockedRepository = Mockito.mock(OffsetRecordRepository.class);
-    FileKey fileKey1 = FileKeyParser.parse("file:///file1.txt");
-    FileKey fileKey2 = FileKeyParser.parse("file:///file2.txt");
+    val mockedRepository = Mockito.mock<OffsetRecordRepository>(OffsetRecordRepository::class.java)
+    val fileKey1 = parse("file:///file1.txt")
+    val fileKey2 = parse("file:///file2.txt")
 
-    Mockito.when(mockedRepository.findLastOffsetRecords(Mockito.anyList()))
-      .thenReturn(List.of(
-        new DefaultOffsetRecord(fileKey1, 100L),
-        new DefaultOffsetRecord(fileKey2, 200L)
-      ));
+    Mockito.`when`<List<OffsetRecord>>(mockedRepository.findLastOffsetRecords(Mockito.anyList<FileKey>()))
+      .thenReturn(
+        listOf(
+          DefaultOffsetRecord(fileKey1, 100L),
+          DefaultOffsetRecord(fileKey2, 200L)
+        )
+      )
 
-    OffsetRecordService offsetRecordService = new OffsetRecordServiceImpl(mockedRepository);
+    val offsetRecordService: OffsetRecordService = OffsetRecordServiceImpl(mockedRepository)
 
     // when
-    Map<FileKey, Long> offsetMap = offsetRecordService.offsetMap(List.of(fileKey1, fileKey2));
+    val offsetMap: Map<FileKey, Long> = offsetRecordService.offsetMap(listOf(fileKey1, fileKey2))
 
     // then
-    assertThat(offsetMap).hasSize(2)
+    assertThat<FileKey, Long>(offsetMap).hasSize(2)
       .containsEntry(fileKey1, 100L)
-      .containsEntry(fileKey2, 200L);
+      .containsEntry(fileKey2, 200L)
   }
 }

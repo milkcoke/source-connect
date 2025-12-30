@@ -1,12 +1,14 @@
-package sourceconnector.service.reader;
+package sourceconnector.service.reader
 
-import java.io.IOException;
+import java.io.IOException
+import java.lang.AutoCloseable
 
-public interface Reader<T> extends AutoCloseable {
+interface Reader<T> : AutoCloseable {
   /**
    * Read a content of type T
-   * @return A content of type T or {@code null} if end of stream has been reached
+   * @return A content of type T or `null` if end of stream has been reached
    * @throws IOException - If an I/O error occurs
    */
-  T read() throws IOException;
+  @Throws(IOException::class)
+  fun read(): T?
 }

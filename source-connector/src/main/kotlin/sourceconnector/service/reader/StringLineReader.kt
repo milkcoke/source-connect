@@ -1,59 +1,56 @@
-package sourceconnector.service.reader;
+package sourceconnector.service.reader
 
-import sourceconnector.exception.FileLogReadException;
+import sourceconnector.exception.FileLogReadException
+import java.io.IOException
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.io.LineNumberReader
 
-import java.io.*;
+class StringLineReader(
+  inputStream: InputStream,
+  private val reader: LineNumberReader = LineNumberReader(InputStreamReader(inputStream))
+) : LineReader<String> {
 
-public class StringLineReader implements LineReader<String> {
-  private final LineNumberReader reader;
-
-  public StringLineReader(InputStream inputStream) {
-    reader = new LineNumberReader(new InputStreamReader(inputStream));
+  @Throws(IOException::class)
+  override fun read(): String? {
+    return reader.readLine()
   }
 
-  /**
-   * Seek the line number updating line number <br>
-   * Should be called before calling read()
-   * @param initialLineNumber position to seek
-   * @throws IllegalArgumentException if initial line number be netgative
-   * @throws FileLogReadException Failed to readLine() for the input stream.
-   */
-  public static StringLineReader withInitialLineNumber(
-    InputStream inputStream,
-    int initialLineNumber
-  ) {
-    if (initialLineNumber < 0) {
-      throw new IllegalArgumentException("initial line number must be greater than or equal to 0");
-    }
-    StringLineReader stringLineReader = new StringLineReader(inputStream);
-    stringLineReader.seekToLine(initialLineNumber);
-    return stringLineReader;
+  override val lineNumber: Int
+    get() = reader.lineNumber
+
+  @Throws(Exception::class)
+  override fun close() {
+    this.reader.close()
   }
 
-  @Override
-  public String read() throws IOException {
-    return reader.readLine();
-  }
-
-  @Override
-  public int getLineNumber() {
-    return this.reader.getLineNumber();
-  }
-
-  @Override
-  public void close() throws Exception {
-    this.reader.close();
-  }
-
-  private void seekToLine(int lineNumber) {
+  private fun seekToLine(lineNumber: Int) {
     try {
-      for (int i = 0; i < lineNumber; i++) {
-        if (this.reader.readLine() == null) {
-          throw new IllegalArgumentException("Initial line number exceeds last line number");
-        }
+      for (i in 0..<lineNumber) {
+        requireNotNull(this.reader.readLine()) { "Initial line number exceeds last line number" }
       }
-    } catch (IOException e) {
-      throw new FileLogReadException(e.getMessage(), e);
+    } catch (e: IOException) {
+      throw FileLogReadException(e.message!!, e)
+    }
+  }
+
+  companion object {
+    /**
+     * Seek the line number updating line number <br></br>
+     * Should be called before calling read()
+     * @param initialLineNumber position to seek
+     * @throws IllegalArgumentException if initial line number be netgative
+     * @throws FileLogReadException Failed to readLine() for the input stream.
+     */
+    @JvmStatic
+    fun withInitialLineNumber(
+      inputStream: InputStream,
+      initialLineNumber: Int
+    ): StringLineReader {
+      require(initialLineNumber >= 0) { "initial line number must be greater than or equal to 0" }
+      val stringLineReader = StringLineReader(inputStream)
+      stringLineReader.seekToLine(initialLineNumber)
+      return stringLineReader
     }
   }
 }
