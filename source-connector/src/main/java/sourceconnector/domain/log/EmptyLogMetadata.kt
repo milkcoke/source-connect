@@ -1,18 +1,18 @@
-package sourceconnector.domain.log;
+package sourceconnector.domain.log
 
-import offsetmanager.domain.file.FileKey;
+import offsetmanager.domain.file.FileKey
 
-public enum EmptyLogMetadata implements LogMetadata {
+enum class EmptyLogMetadata(
+  private val emptyFileKey: FileKey = EmptyFileKey(),
+  private val emptyOffset: Long = -1
+) : LogMetadata {
   INSTANCE;
 
-  @Override
-  public FileKey key() {
-    // FIXME: return a proper empty FileKey if needed
-    return null;
+  override fun key(): FileKey {
+    return emptyFileKey
   }
 
-  @Override
-  public long offset() {
-    return -1;
+  override fun offset(): Long {
+    return emptyOffset
   }
 }
