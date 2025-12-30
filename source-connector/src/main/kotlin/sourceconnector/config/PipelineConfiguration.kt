@@ -9,7 +9,6 @@ import sourceconnector.domain.pipeline.factory.FileLogPipelineSupplier
 import sourceconnector.domain.pipeline.factory.PipelineBuilder
 import sourceconnector.domain.pipeline.factory.PipelineSupplier
 import sourceconnector.repository.file.FileRepository
-import java.util.function.Supplier
 
 @Configuration
 class PipelineConfiguration {

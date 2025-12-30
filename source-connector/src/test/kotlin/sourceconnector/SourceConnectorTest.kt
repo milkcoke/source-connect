@@ -5,7 +5,6 @@ import offsetmanager.domain.offset.DefaultOffsetRecord
 import offsetmanager.domain.offset.OffsetStatus
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import sourceconnector.domain.batch.MessageBatch
 import sourceconnector.domain.log.Log
 import sourceconnector.domain.log.LogMetadata
 import sourceconnector.domain.log.factory.JSONLogFactory
@@ -65,7 +64,8 @@ internal class SourceConnectorTest : KafkaTestSupport() {
           DefaultOffsetRecord(
             lastMessageMetadata.key,
             OffsetStatus.COMPLETED.offset
-          ), MessageBatch { mutableListOf() })
+          )
+        ) { mutableListOf() }
       }
     }
   }

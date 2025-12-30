@@ -21,7 +21,7 @@ class KafkaConfig {
   }
 
   @Bean
-  fun consumer(kafkaProperties: KafkaProperties): KafkaConsumer<kotlin.String?, Long?> {
+  fun consumer(kafkaProperties: KafkaProperties): KafkaConsumer<String, Long?> {
     val properties = Properties()
     properties[CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG] = kafkaProperties.bootstrapServers.joinToString(",")
     properties.putAll(kafkaProperties.consumer.buildProperties())

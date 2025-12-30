@@ -73,13 +73,13 @@ internal class GzipDecompressorTest {
     val fileRepository: FileRepository = LocalFileRepository()
 
     // when
-    Assertions.assertThatThrownBy(ThrowableAssert.ThrowingCallable {
+    Assertions.assertThatThrownBy {
       gzipDecompressor.decompress(
         fileRepository.getFile(
           plainFileKey
         )
       )
-    })
+    }
       .isInstanceOf(ZipException::class.java)
       .hasMessage("Not in GZIP format")
   }

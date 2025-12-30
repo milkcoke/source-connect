@@ -4,7 +4,6 @@ import offsetmanager.domain.file.FileKey
 import offsetmanager.domain.file.LocalFileKey.Companion.from
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.ThrowableAssert
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import sourceconnector.repository.file.FileRepository
@@ -72,13 +71,13 @@ internal class ZipDecompressorTest {
     val fileRepository: FileRepository = LocalFileRepository()
 
     // when
-    Assertions.assertThatThrownBy(ThrowableAssert.ThrowingCallable {
+    Assertions.assertThatThrownBy {
       zipDecompressor.decompress(
         fileRepository.getFile(
           plainFileKey
         )
       )
-    })
+    }
       .isInstanceOf(IOException::class.java)
       .hasMessage("Empty zip file")
   }

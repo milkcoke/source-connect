@@ -2,7 +2,6 @@ package sourceconnector.config
 
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.assertj.core.api.ThrowableAssert
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.boot.context.properties.bind.Binder
@@ -22,7 +21,7 @@ internal class TopicConfigTest {
   @DisplayName("Should throw IllegalArgumentException when sink topic is null or empty")
   @Test
   fun sinkTopicPropertyMissingTest() {
-    assertThatThrownBy(ThrowableAssert.ThrowingCallable { TopicConfig("offset-topic", "") })
+    assertThatThrownBy { TopicConfig("offset-topic", "") }
       .isInstanceOf(IllegalArgumentException::class.java)
       .hasMessage("sinkTopic must not be null or blank")
   }

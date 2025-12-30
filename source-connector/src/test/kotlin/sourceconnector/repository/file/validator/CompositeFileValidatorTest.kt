@@ -2,16 +2,12 @@ package sourceconnector.repository.file.validator
 
 import offsetmanager.domain.file.LocalFileKey.Companion.from
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.ThrowableAssert
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.function.Executable
 import sourceconnector.repository.file.filter.FileExtensionFilter
-import sourceconnector.repository.file.filter.FileFilter
 import sourceconnector.repository.file.filter.FileIncludeFilter
 import java.nio.file.Path
-import java.util.List
 
 internal class CompositeFileValidatorTest {
   @DisplayName("Should get only file all conditions are passed")

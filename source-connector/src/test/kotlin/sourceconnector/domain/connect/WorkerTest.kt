@@ -1,21 +1,18 @@
 package sourceconnector.domain.connect
 
 import offsetmanager.domain.file.FileKey
-import offsetmanager.domain.file.LocalFileKey
 import offsetmanager.domain.file.LocalFileKey.Companion.from
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.ThrowableAssert
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.function.Executable
 import sourceconnector.domain.log.Log
 import sourceconnector.domain.log.factory.JSONLogFactory
 import sourceconnector.domain.pipeline.factory.FileBaseLogPipelineBuilder
 import sourceconnector.domain.pipeline.factory.FileLogPipelineSupplier
 import sourceconnector.domain.pipeline.factory.PipelineSupplier
-import sourceconnector.domain.processor.BaseProcessor
 import sourceconnector.domain.processor.impl.EmptyFilterProcessor
 import sourceconnector.domain.processor.impl.TrimMapperProcessor
 import sourceconnector.repository.file.LocalFileRepository
@@ -23,8 +20,6 @@ import sourceconnector.repository.offset.InternalOffsetRecordRepository
 import sourceconnector.service.offset.OffsetRecordServiceImpl
 import sourceconnector.support.KafkaTestSupport
 import java.nio.file.Path
-import java.util.List
-import java.util.function.Supplier
 
 internal class WorkerTest : KafkaTestSupport() {
   private val pipelineSupplier: PipelineSupplier<Log> = FileLogPipelineSupplier(
@@ -145,6 +140,6 @@ internal class WorkerTest : KafkaTestSupport() {
     )
 
     // when then
-    org.junit.jupiter.api.Assertions.assertDoesNotThrow { worker.start() }
+    assertDoesNotThrow { worker.start() }
   }
 }

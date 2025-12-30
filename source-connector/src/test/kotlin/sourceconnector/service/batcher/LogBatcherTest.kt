@@ -1,7 +1,6 @@
 package sourceconnector.service.batcher
 
 import offsetmanager.domain.file.LocalFileKey.Companion.from
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -9,13 +8,11 @@ import sourceconnector.domain.log.Log
 import sourceconnector.domain.log.factory.JSONLogFactory
 import sourceconnector.domain.pipeline.factory.FileBaseLogPipelineBuilder
 import sourceconnector.domain.pipeline.factory.PipelineBuilder
-import sourceconnector.domain.processor.BaseProcessor
 import sourceconnector.domain.processor.impl.EmptyFilterProcessor
 import sourceconnector.domain.processor.impl.TrimMapperProcessor
 import sourceconnector.repository.file.LocalFileRepository
 import java.nio.file.Path
 import java.util.*
-import java.util.List
 
 internal class LogBatcherTest {
   @DisplayName("Should return emptyList when no more logs to batch")

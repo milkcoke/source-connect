@@ -16,8 +16,6 @@ import org.junit.jupiter.api.Test
 import sourceconnector.support.KafkaTestSupport
 import java.nio.ByteBuffer
 import java.nio.file.Path
-import java.util.*
-import java.util.function.Consumer
 import kotlin.ByteArray
 import kotlin.Exception
 import kotlin.String

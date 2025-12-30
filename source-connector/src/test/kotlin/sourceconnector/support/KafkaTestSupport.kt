@@ -17,7 +17,6 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.assertj.core.api.Assertions
 import org.awaitility.Awaitility
-import org.awaitility.core.ThrowingRunnable
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
@@ -85,12 +84,12 @@ abstract class KafkaTestSupport {
         .atMost(Duration.ofSeconds(3))
         .pollInterval(Duration.ofMillis(500))
         .ignoreExceptions()
-        .untilAsserted(ThrowingRunnable {
+        .untilAsserted {
           val description = adminClient.describeTopics(mutableListOf<String?>(topicName))
             .allTopicNames().get()
           Assertions.assertThat(description.containsKey(topicName)).isTrue()
           Assertions.assertThat(description.get(topicName)!!.partitions().size).isEqualTo(partitions)
-        })
+        }
     } catch (e: Exception) {
       log.error("Topic Creation Failed to: {}", e.message)
     }
@@ -110,12 +109,12 @@ abstract class KafkaTestSupport {
         .atMost(Duration.ofSeconds(3))
         .pollInterval(Duration.ofMillis(500))
         .ignoreExceptions()
-        .untilAsserted(ThrowingRunnable {
+        .untilAsserted {
           val description = adminClient.describeTopics(mutableListOf<String?>(topicName))
             .allTopicNames().get()
           Assertions.assertThat(description.containsKey(topicName)).isTrue()
           Assertions.assertThat(description.get(topicName)!!.partitions().size).isEqualTo(partitions)
-        })
+        }
     } catch (e: Exception) {
       log.error("Topic Creation Failed to: {}", e.message)
     }

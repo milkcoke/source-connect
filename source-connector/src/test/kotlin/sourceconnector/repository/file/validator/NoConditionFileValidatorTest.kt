@@ -2,7 +2,6 @@ package sourceconnector.repository.file.validator
 
 import offsetmanager.domain.file.FileKey
 import offsetmanager.domain.file.LocalFileKey.Companion.from
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test

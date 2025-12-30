@@ -20,9 +20,8 @@ internal class FileTaskAssignorTest : KafkaTestSupport() {
   private val pipelineSupplier: PipelineSupplier<Log> = FileLogPipelineSupplier(
     FileBaseLogPipelineBuilder(),
     LocalFileRepository(),
-    JSONLogFactory(),
-    Supplier { mutableListOf() }
-  )
+    JSONLogFactory()
+  ) { mutableListOf() }
   private lateinit var offsetRecordService: OffsetRecordService
 
   private val offsetTopic = "test-offset"
@@ -59,7 +58,7 @@ internal class FileTaskAssignorTest : KafkaTestSupport() {
       fileKeys.add(FakeFileKey("file-$i"))
     }
     val taskAssignor: TaskAssignor = FileTaskAssignor(fileKeys, 5, this.offsetRecordService)
-    val task0: FileSourceTask= FileSourceTask(
+    val task0 = FileSourceTask(
       0, pipelineSupplier,
       BatchProduceService(producerProperties, this.offsetTopic, this.logTopic)
     )
@@ -108,7 +107,7 @@ internal class FileTaskAssignorTest : KafkaTestSupport() {
   @Test
   fun emptyFilePathAssignTest() {
     // given
-    val taskAssignor: TaskAssignor = FileTaskAssignor(mutableListOf<FileKey>(), 1, this.offsetRecordService!!)
+    val taskAssignor: TaskAssignor = FileTaskAssignor(mutableListOf<FileKey>(), 1, this.offsetRecordService)
     val tasks: Collection<Task<FileProcessingResult>> = listOf<Task<FileProcessingResult>>(
       FileSourceTask(0, pipelineSupplier, BatchProduceService(producerProperties, this.logTopic, this.offsetTopic))
     )

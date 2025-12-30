@@ -1,7 +1,6 @@
 package sourceconnector.repository.file.filter
 
 import offsetmanager.domain.file.LocalFileKey.Companion.from
-import org.assertj.core.api.ThrowableAssert
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test

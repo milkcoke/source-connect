@@ -3,7 +3,6 @@ package sourceconnector.repository.file.decompressor
 import offsetmanager.domain.file.FileKey
 import offsetmanager.domain.file.LocalFileKey
 import offsetmanager.domain.file.LocalFileKey.Companion.from
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Named
