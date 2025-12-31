@@ -18,7 +18,7 @@ import kotlin.system.exitProcess
 
 @Component
 class WorkerStartupRunner(
-  private val appConfig: ConnectConfig,
+  private val connectConfig: ConnectConfig,
   private val worker: Worker,
   private val pipelineSupplier: PipelineSupplier<Log>,
   private val producerProperties: Properties,
@@ -31,7 +31,7 @@ class WorkerStartupRunner(
     var exitCode = 0
     try {
       val tasks: Collection<Task<FileProcessingResult>> = worker.createTasks(
-        appConfig.workerCount, appConfig.taskCount,
+        connectConfig.workerCount, connectConfig.taskCount,
         pipelineSupplier,
         producerProperties,
         topicConfig.sinkTopic, topicConfig.offsetTopic

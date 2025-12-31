@@ -32,7 +32,6 @@ data:
           security:
             protocol: PLAINTEXT
       
-      
       mvc:
         apiversion:
           default: v1
@@ -41,4 +40,3 @@ data:
           use:
             header: X-API-Version
     
-
