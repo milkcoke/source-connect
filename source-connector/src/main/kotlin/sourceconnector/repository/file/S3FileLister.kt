@@ -1,61 +1,65 @@
 package sourceconnector.repository.file
 
-import aws.sdk.kotlin.services.s3.S3Client
-import aws.sdk.kotlin.services.s3.model.ListObjectsV2Request
-import aws.sdk.kotlin.services.s3.paginators.listObjectsV2Paginated
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.flatMapConcat
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.runBlocking
 import offsetmanager.domain.file.FileKey
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response
+import sourceconnector.repository.file.S3Location.Companion.from
 import sourceconnector.repository.file.validator.FileValidator
+
 
 class S3FileLister(
   private val s3Client: S3Client,
   private val fileValidator: FileValidator
 ) : FileLister {
-
-
   /**
    * Get all s3 object key paths <br></br>
    * this can handle both directory and file path
    * @return `List<String>`
    */
-  override fun listFiles(vararg fileKeys: FileKey): List<FileKey> {
-    return listS3Files(fileKeys, recursively = false)
-  }
+  override fun listFiles(vararg inputFileKeys: FileKey): List<FileKey> {
+    val fileKeys: MutableList<FileKey> = mutableListOf()
+    for (fileKey in inputFileKeys) {
+      val s3Location = from(fileKey)
 
-  override fun listFilesRecursively(vararg fileKeys: FileKey): List<FileKey> {
-    return listS3Files(fileKeys, recursively = true)
-  }
+      val request = ListObjectsV2Request.builder()
+        .bucket(s3Location.bucket)
+        .prefix(s3Location.key)
+        .delimiter("/")
+        .build()
 
-  @OptIn(ExperimentalCoroutinesApi::class)
-  private fun listS3Files(
-    inputFileKeys: Array<out FileKey>,
-    recursively: Boolean
-  ): List<FileKey> {
-    return inputFileKeys.flatMap { fileKey ->
-      runBlocking {
-        val s3Location = S3Location.from(fileKey)
-        val request = ListObjectsV2Request {
-          bucket = s3Location.bucket
-          prefix = s3Location.key
-          if (!recursively) {
-            delimiter = "/"
-          }
-        }
+      val keys = this.listFilesInResponse(fileKey, request)
 
-        s3Client.listObjectsV2Paginated(request)
-          .flatMapConcat { response ->
-            response.contents.orEmpty().asFlow()
-          }
-          .map { s3Object -> S3Location(s3Location.bucket, s3Object.key!!).toFileKey() }
-          .filter { fileValidator.isValid(it) }
-          .toList()
-      }
+      fileKeys.addAll(keys)
     }
+
+    return fileKeys
+  }
+
+  override fun listFilesRecursively(vararg inputFileKeys: FileKey): List<FileKey> {
+    val fileKeys: MutableList<FileKey> = mutableListOf()
+    for (fileKey in inputFileKeys) {
+      val s3Location = from(fileKey)
+      val request = ListObjectsV2Request.builder()
+        .bucket(s3Location.bucket)
+        .prefix(s3Location.key)
+        .build()
+
+      val keys = this.listFilesInResponse(fileKey, request)
+
+      fileKeys.addAll(keys)
+    }
+
+    return fileKeys
+  }
+
+  private fun listFilesInResponse(fileKey: FileKey, request: ListObjectsV2Request): List<FileKey> {
+    val s3Location = from(fileKey)
+
+    return this.s3Client.listObjectsV2Paginator(request)
+      .flatMap { response: ListObjectsV2Response? -> response!!.contents() }
+      .map { s3Object -> S3Location(s3Location.bucket, s3Object.key()).toFileKey() }
+      .filter { fileKey -> fileValidator.isValid(fileKey) }
+      .toList()
   }
 }

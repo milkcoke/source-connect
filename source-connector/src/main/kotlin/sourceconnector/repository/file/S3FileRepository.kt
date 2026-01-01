@@ -1,35 +1,27 @@
 package sourceconnector.repository.file
 
-import aws.sdk.kotlin.services.s3.S3Client
-import aws.sdk.kotlin.services.s3.model.GetObjectRequest
-import aws.sdk.kotlin.services.s3.model.S3Exception
-import aws.smithy.kotlin.runtime.content.toInputStream
-import kotlinx.coroutines.runBlocking
 import offsetmanager.domain.file.FileKey
-import java.io.ByteArrayInputStream
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.GetObjectRequest
+import software.amazon.awssdk.services.s3.model.S3Exception
+import sourceconnector.repository.file.S3Location.Companion.from
 import java.io.InputStream
 
 
 class S3FileRepository(
   private val s3Client: S3Client
 ) : FileRepository {
-
   override fun getFile(fileKey: FileKey): InputStream {
-    return runBlocking {
-      val s3Location = S3Location.from(fileKey)
-      val request = GetObjectRequest {
-        bucket  = s3Location.bucket
-        key = s3Location.key
-      }
+    val s3Location = from(fileKey)
+    try {
+      val request = GetObjectRequest.builder()
+        .bucket(s3Location.bucket)
+        .key(s3Location.key)
+        .build()
 
-      try {
-        s3Client.getObject(request) {response ->
-          response.body?.toInputStream()
-            ?: ByteArrayInputStream(byteArrayOf())
-        }
-      } catch (e: S3Exception){
-        throw RuntimeException("Failed to get file from: ${fileKey.get()}", e)
-      }
+      return s3Client.getObject(request)
+    } catch (e: S3Exception) {
+      throw RuntimeException("Failed to get file from: " + fileKey.get(), e)
     }
   }
 }

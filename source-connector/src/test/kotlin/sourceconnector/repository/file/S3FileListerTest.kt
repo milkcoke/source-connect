@@ -12,7 +12,6 @@ import java.nio.file.Path
 internal class S3FileListerTest : S3TestSupport() {
   @DisplayName("Should get empty list when no files exist in the path")
   @Test
-  @Throws(IOException::class)
   fun listFilesNotExistPath() {
     // given
     val fileLister: FileLister = S3FileLister(
@@ -28,8 +27,7 @@ internal class S3FileListerTest : S3TestSupport() {
 
   @DisplayName("Should get file list with no recursive")
   @Test
-  @Throws(IOException::class)
-  suspend fun getListWithoutRecursiveTest() {
+  fun getListWithoutRecursiveTest() {
     // given
     val sampleFilNames: List<String> = listOf(
       "empty.ndjson",
@@ -61,8 +59,7 @@ internal class S3FileListerTest : S3TestSupport() {
 
   @DisplayName("Should get file list with recursive")
   @Test
-  @Throws(IOException::class)
-  suspend fun getListWithRecursive() {
+  fun getListWithRecursive() {
     // given
     val sampleFilNames: List<String> = listOf(
       "empty.ndjson",
@@ -85,7 +82,7 @@ internal class S3FileListerTest : S3TestSupport() {
       .toList()
 
     // then
-    assertThat<String?>(filePaths).hasSize(4)
+    assertThat(filePaths).hasSize(4)
       .containsExactlyInAnyOrder(
         "s3://test-bucket/resources/sample-data/empty.ndjson",
         "s3://test-bucket/resources/sample-data/empty-included.ndjson",
@@ -94,7 +91,7 @@ internal class S3FileListerTest : S3TestSupport() {
       )
   }
 
-  private suspend fun uploadSamples(fileNames: List<String>) {
+  private fun uploadSamples(fileNames: List<String>) {
     for (file in fileNames) {
       val localPath = Path.of("src/test/resources/sample-data/", file)
       val s3Location = S3Location(

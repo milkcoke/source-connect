@@ -12,10 +12,10 @@ import java.nio.file.Path
 internal class S3FileRepositoryTest : S3TestSupport() {
   @DisplayName("Should get InputStream when the file exists")
   @Test
-  suspend fun getFileTest() {
+   fun getFileTest() {
     // given
-    val localFilePath = Path.of("src/test/resources/sample-data/empty.ndjson")
-    val s3Location = S3Location(BUCKET_NAME, "sample-data/empty.ndjson")
+    val localFilePath = Path.of("src/test/resources/sample-data/empty-included.ndjson")
+    val s3Location = S3Location(BUCKET_NAME, "sample-data/empty-included.ndjson")
     this.upload(s3Location, localFilePath)
 
     val fileRepository = S3FileRepository(s3Client)

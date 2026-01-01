@@ -1,15 +1,5 @@
 package sourceconnector.support
 
-import aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider
-import aws.sdk.kotlin.services.s3.S3Client
-import aws.sdk.kotlin.services.s3.model.BucketLocationConstraint
-import aws.sdk.kotlin.services.s3.model.CreateBucketRequest
-import aws.sdk.kotlin.services.s3.model.PutObjectRequest
-import aws.smithy.kotlin.runtime.content.ByteStream
-import aws.smithy.kotlin.runtime.content.fromFile
-import aws.smithy.kotlin.runtime.net.url.Url
-import kotlinx.coroutines.runBlocking
-
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
@@ -17,7 +7,16 @@ import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.localstack.LocalStackContainer
 import org.testcontainers.utility.DockerImageName
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
+import software.amazon.awssdk.core.sync.RequestBody
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest
+import software.amazon.awssdk.services.s3.model.PutObjectRequest
+import software.amazon.awssdk.services.s3.model.PutObjectResponse
 import sourceconnector.repository.file.S3Location
+import java.net.URI
 import java.nio.file.Path
 
 
@@ -25,35 +24,30 @@ import java.nio.file.Path
 @Testcontainers
 abstract class S3TestSupport {
   protected val BUCKET_NAME: String = "test-bucket"
-  protected val REGION: String = "ap-northeast-2"
+  protected val REGION: Region = Region.AP_NORTHEAST_2
   protected lateinit var s3Client: S3Client
 
   @BeforeAll
   fun initS3Client() {
-    // Initialize the AWS SDK for Kotlin client
-    s3Client = S3Client {
-      // The region is a string
-      region = REGION
-      // The endpoint must be a parsed URL
-      endpointUrl = Url.parse(localStackContainer.endpoint.toString())      // The credentials provider has a Kotlin-idiomatic way of setting it
-      credentialsProvider = StaticCredentialsProvider {
-        accessKeyId = "test-access-key"
-        secretAccessKey = "test-secret-access-key"
-      }
-    }
+    val s3Endpoint: URI = localStackContainer.endpoint
 
-    // The createBucket call is a suspend function.
-    // Since @BeforeAll methods cannot be suspend functions, we must use runBlocking
-    // to bridge the synchronous test world with the asynchronous SDK world.
-    runBlocking {
-      val request = CreateBucketRequest {
-        bucket = BUCKET_NAME
-        createBucketConfiguration {
-          locationConstraint = BucketLocationConstraint.fromValue(REGION)
-        }
-      }
-      s3Client.createBucket(request)
-    }
+    s3Client = S3Client.builder() // Redirect endpoint to that localstack container provides
+      .endpointOverride(s3Endpoint)
+      .credentialsProvider(
+        StaticCredentialsProvider.create(
+          AwsBasicCredentials.create("test-access-key", "test-secret-key")
+        )
+      )
+      .region(REGION)
+      .build()
+
+
+    // TODO: why not throw BucketAlreadyExistsException?
+    s3Client.createBucket(
+      CreateBucketRequest.builder()
+        .bucket(BUCKET_NAME)
+        .build()
+    )
   }
 
   @AfterAll
@@ -61,15 +55,16 @@ abstract class S3TestSupport {
     s3Client.close()
   }
 
-  protected suspend fun upload(s3Location: S3Location, path: Path) {
-    // Use the Kotlin DSL for building requests.
-    val request = PutObjectRequest {
-      bucket = s3Location.bucket
-      key = s3Location.key
-      // The body is provided via a ByteStream
-      body = ByteStream.fromFile(path.toFile())
-    }
-    s3Client.putObject(request)
+  fun upload(s3Location: S3Location, path: Path?) {
+    val response: PutObjectResponse? = s3Client.putObject(
+      { builder: PutObjectRequest.Builder ->
+        builder
+          .bucket(s3Location.bucket)
+          .key(s3Location.key)
+          .build()
+      },
+      RequestBody.fromFile(path)
+    )
   }
 
   companion object {

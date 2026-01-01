@@ -1,9 +1,10 @@
 package sourceconnector.config
 
-import aws.sdk.kotlin.services.s3.S3Client
 import org.springframework.beans.factory.BeanRegistrar
 import org.springframework.beans.factory.BeanRegistry
 import org.springframework.core.env.Environment
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.s3.S3Client
 import sourceconnector.repository.file.*
 import java.util.*
 
@@ -30,9 +31,9 @@ class StorageRepositoryRegistrar: BeanRegistrar {
           S3Client::class.java
         ) { spec: BeanRegistry.Spec<S3Client> ->
           spec.supplier { context: BeanRegistry.SupplierContext ->
-            S3Client {
-              region = context.bean<S3Config>(S3Config::class.java).region
-            }
+            S3Client.builder()
+              .region(Region.of(context.bean(S3Config::class.java).region))
+              .build()
           }
         }
         registry.registerBean<S3FileRepository>(

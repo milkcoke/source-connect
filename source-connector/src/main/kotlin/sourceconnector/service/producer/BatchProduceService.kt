@@ -29,7 +29,7 @@ class BatchProduceService(
     offsetRecord: OffsetRecord,
     messageBatch: MessageBatch<String>
   ) {
-    val batch: MutableCollection<String> = messageBatch.get()
+    val batch: Collection<String> = messageBatch.get()
 
     try {
       this.kafkaProducer.beginTransaction()

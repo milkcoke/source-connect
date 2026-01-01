@@ -22,7 +22,7 @@ dependencies {
   implementation("tools.jackson.core:jackson-databind:3.0.3")
   implementation("tools.jackson.module:jackson-module-kotlin:3.0.3")
   implementation("jakarta.ws.rs:jakarta.ws.rs-api:4.0.0")
-  implementation("aws.sdk.kotlin:s3:1.5.110")
+  implementation("software.amazon.awssdk:s3:2.40.16")
   implementation("com.github.luben:zstd-jni:1.5.7-6")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
