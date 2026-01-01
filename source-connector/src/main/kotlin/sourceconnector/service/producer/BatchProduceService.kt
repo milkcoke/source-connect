@@ -5,7 +5,6 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
 import sourceconnector.domain.batch.MessageBatch
-import java.lang.Long
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 import java.util.*
@@ -47,7 +46,7 @@ class BatchProduceService(
         ProducerRecord<String?, ByteArray?>(
           this.offsetTopic,
           offsetRecord.key().get(),
-          ByteBuffer.allocate(Long.BYTES).putLong(offsetRecord.offset()).array()
+          ByteBuffer.allocate(java.lang.Long.BYTES).putLong(offsetRecord.offset()).array()
         )
       )
 

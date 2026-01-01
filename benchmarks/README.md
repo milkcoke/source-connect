@@ -16,12 +16,12 @@ $ node generate_ndjosn.js
 #### (2) Configure the jmh task
 Configure build.gradle `jmh` task configuration \
 refer to the [docs](https://github.com/melix/jmh-gradle-plugin)
-```groovy
+```kts
 jmh {
-  fork = 1
-  warmupIterations = 1
-  iterations = 5
-  includes = ['WorkerBenchmark.fiveTaskBenchmark']
+  fork.set(1)
+  warmupIterations.set(1)
+  iterations.set(1)
+  includes.set(listOf("FileSourceTaskBenchmark.singleTaskBenchmark"))
 }
 ```
 #### (3) Execute jmh

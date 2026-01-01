@@ -18,7 +18,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
   implementation("org.springframework.boot:spring-boot-starter-kafka")
   implementation("org.apache.kafka:kafka-clients:4.1.1")
-  implementation("org.apache.commons:commons-lang3:3.18.0")
+  implementation("org.apache.commons:commons-lang3:3.20.0")
   implementation("tools.jackson.core:jackson-databind:3.0.3")
   implementation("tools.jackson.module:jackson-module-kotlin:3.0.3")
   implementation("jakarta.ws.rs:jakarta.ws.rs-api:4.0.0")
