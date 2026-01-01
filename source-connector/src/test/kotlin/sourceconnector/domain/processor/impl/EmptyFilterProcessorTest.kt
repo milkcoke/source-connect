@@ -1,6 +1,6 @@
 package sourceconnector.domain.processor.impl
 
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import sourceconnector.domain.log.JSONLog
@@ -19,7 +19,7 @@ internal class EmptyFilterProcessorTest {
     val result = processor.process(emptyInput)
 
     // then
-    Assertions.assertThat<Log?>(result).isNull()
+    assertThat<Log?>(result).isNull()
   }
 
   @DisplayName("Should result is to be null when payload is blank")
@@ -33,6 +33,6 @@ internal class EmptyFilterProcessorTest {
     val result = processor.process(emptyInput)
 
     // then
-    Assertions.assertThat<Log?>(result).isNull()
+    assertThat<Log?>(result).isNull()
   }
 }

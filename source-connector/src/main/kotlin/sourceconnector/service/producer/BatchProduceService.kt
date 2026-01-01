@@ -43,7 +43,7 @@ class BatchProduceService(
         )
       }
       this.kafkaProducer.send(
-        ProducerRecord<String?, ByteArray?>(
+        ProducerRecord(
           this.offsetTopic,
           offsetRecord.key().get(),
           ByteBuffer.allocate(java.lang.Long.BYTES).putLong(offsetRecord.offset()).array()

@@ -6,7 +6,7 @@ enum class DecompressorSelector(private val decompressor: Decompressor) {
   GZIP(GzipDecompressor()),
   ZIP(ZipDecompressor()),
   ZSTD(ZstdDecompressor()),
-  NONE(NoneDecompressor()); // Semicolon is needed to separate enum constants from other members
+  NONE(NoneDecompressor());
 
   companion object {
     /**

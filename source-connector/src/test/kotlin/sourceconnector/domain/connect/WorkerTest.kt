@@ -109,7 +109,7 @@ internal class WorkerTest : KafkaTestSupport() {
 
   @DisplayName("Should throw IllegalStateException when no tasks to start")
   @Test
-  fun NoTaskStartTest() {
+  fun noTaskStartTest() {
     // given
     val worker = Worker(0, FileTaskAssignor(mutableListOf<FileKey>(), 0, this.offsetRecordService))
 
