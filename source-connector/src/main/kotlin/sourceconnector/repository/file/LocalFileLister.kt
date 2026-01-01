@@ -8,7 +8,6 @@ import java.io.IOException
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.stream.Collectors
 
 class LocalFileLister(
   private val fileValidator: FileValidator
@@ -66,7 +65,7 @@ class LocalFileLister(
           .filter { path: Path -> Files.isRegularFile(path) }
           .map<LocalFileKey> { obj: Path -> LocalFileKey.from(obj) }
           .filter { filePath: LocalFileKey -> fileValidator.isValid(filePath) }
-          .collect(Collectors.toUnmodifiableList())
+          .toList()
       }
     } catch (_: IOException) {
       throw IllegalArgumentException("failed to list files in directory: $absDir")
@@ -80,7 +79,7 @@ class LocalFileLister(
           .filter { path: Path -> Files.isRegularFile(path) }
           .map<LocalFileKey> { obj: Path -> LocalFileKey.from(obj) }
           .filter { filePath: LocalFileKey -> fileValidator.isValid(filePath) }
-          .collect(Collectors.toUnmodifiableList())
+          .toList()
       }
     } catch (_: IOException) {
       throw IllegalArgumentException("failed to list files in directory: $absDir")

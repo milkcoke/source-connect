@@ -1,6 +1,7 @@
 package sourceconnector.domain.connect
 
 import org.apache.kafka.clients.producer.ProducerConfig
+import org.slf4j.LoggerFactory
 import sourceconnector.domain.log.Log
 import sourceconnector.domain.pipeline.factory.PipelineSupplier
 import sourceconnector.service.producer.BatchProduceService
@@ -18,7 +19,7 @@ class Worker(
 ) {
   private lateinit var executor: ExecutorService
   private val tasks: MutableCollection<Task<FileProcessingResult>> = mutableListOf()
-  private val log = org.slf4j.LoggerFactory.getLogger(Worker::class.java)
+  private val log = LoggerFactory.getLogger(Worker::class.java)
   /**
    * Should be called only once after instantiated.
    * @param totalWorkerCount the number of total workers
@@ -69,7 +70,7 @@ class Worker(
    */
   @Throws(InterruptedException::class, ExecutionException::class)
   fun start() {
-    check(!this.tasks.isEmpty()) { "No tasks to start" }
+    check(this.tasks.isNotEmpty()) { "No task to start" }
 
     try {
       val futures: MutableList<Future<FileProcessingResult>> = this.executor.invokeAll<FileProcessingResult>(tasks)

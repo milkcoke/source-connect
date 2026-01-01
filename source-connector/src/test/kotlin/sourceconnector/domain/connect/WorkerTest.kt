@@ -116,7 +116,7 @@ internal class WorkerTest : KafkaTestSupport() {
     // when then
     Assertions.assertThatThrownBy { worker.start() }
       .isInstanceOf(IllegalStateException::class.java)
-      .hasMessage("No tasks to start")
+      .hasMessage("No task to start")
   }
 
   @DisplayName("Success to start after that tasks are created")

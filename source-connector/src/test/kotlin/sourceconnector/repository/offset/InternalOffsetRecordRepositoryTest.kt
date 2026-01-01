@@ -54,7 +54,7 @@ internal class InternalOffsetRecordRepositoryTest : KafkaTestSupport() {
       // when
       val offsetRecord: OffsetRecord? = repository.findLastOffsetRecord(notExistFileKey)
       // then
-      assertThat<OffsetRecord?>(offsetRecord).isNull()
+      assertThat(offsetRecord).isNull()
     }
   }
 
