@@ -5,6 +5,6 @@ import offsetmanager.domain.offset.OffsetRecord
 import java.util.*
 
 interface OffsetManager {
-  fun findLatestOffsetRecord(key: FileKey): Optional<OffsetRecord>
+  fun findLatestOffsetRecord(key: FileKey): OffsetRecord?
   fun findLatestOffsetRecords(keys: List<FileKey>): List<OffsetRecord>
 }

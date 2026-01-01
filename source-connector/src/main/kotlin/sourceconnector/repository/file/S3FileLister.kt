@@ -4,7 +4,6 @@ import offsetmanager.domain.file.FileKey
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response
-import sourceconnector.repository.file.S3Location.Companion.from
 import sourceconnector.repository.file.validator.FileValidator
 
 
@@ -20,7 +19,7 @@ class S3FileLister(
   override fun listFiles(vararg inputFileKeys: FileKey): List<FileKey> {
     val fileKeys: MutableList<FileKey> = mutableListOf()
     for (fileKey in inputFileKeys) {
-      val s3Location = from(fileKey)
+      val s3Location = S3Location.from(fileKey)
 
       val request = ListObjectsV2Request.builder()
         .bucket(s3Location.bucket)
@@ -39,7 +38,7 @@ class S3FileLister(
   override fun listFilesRecursively(vararg inputFileKeys: FileKey): List<FileKey> {
     val fileKeys: MutableList<FileKey> = mutableListOf()
     for (fileKey in inputFileKeys) {
-      val s3Location = from(fileKey)
+      val s3Location = S3Location.from(fileKey)
       val request = ListObjectsV2Request.builder()
         .bucket(s3Location.bucket)
         .prefix(s3Location.key)
@@ -54,7 +53,7 @@ class S3FileLister(
   }
 
   private fun listFilesInResponse(fileKey: FileKey, request: ListObjectsV2Request): List<FileKey> {
-    val s3Location = from(fileKey)
+    val s3Location = S3Location.from(fileKey)
 
     return this.s3Client.listObjectsV2Paginator(request)
       .flatMap { response: ListObjectsV2Response? -> response!!.contents() }

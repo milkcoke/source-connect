@@ -16,6 +16,7 @@ import offsetmanager.support.KafkaTestSupport
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.ThrowableAssert
 import org.junit.jupiter.api.*
 import org.mockito.Mockito
@@ -112,7 +113,7 @@ internal class OffsetManagerServiceTest {
       val offsetManager = OffsetManagerRepository(offsetStorage, offsetStateUpdater)
       val offsetManagerService = OffsetManagerService(offsetManager)
       // when then
-      Assertions.assertThatThrownBy( { offsetManagerService.readLastOffset("file:///notExistKey.txt") })
+      assertThatThrownBy( { offsetManagerService.readLastOffset("file:///notExistKey.txt") })
         .isInstanceOf(OffsetNotFoundException::class.java)
         .hasMessage("Offset not found for key: file:///notExistKey.txt")
       // cleans
@@ -161,8 +162,8 @@ internal class OffsetManagerServiceTest {
       val mockManager = Mockito.mock<OffsetManager>(OffsetManager::class.java)
       val fileKey = parse("file:///existKey.txt")
 
-      Mockito.`when`<Optional<OffsetRecord>>(mockManager.findLatestOffsetRecord(fileKey))
-        .thenReturn(Optional.of(DefaultOffsetRecord(fileKey, 10L)))
+      Mockito.`when`<OffsetRecord?>(mockManager.findLatestOffsetRecord(fileKey))
+        .thenReturn(DefaultOffsetRecord(fileKey, 10L))
 
       val remoteOffsetService = OffsetManagerService(mockManager)
       // when
@@ -178,13 +179,11 @@ internal class OffsetManagerServiceTest {
       // given
       val mockManager = Mockito.mock<OffsetManager>(OffsetManager::class.java)
       val nonExistFileKey = parse("file:///nonExistKey.txt")
-      Mockito.`when`<Optional<OffsetRecord>>(mockManager.findLatestOffsetRecord(nonExistFileKey)).thenReturn(
-        Optional.empty()
-      )
+      Mockito.`when`<OffsetRecord?>(mockManager.findLatestOffsetRecord(nonExistFileKey)).thenReturn(null)
 
       val remoteOffsetService = OffsetManagerService(mockManager)
       // when then
-      Assertions.assertThatThrownBy { remoteOffsetService.readLastOffset("file:///notExistKey.txt") }
+      assertThatThrownBy { remoteOffsetService.readLastOffset("file:///notExistKey.txt") }
         .isInstanceOf(OffsetNotFoundException::class.java)
         .hasMessage("Offset not found for key: file:///notExistKey.txt")
     }

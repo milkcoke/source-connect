@@ -18,11 +18,9 @@ class OffsetManagerService(
   fun readLastOffset(key: String): LastOffsetRecordResponse {
     val fileKey = parse(key)
 
-    val lastOffsetRecord: Optional<OffsetRecord> = offsetManager.findLatestOffsetRecord(fileKey)
-    if (lastOffsetRecord.isEmpty) {
-      throw OffsetNotFoundException(key)
-    }
-    return LastOffsetRecordResponse.from(lastOffsetRecord.get())
+    return offsetManager.findLatestOffsetRecord(fileKey)
+      ?.let{ LastOffsetRecordResponse.from(it) }
+      ?: throw OffsetNotFoundException(key)
   }
 
   fun readLastOffsets(keys: List<String>): LastOffsetRecordBatchResponse {

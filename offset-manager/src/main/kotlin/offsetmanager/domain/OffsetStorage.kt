@@ -9,7 +9,7 @@ import java.util.*
  * OffsetStorage should store latest OffsetRecord identified by FileKey
  */
 interface OffsetStorage {
-  fun find(key: FileKey): Optional<OffsetRecord>
+  fun find(key: FileKey): OffsetRecord?
   fun upsert(key: FileKey, record: OffsetRecord)
   fun remove(key: FileKey)
   fun clear()

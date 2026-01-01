@@ -18,6 +18,7 @@ data class S3Location(
   }
 
   companion object {
+    @JvmStatic
     fun from(s3Uri: S3Uri): S3Location {
       return S3Location(s3Uri.bucket(), s3Uri.key())
     }

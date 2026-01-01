@@ -48,9 +48,9 @@ internal class OffsetManagerRepositoryTest: KafkaTestSupport() {
     offsetStateUpdater.start()
     val offsetManager = OffsetManagerRepository(offsetStorage, offsetStateUpdater)
     // when
-    val foundOffset: Optional<OffsetRecord> = offsetManager.findLatestOffsetRecord(parse("file:///test/path.txt"))
+    val foundOffset: OffsetRecord? = offsetManager.findLatestOffsetRecord(parse("file:///test/path.txt"))
     // then
-    assertThat<OffsetRecord>(foundOffset).isEmpty()
+    assertThat<OffsetRecord>(foundOffset).isNull()
   }
 
   @DisplayName("Should throw OffsetManagerNotReadyException when OffsetStateUpdater not started")
@@ -61,7 +61,7 @@ internal class OffsetManagerRepositoryTest: KafkaTestSupport() {
       OffsetStateUpdaterImpl(offsetTopic, testConsumerProperties, offsetStorage)
     val offsetManager = OffsetManagerRepository(offsetStorage, offsetStateUpdater)
     // when then
-    Assertions.assertThatThrownBy(ThrowableAssert.ThrowingCallable { offsetManager.findLatestOffsetRecord(parse("file:///test/path.txt")) })
+    Assertions.assertThatThrownBy { offsetManager.findLatestOffsetRecord(parse("file:///test/path.txt")) }
       .isInstanceOf(OffsetManagerNotReadyException::class.java)
   }
 
@@ -117,9 +117,9 @@ internal class OffsetManagerRepositoryTest: KafkaTestSupport() {
     val keyA = parse("file:///key-a.txt")
     val keyB = parse("file:///key-b.txt")
     val keyC = parse("file:///key-c.txt")
-    assertThat<OffsetRecord>(offsetManager.findLatestOffsetRecord(keyA)).isEmpty()
-    assertThat<OffsetRecord>(offsetManager.findLatestOffsetRecord(keyB)).isEmpty()
-    assertThat<OffsetRecord>(offsetManager.findLatestOffsetRecord(keyC)).isEmpty()
+    assertThat<OffsetRecord>(offsetManager.findLatestOffsetRecord(keyA)).isNull()
+    assertThat<OffsetRecord>(offsetManager.findLatestOffsetRecord(keyB)).isNull()
+    assertThat<OffsetRecord>(offsetManager.findLatestOffsetRecord(keyC)).isNull()
 
     for (i in 1..1000) {
       if (((i - 1) % 100).toLong() == 0L) {
@@ -134,11 +134,11 @@ internal class OffsetManagerRepositoryTest: KafkaTestSupport() {
     }
     // when then
     Thread.sleep(1000)
-    assertThat<OffsetRecord>(offsetManager.findLatestOffsetRecord(keyA).get())
+    assertThat<OffsetRecord>(offsetManager.findLatestOffsetRecord(keyA))
       .isEqualTo(DefaultOffsetRecord(keyA, 1000L))
-    assertThat<OffsetRecord>(offsetManager.findLatestOffsetRecord(keyB).get())
+    assertThat<OffsetRecord>(offsetManager.findLatestOffsetRecord(keyB))
       .isEqualTo(DefaultOffsetRecord(keyB, 1000L))
-    assertThat<OffsetRecord>(offsetManager.findLatestOffsetRecord(keyC).get())
+    assertThat<OffsetRecord>(offsetManager.findLatestOffsetRecord(keyC))
       .isEqualTo(DefaultOffsetRecord(keyC, 1000L))
 
     // cleans

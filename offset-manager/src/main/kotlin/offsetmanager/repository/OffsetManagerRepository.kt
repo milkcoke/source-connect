@@ -18,16 +18,13 @@ class OffsetManagerRepository(
   private val offsetStateReadiness: OffsetStateReadiness
 ) : OffsetManager {
 
-  override fun findLatestOffsetRecord(key: FileKey): Optional<OffsetRecord> {
+  override fun findLatestOffsetRecord(key: FileKey): OffsetRecord? {
     this.offsetStateReadiness.awaitReady()
     return this.offsetStorage.find(key)
   }
 
   override fun findLatestOffsetRecords(keys: List<FileKey>): List<OffsetRecord> {
     this.offsetStateReadiness.awaitReady()
-    return keys.stream()
-      .map<Optional<OffsetRecord>> { key: FileKey? -> offsetStorage.find(key!!) }
-      .flatMap<OffsetRecord> { obj: Optional<OffsetRecord> -> obj.stream() }
-      .toList()
+    return keys.mapNotNull { key ->  offsetStorage.find(key) }
   }
 }

@@ -18,9 +18,9 @@ internal class InMemoryOffsetStorageTest {
     val offsetStorage: OffsetStorage = InMemoryOffsetStorage()
     val notExistFileKey: FileKey = from(Path.of("non-existing-file.txt"))
     // when
-    val offsetRecord: Optional<OffsetRecord> = offsetStorage.find(notExistFileKey)
+    val offsetRecord: OffsetRecord? = offsetStorage.find(notExistFileKey)
     // then
-    assertThat<OffsetRecord?>(offsetRecord).isEmpty()
+    assertThat(offsetRecord).isNull()
   }
 
   @DisplayName("Should return FileKey when key found")
@@ -31,9 +31,9 @@ internal class InMemoryOffsetStorageTest {
     val existFileKey: FileKey = from(Path.of("existing-file.txt"))
     offsetStorage.upsert(existFileKey, DefaultOffsetRecord(existFileKey, 0))
     // when
-    val offsetRecord: Optional<OffsetRecord> = offsetStorage.find(existFileKey)
+    val offsetRecord: OffsetRecord? = offsetStorage.find(existFileKey)
     // then
-    assertThat<OffsetRecord?>(offsetRecord.get()).isEqualTo(DefaultOffsetRecord(existFileKey, 0))
+    assertThat<OffsetRecord>(offsetRecord).isEqualTo(DefaultOffsetRecord(existFileKey, 0))
   }
 
   @DisplayName("Should overwrite existing record on upsert")
@@ -45,9 +45,9 @@ internal class InMemoryOffsetStorageTest {
     // when
     offsetStorage.upsert(existFileKey, DefaultOffsetRecord(existFileKey, 0))
     offsetStorage.upsert(existFileKey, DefaultOffsetRecord(existFileKey, 1))
-    val offsetRecord: Optional<OffsetRecord> = offsetStorage.find(existFileKey)
+    val offsetRecord: OffsetRecord? = offsetStorage.find(existFileKey)
     // then
-    assertThat<OffsetRecord?>(offsetRecord.get()).isEqualTo(DefaultOffsetRecord(existFileKey, 1))
+    assertThat<OffsetRecord>(offsetRecord).isEqualTo(DefaultOffsetRecord(existFileKey, 1))
   }
 
   @DisplayName("Should remove record on remove")
@@ -59,9 +59,9 @@ internal class InMemoryOffsetStorageTest {
     offsetStorage.upsert(existFileKey, DefaultOffsetRecord(existFileKey, 0))
     // when
     offsetStorage.remove(existFileKey)
-    val offsetRecord: Optional<OffsetRecord> = offsetStorage.find(existFileKey)
+    val offsetRecord: OffsetRecord? = offsetStorage.find(existFileKey)
     // then
-    assertThat(offsetRecord).isEmpty()
+    assertThat(offsetRecord).isNull()
   }
 
   @DisplayName("Should clear all records on clear")
@@ -75,10 +75,10 @@ internal class InMemoryOffsetStorageTest {
     offsetStorage.upsert(existFileKey2, DefaultOffsetRecord(existFileKey2, 1))
     // when
     offsetStorage.clear()
-    val offsetRecord1: Optional<OffsetRecord> = offsetStorage.find(existFileKey1)
-    val offsetRecord2: Optional<OffsetRecord> = offsetStorage.find(existFileKey1)
+    val offsetRecord1: OffsetRecord? = offsetStorage.find(existFileKey1)
+    val offsetRecord2: OffsetRecord? = offsetStorage.find(existFileKey1)
     // then
-    assertThat(offsetRecord1).isEmpty()
-    assertThat(offsetRecord2).isEmpty()
+    assertThat(offsetRecord1).isNull()
+    assertThat(offsetRecord2).isNull()
   }
 }

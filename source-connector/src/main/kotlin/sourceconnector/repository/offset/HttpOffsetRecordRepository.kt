@@ -38,17 +38,21 @@ class HttpOffsetRecordRepository(
     try {
       val response = httpClient.send<String>(request, HttpResponse.BodyHandlers.ofString())
       val responseStatus = response.statusCode()
-      if (responseStatus == Response.Status.OK.statusCode) {
-        val offsetRecord = objectMapper.readValue<LastOffsetRecordResponse>(
-          response.body(),
-          LastOffsetRecordResponse::class.java
-        )
-        return DefaultOffsetRecord(parse(offsetRecord.key), offsetRecord.offset)
+      when (responseStatus) {
+        Response.Status.OK.statusCode -> {
+          val offsetRecord = objectMapper.readValue<LastOffsetRecordResponse>(
+            response.body(),
+            LastOffsetRecordResponse::class.java
+          )
+          return DefaultOffsetRecord(parse(offsetRecord.key), offsetRecord.offset)
 
-      } else if (responseStatus == Response.Status.NOT_FOUND.statusCode) {
-        return null
-      } else {
-        throw RuntimeException("Failed to fetch offset record, status code: $responseStatus")
+        }
+        Response.Status.NOT_FOUND.statusCode -> {
+          return null
+        }
+        else -> {
+          throw RuntimeException("Failed to fetch offset record, status code: $responseStatus")
+        }
       }
     } catch (e: IOException) {
       throw IllegalStateException("Failed to fetch offset records from OffsetManager", e)

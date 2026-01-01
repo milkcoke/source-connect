@@ -9,11 +9,8 @@ class InMemoryOffsetStorage(
   private val offsetMap: MutableMap<FileKey, OffsetRecord> = ConcurrentHashMap()
 ) : OffsetStorage {
 
-  override fun find(key: FileKey): Optional<OffsetRecord> {
-    if (this.offsetMap.containsKey(key)) {
-      return Optional.of(this.offsetMap[key] as OffsetRecord)
-    }
-    return Optional.empty()
+  override fun find(key: FileKey): OffsetRecord? {
+    return this.offsetMap[key]
   }
 
   override fun upsert(key: FileKey, record: OffsetRecord) {
