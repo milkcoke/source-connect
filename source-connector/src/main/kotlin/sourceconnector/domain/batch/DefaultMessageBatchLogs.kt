@@ -12,7 +12,7 @@ class DefaultMessageBatchLogs(
     this.logs.addAll(logs)
   }
 
-  override fun get(): MutableList<String> {
+  override fun get(): List<String> {
     check(logs.isNotEmpty()) { "No log found" }
     return this.logs
   }

@@ -146,6 +146,7 @@ services:
     volumes:
       - "Kafka02Data:/tmp/kafka-logs"
       - "Kafka02Log:/opt/kafka/logs"
+      - ./kafka_server_jaas.conf:/opt/kafka/config/kafka_server_jaas.conf
 
   KafkaWebUiService:
     image: provectuslabs/kafka-ui:v0.7.2
