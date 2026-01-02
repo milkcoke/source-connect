@@ -48,7 +48,7 @@ internal class InternalOffsetRecordRepositoryTest : KafkaTestSupport() {
     val consumer: KafkaConsumer<String, Long> = createConsumer()
     InternalOffsetRecordRepository(
       consumer,
-      adminClient,
+      createAdminClient(),
       this.offsetTopicName
     ).use { repository ->
       // when
@@ -57,6 +57,27 @@ internal class InternalOffsetRecordRepositoryTest : KafkaTestSupport() {
       assertThat(offsetRecord).isNull()
     }
   }
+
+  @DisplayName("No offset record when begin offset equal to the end offset")
+  @Test
+  fun noOffsetLog() {
+    // given
+    val emptyTopic: String = "emptyTopic"
+    createOffsetTopic(emptyTopic, 2)
+    val notExistFileKey: FileKey = from(Path.of("NotExistFile.ndjson"))
+    val consumer: KafkaConsumer<String, Long> = createConsumer()
+    InternalOffsetRecordRepository(
+      consumer,
+      createAdminClient(),
+      emptyTopic
+    ).use { repository ->
+      // when
+      val offsetRecord: OffsetRecord? = repository.findLastOffsetRecord(notExistFileKey)
+      // then
+      assertThat(offsetRecord).isNull()
+    }
+  }
+
 
   @DisplayName("Get last offset record for a FileKey")
   @Test
@@ -81,11 +102,10 @@ internal class InternalOffsetRecordRepositoryTest : KafkaTestSupport() {
     }
     producer.commitTransaction()
     val consumer: KafkaConsumer<String, Long> = createConsumer()
-    val adminClient = createAdminClient()
 
     InternalOffsetRecordRepository(
       consumer,
-      adminClient,
+      createAdminClient(),
       this.offsetTopicName
     ).use { repository ->
       // when
@@ -119,11 +139,10 @@ internal class InternalOffsetRecordRepositoryTest : KafkaTestSupport() {
     producer.commitTransaction()
 
     val consumer: KafkaConsumer<String, Long> = createConsumer()
-    val adminClient = createAdminClient()
 
     InternalOffsetRecordRepository(
       consumer,
-      adminClient,
+      createAdminClient(),
       this.offsetTopicName
     ).use { repository ->
       // when
@@ -145,11 +164,10 @@ internal class InternalOffsetRecordRepositoryTest : KafkaTestSupport() {
       from(Path.of("NotExistFile3.ndjson"))
     )
     val consumer: KafkaConsumer<String, Long> = createConsumer()
-    val adminClient = createAdminClient()
 
     InternalOffsetRecordRepository(
       consumer,
-      adminClient,
+      createAdminClient(),
       this.offsetTopicName
     ).use { repository ->
       // when
@@ -189,11 +207,10 @@ internal class InternalOffsetRecordRepositoryTest : KafkaTestSupport() {
     producer.commitTransaction()
 
     val consumer: KafkaConsumer<String, Long> = createConsumer()
-    val adminClient = createAdminClient()
 
     InternalOffsetRecordRepository(
       consumer,
-      adminClient,
+      createAdminClient(),
       this.offsetTopicName
     ).use { repository ->
       // when
@@ -238,11 +255,10 @@ internal class InternalOffsetRecordRepositoryTest : KafkaTestSupport() {
     producer.commitTransaction()
 
     val consumer: KafkaConsumer<String, Long> = createConsumer()
-    val adminClient = createAdminClient()
 
     InternalOffsetRecordRepository(
       consumer,
-      adminClient,
+      createAdminClient(),
       this.offsetTopicName
     ).use { repository ->
       // when
