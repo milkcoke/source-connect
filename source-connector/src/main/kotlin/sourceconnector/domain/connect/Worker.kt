@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory
 import sourceconnector.domain.log.Log
 import sourceconnector.domain.pipeline.factory.PipelineSupplier
 import sourceconnector.service.producer.BatchProduceService
+import java.net.InetAddress
 import java.util.*
 import java.util.concurrent.*
 import kotlin.math.min
@@ -44,8 +45,7 @@ class Worker(
     val endIndex = (this.index + 1) * quotient + min(this.index + 1, remainder)
 
     for (taskIndex in startIndex..<endIndex) {
-      producerProperties[ProducerConfig.TRANSACTIONAL_ID_CONFIG] = String.format("Task-%d", taskIndex)
-
+      producerProperties[ProducerConfig.TRANSACTIONAL_ID_CONFIG] = String.format("Task-%d-%s", taskIndex, InetAddress.getLocalHost().hostName)
       tasks.add(
         FileSourceTask(
           taskIndex,
