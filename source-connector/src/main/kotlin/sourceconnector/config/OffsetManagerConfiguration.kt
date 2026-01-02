@@ -13,8 +13,6 @@ import sourceconnector.repository.offset.HttpOffsetRecordRepository
 import sourceconnector.repository.offset.InternalOffsetRecordRepository
 import sourceconnector.service.offset.OffsetRecordRepository
 import sourceconnector.service.offset.OffsetRecordServiceImpl
-import java.net.URI
-import java.net.URL
 
 @Configuration
 class OffsetManagerConfiguration {

@@ -101,20 +101,18 @@ private val offsetTopicName: String,
     consumer.poll(Duration.ZERO)
 
     // 3. Get the end offsets
-    val endOffsets = consumer.endOffsets(topicPartitions)
+    val endOffsets: Map<TopicPartition, Long> = consumer.endOffsets(topicPartitions)
 
     // 4. Seek to the beginning
     consumer.seekToBeginning(topicPartitions)
 
-    // 5. Processing all records until reaching end offsets
+//     5. Processing all records until reaching end offsets
     val remaining: MutableSet<TopicPartition> = HashSet(topicPartitions)
-
-    while (!remaining.isEmpty()) {
-      val records =
-        consumer.poll(Duration.ofMillis(100))
+    while (remaining.isNotEmpty()) {
+      val records = consumer.poll(Duration.ofMillis(100))
 
       for (record in records) {
-        val fileKey = FileKeyParser.parse(record.key()!!)
+        val fileKey = FileKeyParser.parse(record.key())
         this.offsetStorage.upsert(fileKey, DefaultOffsetRecord(fileKey, record.value()!!))
       }
 

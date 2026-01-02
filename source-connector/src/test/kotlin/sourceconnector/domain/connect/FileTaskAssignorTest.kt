@@ -13,9 +13,7 @@ import sourceconnector.repository.offset.InternalOffsetRecordRepository
 import sourceconnector.service.offset.OffsetRecordServiceImpl
 import sourceconnector.service.producer.BatchProduceService
 import sourceconnector.support.KafkaTestSupport
-import java.util.function.Supplier
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class FileTaskAssignorTest : KafkaTestSupport() {
   private val pipelineSupplier: PipelineSupplier<Log> = FileLogPipelineSupplier(
     FileBaseLogPipelineBuilder(),

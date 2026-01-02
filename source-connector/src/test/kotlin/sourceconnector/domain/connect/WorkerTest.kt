@@ -2,8 +2,8 @@ package sourceconnector.domain.connect
 
 import offsetmanager.domain.file.FileKey
 import offsetmanager.domain.file.LocalFileKey.Companion.from
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DisplayName
@@ -54,7 +54,7 @@ internal class WorkerTest : KafkaTestSupport() {
     val worker = Worker(0, FileTaskAssignor(mutableListOf<FileKey>(), 0, this.offsetRecordService))
 
     // when then
-    Assertions.assertThatThrownBy {
+    assertThatThrownBy {
       worker.createTasks(
         0, 1,
         pipelineSupplier, producerProperties,
@@ -73,7 +73,7 @@ internal class WorkerTest : KafkaTestSupport() {
     val worker = Worker(0, FileTaskAssignor(mutableListOf<FileKey>(), 0, this.offsetRecordService))
 
     // when then
-    Assertions.assertThatThrownBy {
+    assertThatThrownBy {
       worker.createTasks(
         1, 0,
         pipelineSupplier, producerProperties,
@@ -114,7 +114,7 @@ internal class WorkerTest : KafkaTestSupport() {
     val worker = Worker(0, FileTaskAssignor(mutableListOf<FileKey>(), 0, this.offsetRecordService))
 
     // when then
-    Assertions.assertThatThrownBy { worker.start() }
+    assertThatThrownBy { worker.start() }
       .isInstanceOf(IllegalStateException::class.java)
       .hasMessage("No task to start")
   }
