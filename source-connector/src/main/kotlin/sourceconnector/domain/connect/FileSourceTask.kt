@@ -44,9 +44,9 @@ class FileSourceTask(
           val messages = batcher.nextBatch().get()
           if (messages.isEmpty()) continue
           lastMessageMetadata = messages.last().metadata
-          val messageBatch: MutableList<String> = messages
+          val messageBatch: List<String> = messages
             .map { log -> log.get() }
-            .toMutableList()
+            .toList()
 
           producer.sendBatch(
             DefaultOffsetRecord(
@@ -63,7 +63,7 @@ class FileSourceTask(
             fileKey,
             OffsetStatus.COMPLETED.offset
           )
-        ) { mutableListOf() }
+        ) { emptyList() }
 
         this.result.addSuccessCount()
       }

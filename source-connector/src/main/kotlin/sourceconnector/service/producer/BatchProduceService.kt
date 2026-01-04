@@ -36,7 +36,7 @@ class BatchProduceService(
       for (message in batch) {
         this.kafkaProducer.send(
           ProducerRecord(
-            logTopic,
+            this.logTopic,
             null,
             message.toByteArray(StandardCharsets.UTF_8)
           )

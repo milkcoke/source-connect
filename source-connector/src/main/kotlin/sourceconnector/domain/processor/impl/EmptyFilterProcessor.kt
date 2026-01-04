@@ -8,6 +8,6 @@ import sourceconnector.domain.processor.AbstractFilterProcessor
  */
 class EmptyFilterProcessor : AbstractFilterProcessor<Log>() {
   override fun condition(input: Log): Boolean {
-    return !input.get().isBlank()
+    return input.get().isNotBlank()
   }
 }
