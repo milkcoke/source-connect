@@ -27,7 +27,6 @@ services:
     container_name: Kafka00Broker
     ports:
       - '9092:9094'
-#      - '9095:9096'
     environment:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
       # KRaft settings
@@ -74,7 +73,6 @@ services:
     container_name: Kafka01Broker
     ports:
       - '9093:9094'
-#      - '9096:9096'
     environment:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
       # KRaft settings
@@ -115,7 +113,6 @@ services:
     container_name: Kafka02Broker
     ports:
       - '9094:9094'
-#      - '9097:9096'
     environment:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
       # KRaft settings

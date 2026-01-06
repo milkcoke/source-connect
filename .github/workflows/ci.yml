@@ -5,6 +5,7 @@ on:
       - main
       - 'release/*'
       - 'feature/*'
+      - "migration/*"
     tags:
       - 'v*'
   pull_request:
