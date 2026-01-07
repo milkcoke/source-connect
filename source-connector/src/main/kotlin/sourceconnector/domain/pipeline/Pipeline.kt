@@ -5,7 +5,7 @@ package sourceconnector.domain.pipeline
  * @param <T> Handling type
 </T> */
 interface Pipeline<T> {
-  val isComplete: Boolean
+  var isComplete: Boolean
 
   fun getResult(): T?
   /**

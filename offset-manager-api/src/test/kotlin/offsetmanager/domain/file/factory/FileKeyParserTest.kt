@@ -3,7 +3,7 @@ package offsetmanager.domain.file.factory
 import offsetmanager.domain.file.LocalFileKey
 import offsetmanager.domain.file.S3FileKey
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.assertj.core.api.Java6Assertions.assertThat
+import org.assertj.core.api.AssertionsForInterfaceTypes.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
@@ -35,7 +35,7 @@ internal class FileKeyParserTest {
 
   @DisplayName("S3FileKey should be created when S3 Uri provided")
   @Test
-  fun S3FileKeyPathTest() {
+  fun s3FileKeyPathTest() {
     val fileKey = FileKeyParser.parse("s3://my-bucket/path/to/file.txt")
     assertThat(fileKey).isInstanceOf(S3FileKey::class.java)
   }
