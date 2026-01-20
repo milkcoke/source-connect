@@ -35,7 +35,7 @@ connect:
   taskCount: 1
 
 offsetManager:
-  type: internal
+  type: http
   baseUrl: http://localhost:8080
 
 spring:
