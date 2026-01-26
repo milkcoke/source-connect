@@ -6,8 +6,6 @@ import offsetmanager.domain.file.FileKey
 import offsetmanager.domain.offset.OffsetRecord
 import offsetmanager.manager.OffsetManager
 import org.springframework.stereotype.Repository
-import java.util.*
-
 /**
  * Should update continuously when new offsets are produced to the offset topic <br></br>
  * without consumer group management in the background
