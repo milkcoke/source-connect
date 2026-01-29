@@ -1,7 +1,7 @@
 plugins {
   kotlin("jvm")
   kotlin("plugin.spring") version "2.3.0"
-  id("org.springframework.boot") version "4.0.1"
+  id("org.springframework.boot") version "4.0.2"
   id("io.spring.dependency-management") version "1.1.7"
   id("com.google.cloud.tools.jib") version "3.5.2"
 }
@@ -19,15 +19,15 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-kafka")
   implementation("org.apache.kafka:kafka-clients:4.1.1")
   implementation("org.apache.commons:commons-lang3:3.20.0")
-  implementation("tools.jackson.core:jackson-databind:3.0.3")
-  implementation("tools.jackson.module:jackson-module-kotlin:3.0.3")
+  implementation("tools.jackson.core:jackson-databind:3.0.4")
+  implementation("tools.jackson.module:jackson-module-kotlin:3.0.4")
   implementation("jakarta.ws.rs:jakarta.ws.rs-api:4.0.0")
-  implementation("software.amazon.awssdk:s3:2.41.0")
+  implementation("software.amazon.awssdk:s3:2.41.15")
   implementation("com.github.luben:zstd-jni:1.5.7-6")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
   testImplementation("org.springframework.boot:spring-boot-starter-test")
-  testImplementation(platform("org.junit:junit-bom:6.0.1"))
+  testImplementation(platform("org.junit:junit-bom:6.0.2"))
   testImplementation("org.junit.jupiter:junit-jupiter")
   testImplementation("org.testcontainers:testcontainers:2.0.3")
   testImplementation("org.testcontainers:testcontainers-localstack:2.0.3")
@@ -35,7 +35,7 @@ dependencies {
   testImplementation("org.testcontainers:testcontainers-kafka")
   testImplementation("org.assertj:assertj-core:3.27.6")
   testImplementation("com.squareup.okhttp3:mockwebserver:5.3.2")
-  testImplementation("org.mockito.kotlin:mockito-kotlin:6.1.0")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:6.2.3")
   testImplementation(kotlin("reflect"))
 }
 
