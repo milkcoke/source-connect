@@ -2,7 +2,7 @@ plugins {
   kotlin("jvm")
   kotlin("plugin.spring") version "2.3.0"
   kotlin("plugin.allopen") version "2.3.0"
-  id("org.springframework.boot") version "4.0.1"
+  id("org.springframework.boot") version "4.0.2"
   id("me.champeau.jmh") version "0.7.3"
 }
 
@@ -17,7 +17,7 @@ dependencies {
   implementation(project(":offset-manager-api"))
   implementation(project(":source-connector"))
   implementation("org.apache.kafka:kafka-clients:4.1.1")
-  implementation("org.springframework.boot:spring-boot-starter-kafka:4.0.1")
+  implementation("org.springframework.boot:spring-boot-starter-kafka:4.0.2")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
   testImplementation(platform("org.junit:junit-bom:6.0.1"))

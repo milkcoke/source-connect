@@ -67,7 +67,7 @@ data:
             value.serializer: org.apache.kafka.common.serialization.ByteArraySerializer
             security.protocol: PLAINTEXT
             sasl.mechanism: PLAIN
-            transactional.id: "s3-source-connector"
+            transactional.id: "source-connector"
   
         consumer:
           max-poll-records: 50_000 # default: 1000

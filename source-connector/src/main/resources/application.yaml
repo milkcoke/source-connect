@@ -7,13 +7,6 @@ source:
     configs:
       recursive: true
       filters:
-        - type: exclude
-          expressions:
-            - '.*empty.*'
-        - type: extension
-          expressions:
-            - .ndjson
-            - .csv
     s3: # AWS S3
       region: ap-northeast-2
 
@@ -35,7 +28,7 @@ connect:
   taskCount: 1
 
 offsetManager:
-  type: internal
+  type: Internal
   baseUrl: http://localhost:8080
 
 spring:
@@ -53,7 +46,6 @@ spring:
         value.serializer: org.apache.kafka.common.serialization.ByteArraySerializer
         security.protocol: PLAINTEXT
         sasl.mechanism: PLAIN
-        transactional.id: "s3-source-connector"
 
     consumer:
       max-poll-records: 50_000 # default: 1000
