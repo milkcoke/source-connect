@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "sourceconnect"
-version = "0.9.3"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
