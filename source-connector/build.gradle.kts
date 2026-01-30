@@ -33,7 +33,7 @@ dependencies {
   testImplementation("org.testcontainers:testcontainers-localstack:2.0.3")
   testImplementation("org.testcontainers:testcontainers-junit-jupiter:2.0.3")
   testImplementation("org.testcontainers:testcontainers-kafka")
-  testImplementation("org.assertj:assertj-core:3.27.6")
+  testImplementation("org.assertj:assertj-core:3.27.7")
   testImplementation("com.squareup.okhttp3:mockwebserver:5.3.2")
   testImplementation("org.mockito.kotlin:mockito-kotlin:6.2.3")
   testImplementation(kotlin("reflect"))
@@ -44,5 +44,5 @@ tasks.test {
 }
 
 kotlin {
-  jvmToolchain(21)
+  jvmToolchain(25)
 }

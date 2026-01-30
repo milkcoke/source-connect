@@ -33,7 +33,7 @@ dependencies {
   testImplementation("org.testcontainers:testcontainers-junit-jupiter")
   testImplementation("org.testcontainers:testcontainers-kafka")
   testImplementation("org.junit.jupiter:junit-jupiter")
-  testImplementation("org.assertj:assertj-core:3.27.6")
+  testImplementation("org.assertj:assertj-core:3.27.7")
   testImplementation("org.mockito:mockito-core:5.21.0")
   testImplementation("tools.jackson.module:jackson-module-kotlin:3.0.4")
   testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -45,7 +45,7 @@ tasks.test {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
 }
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.compilerOptions {
