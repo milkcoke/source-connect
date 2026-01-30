@@ -5,7 +5,6 @@ pluginManagement {
 }
 rootProject.name = "source-connect"
 include(
-  "kafka-streams-connect",
   "source-connector",
   "offset-manager-api",
   "offset-manager",
