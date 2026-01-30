@@ -7,13 +7,6 @@ source:
     configs:
       recursive: true
       filters:
-        - type: exclude
-          expressions:
-            - '.*empty.*'
-        - type: extension
-          expressions:
-            - .ndjson
-            - .csv
     s3: # AWS S3
       region: ap-northeast-2
 
@@ -35,7 +28,7 @@ connect:
   taskCount: 1
 
 offsetManager:
-  type: http
+  type: Internal
   baseUrl: http://localhost:8080
 
 spring:
