@@ -4,9 +4,31 @@
 Source Connect provides the ETL pipeline from file source to the kafka with Exactly Once Semantics.
 ![Overview](./assets/source_connect_components.png)
 
+## Why?
+
+## Comparison with Existing Storage Source Connectors
+
+This section compares commonly used Kafka Source Connectors for
+storage-based ingestion.
+
+| Feature                       | Source Connect                  | Kafka Connect FilePulse      | Aiven S3 Source              | Confluent S3 Source             |
+|-------------------------------|---------------------------------|------------------------------|------------------------------|---------------------------------|
+| **Delivery Semantics**        | **Exactly-once**                | At-least-once                | At-least-once                | At-least-once                   |
+| **Storage Backends**          | Local, S3                       | Local, S3, Azure Blob, GCS   | AWS S3                       | AWS S3                          |
+| **Primary Use Case**          | Reliable batch / ETL ingestion  | Flexible file ingestion      | Simple S3 ingestion          | General S3 ingestion            |
+| **Supported File Formats**    | Text, CSV, **NDJSON (focused)** | CSV, JSON, Avro, XML, Binary | JSONL, Avro, Parquet, Bytes  | Avro, CSV, JSON, Bytes, Parquet |
+| **Compressed Files**          | **✅ (`.zip`, `.gz`, `.zst`)**   | ⚠️ Reader-dependent          | ✅ (`gzip`, `snappy`, `zstd`) | ❌ (Parquet internal only)       |
+| **Streaming Decompression**   | ✅                               | ⚠️ Limited                   | ✅                            | ❌                               |
+| **Archive Formats (zip/tar)** | ❌                               | ⚠️ Partial                   | ❌                            | ❌                               |
+| **Format Parsing Model**      | Streaming line-based parsing    | Rich parsing & transforms    | Basic deserialization        | Basic deserialization           |
+| **Execution Mode**            | **Standalone / Embedded**       | Kafka Connect runtime        | Kafka Connect runtime        | Kafka Connect runtime           |
+| **Kubernetes Native**         | **✅ Native (ConfigMap + YAML)** | ⚠️ Via Connect / Operator    | ⚠️ Via Connect / Operator    | ⚠️ Via Connect / Operator       |
+| **Operational Model**         | **Declarative (YAML-first)**    | Connect-managed lifecycle    | Connect-managed lifecycle    | Connect-managed lifecycle       |
+
 ## PreRequisites
 ![Open-JDK](https://img.shields.io/badge/jdk->=v25-23ED8B00?style=for-the-badge&logo=openjdk&logoColor=%23ED8B00) \
 ![Docker](https://img.shields.io/badge/docker-257bd6?style=for-the-badge&logo=docker&logoColor=white)
+
 
 ## Quick Start in local
 
