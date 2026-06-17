@@ -33,6 +33,7 @@ dependencies {
   testImplementation("org.junit.jupiter:junit-jupiter")
   testImplementation(platform("org.testcontainers:testcontainers-bom:2.0.5"))
   testImplementation("org.testcontainers:testcontainers-junit-jupiter")
+  //FIXME: Update localstack:s3-latest since it does not support community license.
   testImplementation("org.testcontainers:testcontainers-localstack")
   testImplementation("org.testcontainers:testcontainers-kafka")
 

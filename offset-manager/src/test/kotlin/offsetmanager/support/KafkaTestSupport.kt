@@ -10,7 +10,7 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.IsolationLevel
 import org.apache.kafka.common.config.TopicConfig
-import org.apache.kafka.common.record.CompressionType
+import org.apache.kafka.common.record.internal.CompressionType
 import org.apache.kafka.common.serialization.LongDeserializer
 import org.apache.kafka.common.serialization.LongSerializer
 import org.apache.kafka.common.serialization.StringDeserializer
@@ -88,9 +88,10 @@ abstract class KafkaTestSupport(
      *
      * Default kafka lister address are localhost:9092, localhost:9093, localhost:9094
      */
+    @JvmStatic
     @Container
     protected val kafkaContainer: KafkaContainer = KafkaContainer(
-      DockerImageName.parse("apache/kafka:4.1.1")
+      DockerImageName.parse("apache/kafka:4.3.0")
     )
     @JvmStatic
     protected val testConsumerProperties: Properties = Properties()
