@@ -18,7 +18,6 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
-import java.util.stream.Collectors
 
 class HttpOffsetRecordRepository(
   private val baseUrl: String
@@ -63,7 +62,7 @@ class HttpOffsetRecordRepository(
 
   override fun findLastOffsetRecords(keys: List<FileKey>): List<OffsetRecord> {
     val url = URI.create(baseUrl).resolve("/api/offset-records")
-    val fileKeys: List<String> = keys.map { fileKey -> fileKey.get() }.toList()
+    val fileKeys: List<String> = keys.map { it.get() }
     val requestBody = objectMapper.writeValueAsString(mapOf("keys" to fileKeys))
     val request = HttpRequest.newBuilder()
       .uri(url)
@@ -74,29 +73,22 @@ class HttpOffsetRecordRepository(
       .POST(HttpRequest.BodyPublishers.ofString(requestBody))
       .build()
     try {
-      val response = httpClient.send<String?>(request, HttpResponse.BodyHandlers.ofString())
-      if (response.statusCode() == Response.Status.OK.statusCode) {
-        val batchResponse = objectMapper.readValue<LastOffsetRecordBatchResponse>(
-          response.body(),
-          LastOffsetRecordBatchResponse::class.java
-        )
-        return batchResponse.lastOffsetRecords
-          .stream()
-          .map<DefaultOffsetRecord?> { lastOffsetRecord: LastOffsetRecordResponse? ->
-            DefaultOffsetRecord(
-              parse(lastOffsetRecord!!.key),
-              lastOffsetRecord.offset
-            )
-          }
-          .collect(Collectors.toList())
+      val response = httpClient.send(
+        request,
+        HttpResponse.BodyHandlers.ofString()
+      )
+      return when (response.statusCode()) {
+        Response.Status.OK.statusCode -> {
+          val batchResponse = objectMapper.readValue(response.body(), LastOffsetRecordBatchResponse::class.java)
+          batchResponse.lastOffsetRecords.map { DefaultOffsetRecord(parse(it.key), it.offset) }
+        }
+        else -> throw RuntimeException("Failed to fetch offset records, status code: ${response.statusCode()}")
       }
     } catch (ex: IOException) {
       throw IllegalStateException("Failed to fetch offset records from OffsetManager", ex)
     } catch (ex: InterruptedException) {
       throw IllegalStateException("Failed to fetch offset records from OffsetManager", ex)
     }
-
-    return emptyList()
   }
 
   @Throws(Exception::class)
