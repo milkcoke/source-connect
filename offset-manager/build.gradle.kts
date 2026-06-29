@@ -21,7 +21,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-web")
   implementation("org.springframework.boot:spring-boot-starter-validation")
   implementation("org.springframework.boot:spring-boot-starter-kafka")
-  implementation("org.apache.kafka:kafka-clients:4.3.0")
+  implementation("org.apache.kafka:kafka-clients:4.3.1")
   implementation("tools.jackson.module:jackson-module-kotlin:3.2.0")
   implementation("org.awaitility:awaitility:4.3.0")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")

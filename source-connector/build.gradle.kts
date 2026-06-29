@@ -17,7 +17,7 @@ dependencies {
   implementation(project(":offset-manager-api"))
   implementation("org.springframework.boot:spring-boot-starter")
   implementation("org.springframework.boot:spring-boot-starter-kafka")
-  implementation("org.apache.kafka:kafka-clients:4.3.0")
+  implementation("org.apache.kafka:kafka-clients:4.3.1")
   implementation("org.apache.commons:commons-lang3:3.20.0")
   implementation(platform("tools.jackson:jackson-bom:3.2.0"))
   implementation("tools.jackson.core:jackson-databind")
