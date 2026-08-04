@@ -154,7 +154,7 @@ abstract class KafkaTestSupport {
     @Container
     @JvmStatic
     protected val kafkaContainer: KafkaContainer = KafkaContainer(
-      DockerImageName.parse("apache/kafka:4.1.1")
+      DockerImageName.parse("apache/kafka:4.3.1")
     )
   }
 }
