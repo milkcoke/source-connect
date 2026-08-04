@@ -10,7 +10,7 @@ group = "sourceconnect"
 version = "1.0.0"
 
 repositories {
-    mavenCentral()
+  mavenCentral()
 }
 
 dependencies {
@@ -33,9 +33,8 @@ dependencies {
   testImplementation("org.junit.jupiter:junit-jupiter")
   testImplementation(platform("org.testcontainers:testcontainers-bom:2.0.5"))
   testImplementation("org.testcontainers:testcontainers-junit-jupiter")
-  //FIXME: Update localstack:s3-latest since it does not support community license.
-  testImplementation("org.testcontainers:testcontainers-localstack")
   testImplementation("org.testcontainers:testcontainers-kafka")
+  testImplementation("com.adobe.testing:s3mock-testcontainers:5.1.0")
 
   testImplementation("org.assertj:assertj-core:3.27.7")
   testImplementation("com.squareup.okhttp3:mockwebserver:5.4.0")
