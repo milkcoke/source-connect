@@ -10,7 +10,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.config.TopicConfig
 import org.apache.kafka.common.errors.TopicExistsException
-import org.apache.kafka.common.record.CompressionType
+import org.apache.kafka.common.record.internal.CompressionType
 import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.apache.kafka.common.serialization.LongDeserializer
 import org.apache.kafka.common.serialization.StringDeserializer
@@ -110,7 +110,8 @@ class WorkerBenchmark(
         ProducerConfig.ACKS_CONFIG to "-1",
         ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
         ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to ByteArraySerializer::class.java,
-        ProducerConfig.COMPRESSION_TYPE_CONFIG to CompressionType.LZ4.name,
+        ProducerConfig.COMPRESSION_TYPE_CONFIG to CompressionType.ZSTD.name,
+        ProducerConfig.COMPRESSION_ZSTD_LEVEL_CONFIG to 1,
         ProducerConfig.LINGER_MS_CONFIG to 100,
         ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG to true
       )

@@ -4,7 +4,7 @@ import offsetmanager.domain.file.FileKey
 import offsetmanager.domain.file.LocalFileKey.Companion.from
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.producer.ProducerConfig
-import org.apache.kafka.common.record.CompressionType
+import org.apache.kafka.common.record.internal.CompressionType
 import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.openjdk.jmh.annotations.*
@@ -50,7 +50,8 @@ class FileSourceTaskBenchmark(
         ProducerConfig.ACKS_CONFIG to "-1",
         ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
         ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to ByteArraySerializer::class.java,
-        ProducerConfig.COMPRESSION_TYPE_CONFIG to CompressionType.LZ4.name,
+        ProducerConfig.COMPRESSION_TYPE_CONFIG to CompressionType.ZSTD.name,
+        ProducerConfig.COMPRESSION_ZSTD_LEVEL_CONFIG to 1,
         ProducerConfig.LINGER_MS_CONFIG to 100,
         ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG to true,
         ProducerConfig.TRANSACTIONAL_ID_CONFIG to "single-task"
