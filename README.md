@@ -2,7 +2,7 @@
 
 ## Introduction
 Source Connect provides the ETL pipeline from file source to the kafka with Exactly Once Semantics.
-![Overview](./assets/source_connect_components.png)
+![Overview](./assets/overview.svg)
 
 ## Motivation
 
