@@ -5,5 +5,8 @@ import sourceconnector.domain.batch.MessageBatch
 import java.lang.AutoCloseable
 
 interface BatchProducer<T> : AutoCloseable {
-  fun sendBatch(offsetRecord: OffsetRecord, messageBatch: MessageBatch<T>)
+  fun sendBatch(
+    offsetRecord: OffsetRecord,
+    messageBatch: MessageBatch<T>
+  ): BatchResult
 }
