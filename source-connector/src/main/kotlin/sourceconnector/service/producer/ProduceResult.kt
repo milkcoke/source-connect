@@ -1,6 +1,6 @@
 package sourceconnector.service.producer
 
-enum class BatchResult {
+enum class ProduceResult {
   SUCCESS,
   FAIL;
 

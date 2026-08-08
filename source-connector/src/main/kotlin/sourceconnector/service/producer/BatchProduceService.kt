@@ -27,7 +27,7 @@ class BatchProduceService(
   override fun sendBatch(
     offsetRecord: OffsetRecord,
     messageBatch: MessageBatch<String>
-  ): BatchResult {
+  ): ProduceResult {
     val batch: Collection<String> = messageBatch.get()
 
     try {
@@ -54,9 +54,9 @@ class BatchProduceService(
     } catch (e: Exception) {
       log.error("Abort transaction since {}", e.message)
       this.kafkaProducer.abortTransaction()
-      return BatchResult.FAIL
+      return ProduceResult.FAIL
     }
-    return BatchResult.SUCCESS
+    return ProduceResult.SUCCESS
   }
 
   override fun close() {

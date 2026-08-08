@@ -8,5 +8,5 @@ interface BatchProducer<T> : AutoCloseable {
   fun sendBatch(
     offsetRecord: OffsetRecord,
     messageBatch: MessageBatch<T>
-  ): BatchResult
+  ): ProduceResult
 }

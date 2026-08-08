@@ -80,7 +80,7 @@ class Worker(
           "totalCount: {}, successCount: {}, failCount: {}, skippedCount: {}",
           result.totalCount,
           result.successCount,
-          result.failureCount,
+          result.failedFileKeys.size,
           result.skippedCount
         )
       }
