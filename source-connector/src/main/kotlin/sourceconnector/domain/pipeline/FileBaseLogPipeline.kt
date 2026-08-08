@@ -17,7 +17,7 @@ class FileBaseLogPipeline(
   private val reader: LineReader<String>,
   private val logFactory: LogFactory,
   private val startProcessor: BaseProcessor<Log>
-) : Pipeline<Log?>, AutoCloseable {
+) : Pipeline<Log?>{
   private val log = LoggerFactory.getLogger(this.javaClass)
   override var isComplete: Boolean = false
 
